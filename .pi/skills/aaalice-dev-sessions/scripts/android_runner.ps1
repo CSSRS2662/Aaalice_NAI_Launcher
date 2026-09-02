@@ -368,8 +368,15 @@ if (-not [string]::IsNullOrWhiteSpace($EmulatorId)) {
     $runningEmulator = $androidDevices |
         Where-Object { $_.emulator } |
         Where-Object {
-            $avdName = (& $adbCommand -s $_.id emu avd name 2>$null | Select-Object -First 1)
-            $LASTEXITCODE -eq 0 -and $avdName.Trim() -eq $EmulatorId
+            $deviceId = [string]$_.id
+            if ([string]::IsNullOrWhiteSpace($deviceId)) {
+                return $false
+            }
+
+            $avdName = (& $adbCommand -s $deviceId emu avd name 2>$null | Select-Object -First 1)
+            $avdQuerySucceeded = $LASTEXITCODE -eq 0
+            $normalizedAvdName = [string]$avdName
+            $avdQuerySucceeded -and $normalizedAvdName.Trim() -eq $EmulatorId
         } |
         Select-Object -First 1
     if ($runningEmulator) {
