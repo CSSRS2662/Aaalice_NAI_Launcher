@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/autocomplete/tag_catalog_repository.dart';
 import '../../core/network/network_failure_diagnostics.dart';
+import '../../core/network/network_client_provider.dart';
 import '../../core/network/online_gallery_retry_interceptor.dart';
 import '../../data/datasources/remote/danbooru_api_service.dart';
 import '../../data/datasources/remote/gelbooru_api_service.dart';
@@ -21,13 +22,15 @@ import '../../data/services/online_gallery/online_gallery_query.dart';
 import 'quick_tag_cloud_gallery_provider.dart';
 
 Dio onlineGalleryHttpClient(Ref ref) {
-  final dio = Dio(
-    BaseOptions(
-      connectTimeout: const Duration(seconds: 30),
-      receiveTimeout: const Duration(seconds: 30),
-      sendTimeout: const Duration(seconds: 30),
-    ),
-  );
+  final dio = ref
+      .watch(networkClientFactoryProvider)
+      .createDio(
+        BaseOptions(
+          connectTimeout: const Duration(seconds: 30),
+          receiveTimeout: const Duration(seconds: 30),
+          sendTimeout: const Duration(seconds: 30),
+        ),
+      );
   addNetworkFailureDiagnostics(dio, scope: 'Online gallery');
   dio.interceptors.add(OnlineGalleryRetryInterceptor(dio: dio));
   ref.onDispose(dio.close);

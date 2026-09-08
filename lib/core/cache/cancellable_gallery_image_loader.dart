@@ -6,6 +6,8 @@ import 'package:dio/dio.dart';
 import 'package:dio/io.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 
+import '../network/network_client_factory.dart';
+
 import 'gallery_image_request.dart';
 import 'online_gallery_image_cache_manager.dart';
 import 'online_gallery_prefetch_coordinator.dart';
@@ -19,7 +21,7 @@ class CancellableGalleryImageLoader {
        _ownsDio = dio == null,
        _dio =
            dio ??
-           Dio(
+           NetworkClientFactory().createDio(
              BaseOptions(
                connectTimeout: const Duration(seconds: 15),
                sendTimeout: const Duration(seconds: 15),

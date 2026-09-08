@@ -1,5 +1,4 @@
 import 'package:dio/dio.dart';
-import 'package:dio_http2_adapter/dio_http2_adapter.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
@@ -7,31 +6,28 @@ import '../../data/services/token_refresh_service.dart';
 import '../../l10n/app_localizations.dart';
 import '../../presentation/providers/auth_provider.dart';
 import '../../presentation/providers/locale_provider.dart';
-import '../../presentation/providers/proxy_settings_provider.dart';
 import '../constants/api_constants.dart';
 import '../storage/secure_storage_service.dart';
 import '../utils/app_logger.dart';
 import 'dio_error_response_parser.dart';
+import 'network_client_provider.dart';
 
 part 'dio_client.g.dart';
 
 /// Dio 客户端 Provider
 ///
-/// 根据代理设置动态选择 HTTP 适配器：
-/// - 有代理时：使用默认 HTTP/1.1 适配器（配合 HttpOverrides.global 使用代理）
-/// - 无代理时：使用 HTTP/2 适配器（提升并发性能）
+/// 与生图和在线画廊共用底层连接策略，认证仅添加到 NovelAI 客户端。
 @Riverpod(keepAlive: true)
 Dio dioClient(Ref ref) {
-  // 监听代理设置变化，当代理设置改变时会触发 Dio 重建
-  final proxyAddress = ref.watch(currentProxyAddressProvider);
-
-  final dio = Dio(
-    BaseOptions(
-      connectTimeout: ApiConstants.connectTimeout,
-      receiveTimeout: ApiConstants.receiveTimeout,
-      headers: ApiConstants.defaultHeaders,
-    ),
-  );
+  final dio = ref
+      .watch(networkClientFactoryProvider)
+      .createDio(
+        BaseOptions(
+          connectTimeout: ApiConstants.connectTimeout,
+          receiveTimeout: ApiConstants.receiveTimeout,
+          headers: ApiConstants.defaultHeaders,
+        ),
+      );
 
   // 添加认证拦截器
   dio.interceptors.add(AuthInterceptor(ref));
@@ -39,22 +35,8 @@ Dio dioClient(Ref ref) {
   // 添加错误处理拦截器
   dio.interceptors.add(ErrorInterceptor(ref));
 
-  // 根据代理设置选择适配器
-  if (proxyAddress != null && proxyAddress.isNotEmpty) {
-    // 有代理时：使用默认 HTTP/1.1 适配器
-    // 默认适配器内部使用 dart:io.HttpClient，会自动遵循 HttpOverrides.global
-    AppLogger.i('Dio using proxy: $proxyAddress (HTTP/1.1 adapter)', 'NETWORK');
-    // 不设置 httpClientAdapter，使用默认值
-  } else {
-    // 无代理时：使用 HTTP/2 适配器以提升并发性能
-    AppLogger.d('Dio using HTTP/2 adapter (no proxy)', 'NETWORK');
-    dio.httpClientAdapter = Http2Adapter(
-      ConnectionManager(idleTimeout: const Duration(seconds: 15)),
-    );
-  }
-
-  // 注意：不要在 dispose 时关闭 Dio，因为 Provider 可能会被重建
-  // ref.onDispose(dio.close);
+  // Let requests already in flight finish when the provider is rebuilt.
+  ref.onDispose(() => dio.close());
 
   return dio;
 }
@@ -69,20 +51,20 @@ Dio dioClient(Ref ref) {
 /// 默认适配器通过 HttpClientRequest.abort() 在任意阶段真正中断请求。
 @Riverpod(keepAlive: true)
 Dio imageGenerationDioClient(Ref ref) {
-  // 监听代理设置变化触发重建：默认适配器在创建 HttpClient 时
-  // 才读取 HttpOverrides.global，代理变更后需要新实例
-  ref.watch(currentProxyAddressProvider);
-
-  final dio = Dio(
-    BaseOptions(
-      connectTimeout: ApiConstants.connectTimeout,
-      receiveTimeout: ApiConstants.receiveTimeout,
-      headers: ApiConstants.defaultHeaders,
-    ),
-  );
+  final dio = ref
+      .watch(networkClientFactoryProvider)
+      .createDio(
+        BaseOptions(
+          connectTimeout: ApiConstants.connectTimeout,
+          receiveTimeout: ApiConstants.receiveTimeout,
+          headers: ApiConstants.defaultHeaders,
+        ),
+      );
 
   dio.interceptors.add(AuthInterceptor(ref));
   dio.interceptors.add(ErrorInterceptor(ref));
+
+  ref.onDispose(() => dio.close());
 
   AppLogger.d(
     'Image generation Dio using HTTP/1.1 adapter (abortable)',
@@ -229,8 +211,15 @@ class AuthInterceptor extends Interceptor {
 
               try {
                 // 创建新的 Dio 实例来重试，避免循环
-                final retryDio = Dio();
-                final response = await retryDio.fetch(err.requestOptions);
+                final retryDio = _ref
+                    .read(networkClientFactoryProvider)
+                    .createDio();
+                late final Response<dynamic> response;
+                try {
+                  response = await retryDio.fetch(err.requestOptions);
+                } finally {
+                  retryDio.close();
+                }
                 _isRefreshing = false;
                 handler.resolve(response);
                 return;

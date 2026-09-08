@@ -6,6 +6,8 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../core/network/network_failure_diagnostics.dart';
+import '../../core/network/network_client_factory.dart';
+import '../../core/network/network_client_provider.dart';
 import '../../core/storage/secure_storage_service.dart';
 import '../../core/utils/app_logger.dart';
 import '../datasources/remote/danbooru_api_service.dart';
@@ -95,12 +97,14 @@ class DanbooruAuthState {
 }
 
 class DanbooruCredentialVerifier {
-  const DanbooruCredentialVerifier();
+  const DanbooruCredentialVerifier({this.clientFactory});
+
+  final NetworkClientFactory? clientFactory;
 
   Future<(DanbooruUser?, bool isNetworkError)> verify(
     DanbooruCredentials credentials,
   ) async {
-    final dio = _createDanbooruAuthDio();
+    final dio = _createDanbooruAuthDio(clientFactory);
     try {
       return await DanbooruApiService(
         dio,
@@ -113,11 +117,13 @@ class DanbooruCredentialVerifier {
 
 @Riverpod(keepAlive: true)
 DanbooruCredentialVerifier danbooruCredentialVerifier(Ref ref) {
-  return const DanbooruCredentialVerifier();
+  return DanbooruCredentialVerifier(
+    clientFactory: ref.watch(networkClientFactoryProvider),
+  );
 }
 
-Dio _createDanbooruAuthDio() {
-  final dio = Dio(
+Dio _createDanbooruAuthDio(NetworkClientFactory? clientFactory) {
+  final dio = (clientFactory ?? NetworkClientFactory()).createDio(
     BaseOptions(
       connectTimeout: const Duration(seconds: 15),
       receiveTimeout: const Duration(seconds: 15),

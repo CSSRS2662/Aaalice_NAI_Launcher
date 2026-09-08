@@ -3,6 +3,7 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../../core/constants/storage_keys.dart';
 import '../../core/network/proxy_service.dart';
+import '../../core/platform/platform_capabilities.dart';
 import '../../core/storage/local_storage_service.dart';
 import '../../data/models/settings/proxy_settings.dart';
 
@@ -84,6 +85,7 @@ class ProxySettingsNotifier extends _$ProxySettingsNotifier {
 /// 供其他组件订阅，用于判断是否需要使用代理
 @riverpod
 String? currentProxyAddress(Ref ref) {
+  if (!PlatformCapabilities.operatingSystem.supportsAppProxy) return null;
   final settings = ref.watch(proxySettingsNotifierProvider);
   return settings.effectiveProxyAddress;
 }
@@ -93,5 +95,6 @@ String? currentProxyAddress(Ref ref) {
 /// 用于在 UI 中显示当前系统代理配置
 @riverpod
 String? detectedSystemProxy(Ref ref) {
+  if (!PlatformCapabilities.operatingSystem.supportsAppProxy) return null;
   return ProxyService.getSystemProxyAddress();
 }

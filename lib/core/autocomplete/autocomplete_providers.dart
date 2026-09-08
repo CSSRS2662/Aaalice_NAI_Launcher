@@ -7,6 +7,7 @@ import '../../data/services/alias_resolver_service.dart';
 import '../../presentation/prompt_assistant/services/prompt_assistant_service.dart';
 import '../database/services/service_providers.dart';
 import '../network/network_failure_diagnostics.dart';
+import '../network/network_client_provider.dart';
 import 'autocomplete_cache_database.dart';
 import 'autocomplete_settings.dart';
 import 'cooccurrence_completion_source.dart';
@@ -40,18 +41,20 @@ final autocompleteCacheStatisticsProvider =
 final danbooruCompletionSourceProvider = Provider<DanbooruCompletionSource>((
   ref,
 ) {
-  final dio = Dio(
-    BaseOptions(
-      baseUrl: 'https://danbooru.donmai.us',
-      connectTimeout: const Duration(seconds: 3),
-      receiveTimeout: const Duration(seconds: 3),
-      sendTimeout: const Duration(seconds: 3),
-      headers: const {
-        'Accept': 'application/json',
-        'User-Agent': 'Aaalice-NAI-Launcher/Autocomplete',
-      },
-    ),
-  );
+  final dio = ref
+      .watch(networkClientFactoryProvider)
+      .createDio(
+        BaseOptions(
+          baseUrl: 'https://danbooru.donmai.us',
+          connectTimeout: const Duration(seconds: 15),
+          receiveTimeout: const Duration(seconds: 15),
+          sendTimeout: const Duration(seconds: 15),
+          headers: const {
+            'Accept': 'application/json',
+            'User-Agent': 'Aaalice-NAI-Launcher/Autocomplete',
+          },
+        ),
+      );
   addNetworkFailureDiagnostics(dio, scope: 'Danbooru autocomplete');
   ref.onDispose(dio.close);
   return DanbooruCompletionSource(

@@ -3,28 +3,34 @@ import 'dart:async';
 import 'package:dio/dio.dart';
 
 import '../utils/app_logger.dart';
+import '../network/network_client_factory.dart';
 import 'autocomplete_cache_database.dart';
 import 'completion_models.dart';
 
 class DanbooruCompletionSource implements CompletionSource {
-  DanbooruCompletionSource({Dio? dio, required AutocompleteCacheDatabase cache})
-    : _cache = cache,
-      _dio =
-          dio ??
-          Dio(
-            BaseOptions(
-              baseUrl: 'https://danbooru.donmai.us',
-              connectTimeout: const Duration(seconds: 3),
-              receiveTimeout: const Duration(seconds: 3),
-              sendTimeout: const Duration(seconds: 3),
-              headers: const {
-                'Accept': 'application/json',
-                'User-Agent': 'Aaalice-NAI-Launcher/Autocomplete',
-              },
-            ),
-          );
+  DanbooruCompletionSource({
+    Dio? dio,
+    NetworkClientFactory? clientFactory,
+    required AutocompleteCacheDatabase cache,
+  }) : _cache = cache,
+       _ownsDio = dio == null,
+       _dio =
+           dio ??
+           (clientFactory ?? NetworkClientFactory()).createDio(
+             BaseOptions(
+               baseUrl: 'https://danbooru.donmai.us',
+               connectTimeout: const Duration(seconds: 15),
+               receiveTimeout: const Duration(seconds: 15),
+               sendTimeout: const Duration(seconds: 15),
+               headers: const {
+                 'Accept': 'application/json',
+                 'User-Agent': 'Aaalice-NAI-Launcher/Autocomplete',
+               },
+             ),
+           );
 
   final Dio _dio;
+  final bool _ownsDio;
   final AutocompleteCacheDatabase _cache;
   final Map<String, _MemoryEntry> _memory = {};
   CancelToken? _cancelToken;
@@ -40,6 +46,11 @@ class DanbooruCompletionSource implements CompletionSource {
   void cancelPending() {
     _cancelToken?.cancel('Autocomplete query replaced');
     _cancelToken = null;
+  }
+
+  void dispose() {
+    cancelPending();
+    if (_ownsDio) _dio.close(force: true);
   }
 
   @override

@@ -1,10 +1,10 @@
 import 'dart:io';
 
 import 'package:dio/dio.dart';
-import 'package:dio/io.dart';
 
 import '../utils/app_logger.dart';
 import 'windows_proxy_helper.dart';
+import 'network_client_factory.dart';
 
 /// 代理测试结果
 class ProxyTestResult {
@@ -151,7 +151,9 @@ class ProxyService {
 
   /// 创建测试用的 Dio 实例
   static Dio _createTestDio({String? proxyAddress, Duration? timeout}) {
-    final dio = Dio(
+    return NetworkClientFactory(
+      desktopProxyAddress: () => proxyAddress,
+    ).createDio(
       BaseOptions(
         connectTimeout: timeout ?? const Duration(seconds: 10),
         receiveTimeout: timeout ?? const Duration(seconds: 10),
@@ -159,19 +161,6 @@ class ProxyService {
         validateStatus: (status) => status != null && status < 500,
       ),
     );
-
-    if (proxyAddress != null && proxyAddress.isNotEmpty) {
-      dio.httpClientAdapter = IOHttpClientAdapter(
-        createHttpClient: () {
-          final client = HttpClient();
-          client.findProxy = (uri) => 'PROXY $proxyAddress';
-          client.badCertificateCallback = (cert, host, port) => true;
-          return client;
-        },
-      );
-    }
-
-    return dio;
   }
 
   static String _getErrorMessage(DioException e) {
