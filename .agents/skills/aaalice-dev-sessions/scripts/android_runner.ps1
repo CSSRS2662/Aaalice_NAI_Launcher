@@ -153,6 +153,27 @@ function Get-AndroidDevices {
     )
 }
 
+function Get-AndroidEmulatorAvdName {
+    param([AllowEmptyString()][string]$DeviceId)
+
+    if ([string]::IsNullOrWhiteSpace($DeviceId)) { return $null }
+
+    # The emulator console may return no output while the guest is booting.
+    $queries = @(
+        @('-s', $DeviceId, 'emu', 'avd', 'name'),
+        @('-s', $DeviceId, 'shell', 'getprop', 'ro.boot.qemu.avd_name')
+    )
+    foreach ($query in $queries) {
+        $output = @(& $adbCommand @query 2>$null)
+        $querySucceeded = $LASTEXITCODE -eq 0
+        $name = $output | Select-Object -First 1
+        if ($querySucceeded -and -not [string]::IsNullOrWhiteSpace($name)) {
+            return $name.Trim()
+        }
+    }
+    throw "Cannot identify the AVD for running device '$DeviceId'. Both the emulator console and Android property query failed; refusing to launch a possible duplicate emulator."
+}
+
 function Get-AndroidEmulators {
     $emulatorExecutable = if ($IsWindows) { 'emulator/emulator.exe' } else { 'emulator/emulator' }
     $emulatorCommand = Resolve-AndroidSdkTool `
@@ -163,7 +184,7 @@ function Get-AndroidEmulators {
     }
 
     $ids = @(& $emulatorCommand -list-avds) |
-        ForEach-Object { $_.Trim() } |
+        ForEach-Object { if (-not [string]::IsNullOrWhiteSpace($_)) { $_.Trim() } } |
         Where-Object { -not [string]::IsNullOrWhiteSpace($_) }
     if ($LASTEXITCODE -ne 0) {
         return @()
@@ -441,8 +462,8 @@ if (-not [string]::IsNullOrWhiteSpace($EmulatorId)) {
     $runningEmulator = $androidDevices |
         Where-Object { $_.emulator } |
         Where-Object {
-            $avdName = (& $adbCommand -s $_.id emu avd name 2>$null | Select-Object -First 1)
-            $LASTEXITCODE -eq 0 -and $avdName.Trim() -eq $EmulatorId
+            $avdName = Get-AndroidEmulatorAvdName -DeviceId $_.id
+            -not [string]::IsNullOrWhiteSpace($avdName) -and $avdName -eq $EmulatorId
         } |
         Select-Object -First 1
     if ($runningEmulator) {
