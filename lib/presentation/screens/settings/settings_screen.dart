@@ -67,8 +67,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   @override
   void initState() {
     super.initState();
-    _selectedSection = widget.initialSection;
-    _showCompactDetail = widget.initialSection != SettingsSection.account;
+    _selectedSection = _availableSection(widget.initialSection);
+    _showCompactDetail = _selectedSection != SettingsSection.account;
     _contentScrollController.addListener(_onContentScroll);
   }
 
@@ -76,7 +76,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   void didUpdateWidget(covariant SettingsScreen oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.initialSection != widget.initialSection) {
-      final section = widget.initialSection;
+      final section = _availableSection(widget.initialSection);
       final revision = ++_externalSectionRevision;
       WidgetsBinding.instance.addPostFrameCallback((_) async {
         if (!mounted || revision != _externalSectionRevision) return;
@@ -87,6 +87,17 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         if (!changed) _restoreSelectedSectionInRoute();
       });
     }
+  }
+
+  SettingsSection _availableSection(SettingsSection section) {
+    final capabilities = PlatformCapabilities.current;
+    if ((section == SettingsSection.network &&
+            !capabilities.supportsAppProxy) ||
+        (section == SettingsSection.shortcuts &&
+            !capabilities.supportsKeyboardShortcutConfiguration)) {
+      return SettingsSection.account;
+    }
+    return section;
   }
 
   List<_SettingsSection> _buildSections(BuildContext context) {
@@ -145,22 +156,25 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         label: context.l10n.settings_privacySharing,
         widget: const PrivacySettingsSection(),
       ),
-      _SettingsSection(
-        id: SettingsSection.network,
-        icon: Icons.network_check_outlined,
-        selectedIcon: Icons.network_check,
-        label: context.l10n.settings_network,
-        widget: const NetworkSettingsSection(),
-      ),
-      _SettingsSection(
-        id: SettingsSection.shortcuts,
-        icon: Icons.keyboard_outlined,
-        selectedIcon: Icons.keyboard,
-        label: context.l10n.settings_shortcuts,
-        widget: const ShortcutSettingsSection(),
-        compactEnabled:
-            PlatformCapabilities.current.supportsKeyboardShortcutConfiguration,
-      ),
+      if (PlatformCapabilities.current.supportsAppProxy)
+        _SettingsSection(
+          id: SettingsSection.network,
+          icon: Icons.network_check_outlined,
+          selectedIcon: Icons.network_check,
+          label: context.l10n.settings_network,
+          widget: const NetworkSettingsSection(),
+        ),
+      if (PlatformCapabilities.current.supportsKeyboardShortcutConfiguration)
+        _SettingsSection(
+          id: SettingsSection.shortcuts,
+          icon: Icons.keyboard_outlined,
+          selectedIcon: Icons.keyboard,
+          label: context.l10n.settings_shortcuts,
+          widget: const ShortcutSettingsSection(),
+          compactEnabled: PlatformCapabilities
+              .current
+              .supportsKeyboardShortcutConfiguration,
+        ),
       _SettingsSection(
         id: SettingsSection.integrations,
         icon: Icons.extension_outlined,

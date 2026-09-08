@@ -117,6 +117,61 @@ void main() {
     storage = _MemoryLocalStorage();
   });
 
+  for (final width in [320.0, 600.0, 840.0, 1180.0, 1600.0]) {
+    for (final scale in [1.0, 3.0]) {
+      testWidgets('Android settings hide desktop sections at $width/$scale', (
+        tester,
+      ) async {
+        debugDefaultTargetPlatformOverride = TargetPlatform.android;
+        await tester.binding.setSurfaceSize(Size(width, 900));
+        addTearDown(() {
+          debugDefaultTargetPlatformOverride = null;
+          return tester.binding.setSurfaceSize(null);
+        });
+        for (final section in [
+          SettingsSection.network,
+          SettingsSection.shortcuts,
+        ]) {
+          await tester.pumpWidget(
+            ProviderScope(
+              overrides: [
+                localStorageServiceProvider.overrideWithValue(storage),
+                authNotifierProvider.overrideWith(_FakeAuthNotifier.new),
+                accountManagerNotifierProvider.overrideWith(
+                  _FakeAccountManagerNotifier.new,
+                ),
+                subscriptionNotifierProvider.overrideWith(
+                  _FakeSubscriptionNotifier.new,
+                ),
+              ],
+              child: MaterialApp(
+                locale: const Locale('zh'),
+                localizationsDelegates: AppLocalizations.localizationsDelegates,
+                supportedLocales: AppLocalizations.supportedLocales,
+                builder: (context, child) => MediaQuery(
+                  data: MediaQuery.of(
+                    context,
+                  ).copyWith(textScaler: TextScaler.linear(scale)),
+                  child: child!,
+                ),
+                home: SettingsScreen(initialSection: section),
+              ),
+            ),
+          );
+          await tester.pump();
+          await tester.pump(const Duration(milliseconds: 300));
+          expect(find.text('网络'), findsNothing);
+          expect(find.text('快捷键'), findsNothing);
+          expect(find.byType(ShortcutSettingsSection), findsNothing);
+          expect(tester.takeException(), isNull);
+        }
+        await tester.pumpWidget(const SizedBox.shrink());
+        await tester.pump();
+        debugDefaultTargetPlatformOverride = null;
+      });
+    }
+  }
+
   testWidgets('设置页导航为 11 个稳定分类并包含备份与恢复', (tester) async {
     debugDefaultTargetPlatformOverride = TargetPlatform.windows;
     await tester.binding.setSurfaceSize(const Size(1280, 900));
@@ -535,22 +590,8 @@ void main() {
     expect(find.text('账户'), findsOneWidget);
     expect(find.text('关于'), findsOneWidget);
 
-    final shortcutsTile = find.ancestor(
-      of: find.text('快捷键'),
-      matching: find.byType(ListTile),
-    );
-    expect(shortcutsTile, findsOneWidget);
-    expect(tester.widget<ListTile>(shortcutsTile).enabled, isFalse);
-    expect(tester.widget<ListTile>(shortcutsTile).onTap, isNull);
-    expect(
-      find.descendant(
-        of: shortcutsTile,
-        matching: find.byIcon(Icons.chevron_right),
-      ),
-      findsNothing,
-    );
-    await tester.tap(shortcutsTile);
-    await pumpTransition();
+    expect(find.text('快捷键'), findsNothing);
+    expect(find.text('网络'), findsNothing);
     expect(find.byKey(const ValueKey('settings-section-list')), findsOneWidget);
     expect(find.byType(ShortcutSettingsSection), findsNothing);
 
