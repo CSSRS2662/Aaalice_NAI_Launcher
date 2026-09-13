@@ -1,8 +1,12 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 
+import '../../../../core/storage/local_storage_service.dart';
 import '../../../../core/utils/localization_extension.dart';
 import '../../../../core/utils/nai_resolution_adapter.dart';
 import '../../../../data/models/image/resolution_preset.dart';
+import '../../../widgets/common/app_toast.dart';
 import '../../../widgets/common/themed_dropdown.dart';
 
 /// 尺寸选择器 (带分组预设和自定义输入)
@@ -14,11 +18,15 @@ class SizeSelector extends StatefulWidget {
   final int height;
   final void Function(int width, int height) onChanged;
 
+  @visibleForTesting
+  final LocalStorageService? storage;
+
   const SizeSelector({
     super.key,
     required this.width,
     required this.height,
     required this.onChanged,
+    this.storage,
   });
 
   @override
@@ -31,7 +39,10 @@ class _SizeSelectorState extends State<SizeSelector> {
   late FocusNode _widthFocusNode;
   late FocusNode _heightFocusNode;
   final FocusNode _dropdownFocusNode = FocusNode();
+  late final LocalStorageService _storage;
+  late List<CustomResolutionPreset> _savedCustomPresets;
   String? _selectedPresetId;
+  bool _isUpdatingSavedPresets = false;
 
   @override
   void initState() {
@@ -40,7 +51,25 @@ class _SizeSelectorState extends State<SizeSelector> {
     _heightController = TextEditingController(text: widget.height.toString());
     _widthFocusNode = FocusNode();
     _heightFocusNode = FocusNode();
+    _storage = widget.storage ?? LocalStorageService();
+    _savedCustomPresets = _loadSavedCustomPresets();
     _updateSelectedPreset();
+  }
+
+  List<CustomResolutionPreset> _loadSavedCustomPresets() {
+    final uniquePresets = <CustomResolutionPreset>{};
+    for (final value in _storage.getCustomResolutionPresets()) {
+      final preset = CustomResolutionPreset.fromStorageValue(value);
+      if (preset != null &&
+          NaiResolutionAdapter.validateGenerationResolution(
+                preset.width,
+                preset.height,
+              ) ==
+              null) {
+        uniquePresets.add(preset);
+      }
+    }
+    return uniquePresets.toList(growable: false);
   }
 
   @override
@@ -87,8 +116,28 @@ class _SizeSelectorState extends State<SizeSelector> {
       widget.width,
       widget.height,
     );
-    _selectedPresetId = matchedPreset?.id ?? 'custom';
+    final savedPreset = _findSavedPresetBySize(widget.width, widget.height);
+    _selectedPresetId = matchedPreset?.id ?? savedPreset?.id ?? 'custom';
   }
+
+  CustomResolutionPreset? _findSavedPresetById(String id) {
+    for (final preset in _savedCustomPresets) {
+      if (preset.id == id) return preset;
+    }
+    return null;
+  }
+
+  CustomResolutionPreset? _findSavedPresetBySize(int width, int height) {
+    for (final preset in _savedCustomPresets) {
+      if (preset.width == width && preset.height == height) return preset;
+    }
+    return null;
+  }
+
+  ({int width, int height}) _manualSize() => (
+    width: int.tryParse(_widthController.text) ?? 0,
+    height: int.tryParse(_heightController.text) ?? 0,
+  );
 
   @override
   void dispose() {
@@ -136,6 +185,12 @@ class _SizeSelectorState extends State<SizeSelector> {
       return;
     }
 
+    final savedPreset = _findSavedPresetById(presetId);
+    if (savedPreset != null) {
+      widget.onChanged(savedPreset.width, savedPreset.height);
+      return;
+    }
+
     final preset = ResolutionPreset.findById(presetId);
     if (preset != null) {
       widget.onChanged(preset.width, preset.height);
@@ -148,8 +203,9 @@ class _SizeSelectorState extends State<SizeSelector> {
 
     // 检查是否匹配某个预设
     final matchedPreset = ResolutionPreset.findBySize(newWidth, newHeight);
+    final savedPreset = _findSavedPresetBySize(newWidth, newHeight);
     setState(() {
-      _selectedPresetId = matchedPreset?.id ?? 'custom';
+      _selectedPresetId = matchedPreset?.id ?? savedPreset?.id ?? 'custom';
     });
 
     if (newWidth != widget.width || newHeight != widget.height) {
@@ -199,9 +255,205 @@ class _SizeSelectorState extends State<SizeSelector> {
           ),
         );
       }
+
+      if (group == ResolutionGroup.custom) {
+        for (final preset in _savedCustomPresets) {
+          items.add(
+            DropdownMenuItem<String>(
+              value: preset.id,
+              child: Padding(
+                padding: const EdgeInsets.only(left: 8),
+                child: Text(
+                  preset.displaySize,
+                  style: const TextStyle(fontSize: 13),
+                ),
+              ),
+            ),
+          );
+        }
+      }
     }
 
     return items;
+  }
+
+  Future<void> _saveOrDeleteCustomPreset() async {
+    if (_isUpdatingSavedPresets) return;
+    final size = _manualSize();
+    if (NaiResolutionAdapter.validateGenerationResolution(
+          size.width,
+          size.height,
+        ) !=
+        null) {
+      return;
+    }
+
+    final existing = _findSavedPresetBySize(size.width, size.height);
+    final nextPresets = existing == null
+        ? <CustomResolutionPreset>[
+            ..._savedCustomPresets,
+            CustomResolutionPreset(width: size.width, height: size.height),
+          ]
+        : _savedCustomPresets
+              .where((preset) => preset != existing)
+              .toList(growable: false);
+
+    final previousPresets = _savedCustomPresets;
+    final previousSelectedPresetId = _selectedPresetId;
+    setState(() {
+      _savedCustomPresets = nextPresets;
+      _selectedPresetId = existing == null
+          ? CustomResolutionPreset(width: size.width, height: size.height).id
+          : 'custom';
+      _isUpdatingSavedPresets = true;
+    });
+    try {
+      await _storage.setCustomResolutionPresets(
+        nextPresets.map((preset) => preset.storageValue).toList(),
+      );
+      if (!mounted) return;
+      setState(() => _isUpdatingSavedPresets = false);
+    } catch (error) {
+      if (!mounted) return;
+      setState(() {
+        _savedCustomPresets = previousPresets;
+        _selectedPresetId = previousSelectedPresetId;
+        _isUpdatingSavedPresets = false;
+      });
+      AppToast.error(context, context.l10n.globalSettings_saveFailed(error));
+    }
+  }
+
+  Widget _buildDimensionField({
+    required TextEditingController controller,
+    required FocusNode focusNode,
+    required String label,
+  }) {
+    return ThemedTextField(
+      controller: controller,
+      focusNode: focusNode,
+      keyboardType: TextInputType.number,
+      labelText: label,
+      style: const TextStyle(fontSize: 13),
+      onChanged: (_) => _onManualSizeChanged(),
+    );
+  }
+
+  Widget _buildSwapButton(BuildContext context) {
+    return IconButton(
+      onPressed: () {
+        final temp = _widthController.text;
+        _widthController.text = _heightController.text;
+        _heightController.text = temp;
+        _onManualSizeChanged();
+      },
+      icon: const Icon(Icons.swap_horiz, size: 20),
+      tooltip: context.l10n.common_swap,
+      style: IconButton.styleFrom(
+        backgroundColor: Colors.transparent,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+      ),
+    );
+  }
+
+  Widget _buildCustomPresetAction(BuildContext context) {
+    final size = _manualSize();
+    final savedPreset = _findSavedPresetBySize(size.width, size.height);
+    final matchesBuiltIn =
+        ResolutionPreset.findBySize(size.width, size.height) != null;
+    final valid =
+        NaiResolutionAdapter.validateGenerationResolution(
+          size.width,
+          size.height,
+        ) ==
+        null;
+    final deleting = savedPreset != null;
+
+    return ConstrainedBox(
+      constraints: const BoxConstraints(minWidth: 64, minHeight: 48),
+      child: TextButton(
+        key: ValueKey(
+          deleting ? 'delete-custom-resolution' : 'save-custom-resolution',
+        ),
+        onPressed:
+            !_isUpdatingSavedPresets && valid && (deleting || !matchesBuiltIn)
+            ? () => unawaited(_saveOrDeleteCustomPreset())
+            : null,
+        style: deleting
+            ? TextButton.styleFrom(
+                foregroundColor: Theme.of(context).colorScheme.error,
+              )
+            : null,
+        child: Text(
+          deleting ? context.l10n.common_delete : context.l10n.common_save,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSizeInputs(BuildContext context) {
+    final theme = Theme.of(context);
+    final l10n = context.l10n;
+    final customMode =
+        _selectedPresetId == 'custom' ||
+        _findSavedPresetById(_selectedPresetId ?? '') != null;
+
+    Widget fieldsAndSwap() => Row(
+      children: [
+        Expanded(
+          child: _buildDimensionField(
+            controller: _widthController,
+            focusNode: _widthFocusNode,
+            label: l10n.resolution_width,
+          ),
+        ),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 6),
+          child: Text(
+            '×',
+            style: TextStyle(
+              fontSize: 16,
+              color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+            ),
+          ),
+        ),
+        Expanded(
+          child: _buildDimensionField(
+            controller: _heightController,
+            focusNode: _heightFocusNode,
+            label: l10n.resolution_height,
+          ),
+        ),
+        const SizedBox(width: 4),
+        _buildSwapButton(context),
+      ],
+    );
+
+    if (!customMode) return fieldsAndSwap();
+
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final scaledLabelSize = MediaQuery.textScalerOf(context).scale(14);
+        final action = _buildCustomPresetAction(context);
+        if (constraints.maxWidth >= 344 && scaledLabelSize <= 22) {
+          return Row(
+            children: [
+              Expanded(child: fieldsAndSwap()),
+              const SizedBox(width: 4),
+              action,
+            ],
+          );
+        }
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            fieldsAndSwap(),
+            const SizedBox(height: 4),
+            Align(alignment: Alignment.centerRight, child: action),
+          ],
+        );
+      },
+    );
   }
 
   @override
@@ -218,12 +470,25 @@ class _SizeSelectorState extends State<SizeSelector> {
       children: [
         // 预设下拉菜单
         ThemedDropdown<String>(
+          key: ValueKey('resolution-preset-$_selectedPresetId'),
           value: _selectedPresetId,
           focusNode: _dropdownFocusNode,
           items: _buildDropdownItems(context),
           selectedItemBuilder: (context) {
             // 自定义选中项显示
             return _buildDropdownItems(context).map((item) {
+              final savedPreset = _findSavedPresetById(item.value ?? '');
+              if (savedPreset != null) {
+                return Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    '${_getTypeName(context, ResolutionType.custom)} · '
+                    '${savedPreset.displaySize}',
+                    style: const TextStyle(fontSize: 13),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                );
+              }
               final preset = ResolutionPreset.findById(item.value ?? '');
               if (preset == null) {
                 return const Text('');
@@ -248,61 +513,7 @@ class _SizeSelectorState extends State<SizeSelector> {
         const SizedBox(height: 8),
 
         // 宽高输入框
-        Row(
-          children: [
-            // 宽度输入
-            Expanded(
-              child: ThemedTextField(
-                controller: _widthController,
-                focusNode: _widthFocusNode,
-                keyboardType: TextInputType.number,
-                labelText: l10n.resolution_width,
-                style: const TextStyle(fontSize: 13),
-                onChanged: (_) => _onManualSizeChanged(),
-              ),
-            ),
-            // × 符号
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8),
-              child: Text(
-                '×',
-                style: TextStyle(
-                  fontSize: 16,
-                  color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
-                ),
-              ),
-            ),
-            // 高度输入
-            Expanded(
-              child: ThemedTextField(
-                controller: _heightController,
-                focusNode: _heightFocusNode,
-                keyboardType: TextInputType.number,
-                labelText: l10n.resolution_height,
-                style: const TextStyle(fontSize: 13),
-                onChanged: (_) => _onManualSizeChanged(),
-              ),
-            ),
-            // 交换宽高按钮
-            const SizedBox(width: 8),
-            IconButton(
-              onPressed: () {
-                final temp = _widthController.text;
-                _widthController.text = _heightController.text;
-                _heightController.text = temp;
-                _onManualSizeChanged();
-              },
-              icon: const Icon(Icons.swap_horiz, size: 20),
-              tooltip: context.l10n.common_swap,
-              style: IconButton.styleFrom(
-                backgroundColor: Colors.transparent,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
-                ),
-              ),
-            ),
-          ],
-        ),
+        _buildSizeInputs(context),
         if (resolutionIssue != null) ...[
           const SizedBox(height: 6),
           Text(

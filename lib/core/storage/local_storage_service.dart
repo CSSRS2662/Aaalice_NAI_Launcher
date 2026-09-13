@@ -220,6 +220,22 @@ class LocalStorageService {
     }
   }
 
+  /// 获取用户保存的自定义分辨率（稳定格式为 `宽x高`）。
+  List<String> getCustomResolutionPresets() {
+    final value = getSetting<dynamic>(StorageKeys.customResolutionPresets);
+    if (value is! List) return const [];
+    return value.whereType<String>().toList(growable: false);
+  }
+
+  /// 保存用户的自定义分辨率列表。
+  Future<void> setCustomResolutionPresets(List<String> presets) async {
+    if (presets.isEmpty) {
+      await deleteSetting(StorageKeys.customResolutionPresets);
+      return;
+    }
+    await setSetting(StorageKeys.customResolutionPresets, presets);
+  }
+
   // ==================== Image Save ====================
 
   /// 获取图片保存路径

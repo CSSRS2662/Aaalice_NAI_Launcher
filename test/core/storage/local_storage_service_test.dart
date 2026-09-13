@@ -63,6 +63,24 @@ void main() {
     expect(storage.getDefaultSampler(), Samplers.kDpmpp2sAncestral);
   });
 
+  test('round trips and clears custom resolution presets', () async {
+    final storage = LocalStorageService();
+
+    expect(storage.getCustomResolutionPresets(), isEmpty);
+
+    await storage.setCustomResolutionPresets(['704x1472', '1472x704']);
+    expect(storage.getCustomResolutionPresets(), ['704x1472', '1472x704']);
+
+    await storage.setCustomResolutionPresets([]);
+    expect(storage.getCustomResolutionPresets(), isEmpty);
+    expect(
+      Hive.box<dynamic>(
+        StorageKeys.settingsBox,
+      ).get(StorageKeys.customResolutionPresets),
+      isNull,
+    );
+  });
+
   test('prerelease updates are disabled when no preference is stored', () {
     final storage = LocalStorageService();
 

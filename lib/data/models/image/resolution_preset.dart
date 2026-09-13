@@ -169,3 +169,38 @@ class ResolutionPreset {
     return map;
   }
 }
+
+/// 用户保存的自定义分辨率。
+///
+/// 持久化只使用稳定的 `宽x高` 字符串，避免将展示文案或运行时对象写入设置。
+class CustomResolutionPreset {
+  const CustomResolutionPreset({required this.width, required this.height});
+
+  final int width;
+  final int height;
+
+  String get id => 'saved_custom_${width}_$height';
+  String get storageValue => '${width}x$height';
+  String get displaySize => '$width×$height';
+
+  static CustomResolutionPreset? fromStorageValue(String value) {
+    final match = RegExp(r'^(\d+)x(\d+)$').firstMatch(value.trim());
+    if (match == null) return null;
+
+    final width = int.tryParse(match.group(1)!);
+    final height = int.tryParse(match.group(2)!);
+    if (width == null || height == null || width <= 0 || height <= 0) {
+      return null;
+    }
+    return CustomResolutionPreset(width: width, height: height);
+  }
+
+  @override
+  bool operator ==(Object other) =>
+      other is CustomResolutionPreset &&
+      other.width == width &&
+      other.height == height;
+
+  @override
+  int get hashCode => Object.hash(width, height);
+}

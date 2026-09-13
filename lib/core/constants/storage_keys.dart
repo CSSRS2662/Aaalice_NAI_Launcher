@@ -124,6 +124,7 @@ class StorageKeys {
   static const String defaultHeight = 'default_height';
   static const String selectedResolutionPresetId =
       'selected_resolution_preset_id';
+  static const String customResolutionPresets = 'custom_resolution_presets';
   static const String imageSavePath = 'image_save_path';
   static const String autoSaveImages = 'auto_save_images';
   static const String imageStraightAlpha = 'image_straight_alpha';
