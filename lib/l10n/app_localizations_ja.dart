@@ -68,7 +68,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get generation_enhancementFinalizing => '画像を合成・エンコード中…';
 
   @override
-  String get app_title => 'NAI Launcher';
+  String get app_title => 'Aaalice Pocket';
 
   @override
   String get app_subtitle => 'NovelAI サードパーティ クライアント';

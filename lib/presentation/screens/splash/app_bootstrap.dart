@@ -111,6 +111,7 @@ class _AppBootstrapState extends ConsumerState<AppBootstrap> {
   Widget _buildSplash() {
     final locale = ref.watch(localeNotifierProvider);
     return MaterialApp(
+      title: 'Aaalice Pocket',
       debugShowCheckedModeBanner: false,
       theme: ThemeData.dark(),
       locale: locale,

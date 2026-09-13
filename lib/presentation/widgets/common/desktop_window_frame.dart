@@ -193,9 +193,7 @@ class _DesktopWindowHeaderState extends State<DesktopWindowHeader>
         key: const ValueKey('desktop-window-header-divider'),
         decoration: BoxDecoration(
           border: Border(
-            bottom: BorderSide(
-              color: colors.onSurface.withValues(alpha: 0.10),
-            ),
+            bottom: BorderSide(color: colors.onSurface.withValues(alpha: 0.10)),
           ),
         ),
         child: SizedBox(
@@ -223,7 +221,7 @@ class _DesktopWindowHeaderState extends State<DesktopWindowHeader>
                               mainAxisSize: MainAxisSize.min,
                               children: [
                                 Image.asset(
-                                  'assets/icons/Icon.png',
+                                  'android/app/src/main/res/mipmap-xxxhdpi/ic_launcher.png',
                                   key: const ValueKey(
                                     'desktop-window-project-icon',
                                   ),
@@ -234,7 +232,7 @@ class _DesktopWindowHeaderState extends State<DesktopWindowHeader>
                                 const SizedBox(width: 8),
                                 Flexible(
                                   child: Text(
-                                    'NAI Launcher',
+                                    'Aaalice Pocket',
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
                                     style: theme.textTheme.labelLarge?.copyWith(

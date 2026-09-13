@@ -19,7 +19,7 @@ void main() {
 
   setUpAll(() async {
     PackageInfo.setMockInitialValues(
-      appName: 'NAI Launcher',
+      appName: 'Aaalice Pocket',
       packageName: 'nai_launcher',
       version: '1.0.0',
       buildNumber: '1',
@@ -77,7 +77,9 @@ void main() {
         size.width,
         size.height - keyboardInset,
       );
-      for (final content in [find.text('NAI Launcher'), find.text('0%')]) {
+      expect(find.byKey(const ValueKey('splash-brand-art')), findsOneWidget);
+      expect(find.text('NAI Launcher'), findsNothing);
+      for (final content in [find.text('Aaalice Pocket'), find.text('0%')]) {
         await tester.ensureVisible(content);
         await tester.pump();
         expect(
@@ -91,4 +93,40 @@ void main() {
       }
     },
   );
+
+  testWidgets('Splash plays the pixel artist intro once and settles', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          warmupNotifierProvider.overrideWith(_IdleWarmupNotifier.new),
+        ],
+        child: const MaterialApp(
+          locale: Locale('zh'),
+          supportedLocales: AppLocalizations.supportedLocales,
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          home: SplashScreen(),
+        ),
+      ),
+    );
+
+    final artFade = find.byKey(const ValueKey('splash-brand-art-transition'));
+    expect(artFade, findsOneWidget);
+    expect(tester.widget<FadeTransition>(artFade).opacity.value, 0);
+
+    await tester.pump(const Duration(milliseconds: 200));
+    final enteringOpacity = tester
+        .widget<FadeTransition>(artFade)
+        .opacity
+        .value;
+    expect(enteringOpacity, greaterThan(0));
+    expect(enteringOpacity, lessThan(1));
+
+    await tester.pump(const Duration(milliseconds: 900));
+    expect(tester.widget<FadeTransition>(artFade).opacity.value, 1);
+
+    await tester.pump(const Duration(seconds: 2));
+    expect(tester.widget<FadeTransition>(artFade).opacity.value, 1);
+  });
 }

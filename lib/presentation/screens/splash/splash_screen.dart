@@ -18,27 +18,42 @@ class SplashScreen extends ConsumerStatefulWidget {
 
 class _SplashScreenState extends ConsumerState<SplashScreen>
     with SingleTickerProviderStateMixin {
-  late AnimationController _breathController;
-  late Animation<double> _breathAnimation;
-  late Animation<double> _glowAnimation;
+  static const _backgroundTop = Color(0xFF2B182D);
+  static const _backgroundMiddle = Color(0xFF211424);
+  static const _backgroundBottom = Color(0xFF120E19);
+  static const _brandPink = Color(0xFFFF7F9F);
+  static const _brandPeach = Color(0xFFFFB07C);
+  static const _brandTeal = Color(0xFF73E2DD);
+
+  late final AnimationController _introController;
+  late final Animation<double> _artOpacity;
+  late final Animation<Offset> _artOffset;
+  late final Animation<double> _titleOpacity;
   bool? _motionEnabled;
 
   @override
   void initState() {
     super.initState();
 
-    // Logo 呼吸动画
-    _breathController = AnimationController(
+    _introController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 2000),
+      duration: const Duration(milliseconds: 1100),
     );
 
-    _breathAnimation = Tween<double>(begin: 0.95, end: 1.05).animate(
-      CurvedAnimation(parent: _breathController, curve: Curves.easeInOut),
+    _artOpacity = CurvedAnimation(
+      parent: _introController,
+      curve: const Interval(0, 0.42, curve: Curves.easeOut),
     );
-
-    _glowAnimation = Tween<double>(begin: 0.3, end: 0.8).animate(
-      CurvedAnimation(parent: _breathController, curve: Curves.easeInOut),
+    _artOffset = Tween<Offset>(begin: const Offset(0, 0.1), end: Offset.zero)
+        .animate(
+          CurvedAnimation(
+            parent: _introController,
+            curve: const Interval(0, 0.64, curve: Curves.easeOutCubic),
+          ),
+        );
+    _titleOpacity = CurvedAnimation(
+      parent: _introController,
+      curve: const Interval(0.28, 0.76, curve: Curves.easeOut),
     );
   }
 
@@ -49,17 +64,17 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
     if (_motionEnabled == motionEnabled) return;
     _motionEnabled = motionEnabled;
     if (motionEnabled) {
-      _breathController.repeat(reverse: true);
+      if (_introController.isDismissed) {
+        _introController.forward();
+      }
     } else {
-      _breathController
-        ..stop()
-        ..value = 0.5;
+      _introController.value = 1;
     }
   }
 
   @override
   void dispose() {
-    _breathController.dispose();
+    _introController.dispose();
     super.dispose();
   }
 
@@ -68,14 +83,12 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
     final warmupState = ref.watch(warmupNotifierProvider);
     final progress = warmupState.progress;
     final theme = Theme.of(context);
-    final primaryColor = theme.colorScheme.primary;
-    final backgroundColor = theme.colorScheme.surface;
 
     return Scaffold(
-      backgroundColor: backgroundColor,
+      backgroundColor: _backgroundBottom,
       body: Stack(
         children: [
-          _buildBackground(primaryColor, backgroundColor),
+          _buildBackground(),
           SafeArea(
             child: AdaptiveSlotLayout(
               builder: (context, areas) => SingleChildScrollView(
@@ -98,13 +111,13 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        _buildLogo(primaryColor),
-                        const SizedBox(height: 24),
-                        _buildTitle(theme, primaryColor),
-                        const SizedBox(height: 48),
+                        _buildBrandArt(),
+                        const SizedBox(height: 18),
+                        _buildTitle(theme),
+                        const SizedBox(height: 42),
                         _buildProgressSection(
                           theme,
-                          primaryColor,
+                          _brandPink,
                           progress,
                           warmupState.subTaskMessage,
                           warmupState.error,
@@ -123,7 +136,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
             child: Text(
               AppVersion.versionName,
               style: theme.textTheme.bodySmall?.copyWith(
-                color: theme.colorScheme.onSurface.withValues(alpha: 0.3),
+                color: Colors.white.withValues(alpha: 0.34),
                 fontWeight: FontWeight.w500,
               ),
             ),
@@ -133,56 +146,122 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
     );
   }
 
-  Widget _buildBackground(Color primaryColor, Color backgroundColor) {
+  Widget _buildBackground() {
     return AnimatedBuilder(
-      animation: _glowAnimation,
+      animation: _introController,
       builder: (context, child) {
-        return Container(
-          decoration: BoxDecoration(
-            gradient: RadialGradient(
-              center: const Alignment(0, -0.3),
-              radius: 1.5,
-              colors: [
-                primaryColor.withValues(alpha: _glowAnimation.value * 0.15),
-                backgroundColor,
-              ],
-            ),
-          ),
-        );
-      },
-    );
-  }
-
-  Widget _buildLogo(Color primaryColor) {
-    return AnimatedBuilder(
-      animation: _breathAnimation,
-      builder: (context, child) {
-        return Transform.scale(
-          scale: _breathAnimation.value,
-          child: Container(
-            width: 120,
-            height: 120,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [primaryColor, primaryColor.withValues(alpha: 0.6)],
-              ),
-              boxShadow: [
-                BoxShadow(
-                  color: primaryColor.withValues(
-                    alpha: _glowAnimation.value * 0.5,
-                  ),
-                  blurRadius: 40,
-                  spreadRadius: 5,
+        final reveal = Curves.easeOut.transform(_introController.value);
+        return Stack(
+          fit: StackFit.expand,
+          children: [
+            const DecoratedBox(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    _backgroundTop,
+                    _backgroundMiddle,
+                    _backgroundBottom,
+                  ],
+                  stops: [0, 0.52, 1],
                 ),
-              ],
+              ),
             ),
-            child: const Icon(
-              Icons.auto_awesome,
-              size: 56,
-              color: Colors.white,
+            Opacity(
+              opacity: 0.28 + reveal * 0.32,
+              child: const DecoratedBox(
+                decoration: BoxDecoration(
+                  gradient: RadialGradient(
+                    center: Alignment(0, -0.34),
+                    radius: 0.82,
+                    colors: [Color(0x66FF718F), Color(0x0017101F)],
+                  ),
+                ),
+              ),
+            ),
+            const IgnorePointer(
+              child: CustomPaint(painter: _PixelBackdropPainter()),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _buildBrandArt() {
+    return AnimatedBuilder(
+      animation: _introController,
+      builder: (context, child) {
+        return FadeTransition(
+          key: const ValueKey('splash-brand-art-transition'),
+          opacity: _artOpacity,
+          child: SlideTransition(
+            position: _artOffset,
+            child: SizedBox(
+              width: 220,
+              height: 190,
+              child: Stack(
+                clipBehavior: Clip.none,
+                alignment: Alignment.center,
+                children: [
+                  Container(
+                    width: 156,
+                    height: 156,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(46),
+                      boxShadow: const [
+                        BoxShadow(
+                          color: Color(0x66FF708F),
+                          blurRadius: 44,
+                          spreadRadius: 2,
+                        ),
+                        BoxShadow(
+                          color: Color(0x4073E2DD),
+                          blurRadius: 24,
+                          spreadRadius: -6,
+                        ),
+                      ],
+                    ),
+                  ),
+                  Image.asset(
+                    'android/app/src/main/res/mipmap-xxxhdpi/ic_launcher.png',
+                    key: const ValueKey('splash-brand-art'),
+                    width: 176,
+                    height: 176,
+                    fit: BoxFit.contain,
+                    filterQuality: FilterQuality.none,
+                    excludeFromSemantics: true,
+                  ),
+                  Positioned(
+                    left: 8,
+                    top: 34,
+                    child: _PixelSpark(
+                      opacity: _introInterval(0.34, 0.58),
+                      color: _brandPeach,
+                      pixelSize: 4,
+                    ),
+                  ),
+                  Positioned(
+                    right: 5,
+                    top: 56,
+                    child: _PixelSpark(
+                      opacity: _introInterval(0.48, 0.72),
+                      color: _brandTeal,
+                      pixelSize: 3,
+                    ),
+                  ),
+                  Positioned(
+                    right: 22,
+                    bottom: 9,
+                    child: _PixelSpark(
+                      opacity: _introInterval(0.62, 0.88),
+                      color: _brandPink,
+                      pixelSize: 4,
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         );
@@ -190,37 +269,45 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
     );
   }
 
-  Widget _buildTitle(ThemeData theme, Color primaryColor) {
-    final lighterColor = Color.lerp(primaryColor, Colors.white, 0.4)!;
+  double _introInterval(double begin, double end) {
+    final progress = ((_introController.value - begin) / (end - begin))
+        .clamp(0.0, 1.0)
+        .toDouble();
+    return Curves.easeOut.transform(progress);
+  }
 
-    return Column(
-      children: [
-        ShaderMask(
-          shaderCallback: (bounds) => LinearGradient(
-            colors: [primaryColor, lighterColor],
-          ).createShader(bounds),
-          child: const Text(
-            'NAI Launcher',
+  Widget _buildTitle(ThemeData theme) {
+    return FadeTransition(
+      opacity: _titleOpacity,
+      child: Column(
+        children: [
+          ShaderMask(
+            shaderCallback: (bounds) => const LinearGradient(
+              colors: [_brandPink, _brandPeach],
+            ).createShader(bounds),
+            child: const Text(
+              'Aaalice Pocket',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 32,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+                letterSpacing: 1.4,
+              ),
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'NovelAI Image Generation',
             textAlign: TextAlign.center,
             style: TextStyle(
-              fontSize: 32,
-              fontWeight: FontWeight.bold,
-              color: Colors.white,
-              letterSpacing: 2,
+              fontSize: 14,
+              color: Colors.white.withValues(alpha: 0.58),
+              letterSpacing: 1,
             ),
           ),
-        ),
-        const SizedBox(height: 8),
-        Text(
-          'NovelAI Image Generation',
-          textAlign: TextAlign.center,
-          style: TextStyle(
-            fontSize: 14,
-            color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
-            letterSpacing: 1,
-          ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 
@@ -356,8 +443,6 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
   }
 
   Widget _buildProgressBar(ThemeData theme, Color primaryColor, double value) {
-    final lighterColor = Color.lerp(primaryColor, Colors.white, 0.4)!;
-
     return Container(
       height: 4,
       decoration: BoxDecoration(
@@ -375,9 +460,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
                 width: constraints.maxWidth * value,
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(2),
-                  gradient: LinearGradient(
-                    colors: [primaryColor, lighterColor],
-                  ),
+                  gradient: LinearGradient(colors: [primaryColor, _brandPeach]),
                   boxShadow: [
                     BoxShadow(
                       color: primaryColor.withValues(alpha: 0.5),
@@ -392,4 +475,80 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
       ),
     );
   }
+}
+
+class _PixelSpark extends StatelessWidget {
+  const _PixelSpark({
+    required this.opacity,
+    required this.color,
+    required this.pixelSize,
+  });
+
+  final double opacity;
+  final Color color;
+  final double pixelSize;
+
+  @override
+  Widget build(BuildContext context) {
+    final extent = pixelSize * 3;
+    return Opacity(
+      opacity: opacity,
+      child: SizedBox.square(
+        dimension: extent,
+        child: Stack(
+          children: [
+            Positioned(
+              left: pixelSize,
+              child: ColoredBox(
+                color: color,
+                child: SizedBox(width: pixelSize, height: extent),
+              ),
+            ),
+            Positioned(
+              top: pixelSize,
+              child: ColoredBox(
+                color: color,
+                child: SizedBox(width: extent, height: pixelSize),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _PixelBackdropPainter extends CustomPainter {
+  const _PixelBackdropPainter();
+
+  static const _pixels = <({double x, double y, double size, Color color})>[
+    (x: 0.08, y: 0.16, size: 3, color: Color(0x36FF7F9F)),
+    (x: 0.16, y: 0.27, size: 2, color: Color(0x2E73E2DD)),
+    (x: 0.88, y: 0.18, size: 3, color: Color(0x32FFB07C)),
+    (x: 0.78, y: 0.32, size: 2, color: Color(0x2673E2DD)),
+    (x: 0.1, y: 0.72, size: 2, color: Color(0x24FFB07C)),
+    (x: 0.9, y: 0.66, size: 3, color: Color(0x28FF7F9F)),
+    (x: 0.2, y: 0.9, size: 2, color: Color(0x2073E2DD)),
+    (x: 0.82, y: 0.88, size: 2, color: Color(0x20FFB07C)),
+  ];
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint();
+    for (final pixel in _pixels) {
+      paint.color = pixel.color;
+      canvas.drawRect(
+        Rect.fromLTWH(
+          size.width * pixel.x,
+          size.height * pixel.y,
+          pixel.size,
+          pixel.size,
+        ),
+        paint,
+      );
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant _PixelBackdropPainter oldDelegate) => false;
 }

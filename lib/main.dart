@@ -451,7 +451,7 @@ Future<_DesktopWindowConfiguration?> _prepareDesktopWindow() async {
             ? TitleBarStyle.hidden
             : TitleBarStyle.normal,
         windowButtonVisibility: !Platform.isWindows,
-        title: 'NAI Launcher',
+        title: 'Aaalice Pocket',
       ),
       restorePlan: restorePlan,
       stateController: stateController,
@@ -471,7 +471,7 @@ Future<bool> _initializeSystemTray() async {
           ? 'assets/icons/app_icon.ico'
           : 'assets/icons/tray_icon.png',
     );
-    await trayManager.setToolTip('NAI Launcher');
+    await trayManager.setToolTip('Aaalice Pocket');
     final l10n = _getLocalizedStrings();
     await trayManager.setContextMenu(
       Menu(
