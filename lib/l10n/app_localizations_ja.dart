@@ -1588,6 +1588,36 @@ class AppLocalizationsJa extends AppLocalizations {
   String get prompt_negative => '除外したい要素';
 
   @override
+  String get prompt_singleEditorMode => '単一ボックス';
+
+  @override
+  String get prompt_groupedEditorMode => 'グループ';
+
+  @override
+  String get prompt_addGroup => 'セクションを追加';
+
+  @override
+  String get prompt_groupHint => 'このセクションにプロンプトを入力';
+
+  @override
+  String get prompt_emptyGroup => '空のセクション';
+
+  @override
+  String get prompt_reorderGroup => 'ドラッグしてセクションを並べ替え';
+
+  @override
+  String get prompt_expandGroup => 'セクションを展開';
+
+  @override
+  String get prompt_collapseGroup => 'セクションを折りたたむ';
+
+  @override
+  String get prompt_deleteGroup => 'セクションを削除';
+
+  @override
+  String get prompt_deleteGroupConfirm => 'このセクションとプロンプトを削除しますか？';
+
+  @override
   String get prompt_positivePrompt => 'プロンプト';
 
   @override

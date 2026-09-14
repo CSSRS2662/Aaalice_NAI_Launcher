@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 
 import '../../../../data/models/character/character_prompt.dart';
+import 'prompt_group_controller.dart';
 
 @immutable
 class PromptInputViewData {
@@ -24,6 +25,7 @@ typedef PromptImportCallback =
 class PromptInputCommands {
   const PromptInputCommands({
     required this.setNegativeMode,
+    required this.setEditorMode,
     required this.updatePrompt,
     required this.updateNegativePrompt,
     required this.importComfyuiPrompt,
@@ -36,6 +38,7 @@ class PromptInputCommands {
   });
 
   final ValueChanged<bool> setNegativeMode;
+  final ValueChanged<PromptEditorMode> setEditorMode;
   final ValueChanged<String> updatePrompt;
   final ValueChanged<String> updateNegativePrompt;
   final PromptImportCallback importComfyuiPrompt;

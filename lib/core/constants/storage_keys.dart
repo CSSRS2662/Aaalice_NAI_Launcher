@@ -84,6 +84,7 @@ class StorageKeys {
   static const String imageComparisonFollowMouse =
       'image_comparison_follow_mouse';
   static const String promptEditorManualHeight = 'prompt_editor_manual_height';
+  static const String promptGroupEditorState = 'prompt_group_editor_state_v1';
   static const String promptMaximized = 'prompt_maximized';
   static const String generationLayoutMode = 'generation_layout_mode';
   static const String mobileGenerationGestureHintCompleted =

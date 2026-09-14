@@ -96,6 +96,12 @@ class UnifiedPromptInput extends ConsumerStatefulWidget {
   /// 输入框会话标识（用于历史栈隔离）
   final String? sessionId;
 
+  /// Optional shared identity for text/tag presentation mode.
+  ///
+  /// Grouped editors keep independent history sessions while sharing the main
+  /// prompt's mode toggle through this value.
+  final Object? tagModeSessionId;
+
   /// 是否显示右下角助手
   final bool enableAssistant;
   final bool showTagModeSwitch;
@@ -126,6 +132,7 @@ class UnifiedPromptInput extends ConsumerStatefulWidget {
     this.expands = false,
     this.fitContent = false,
     this.sessionId,
+    this.tagModeSessionId,
     this.enableAssistant = true,
     this.showTagModeSwitch = true,
     this.assistantTapRegionGroupId,
@@ -143,7 +150,8 @@ class _UnifiedPromptInputState extends ConsumerState<UnifiedPromptInput> {
   /// 语法高亮控制器
   NaiSyntaxController? _syntaxController;
   bool _syncingControllerValue = false;
-  Object get _modeId => widget.sessionId ?? _effectiveController;
+  Object get _modeId =>
+      widget.tagModeSessionId ?? widget.sessionId ?? _effectiveController;
   bool get _tagMode =>
       widget.config.enableTagMode && ref.read(promptTagModeProvider(_modeId));
 

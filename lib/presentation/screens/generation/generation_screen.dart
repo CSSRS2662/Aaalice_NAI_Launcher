@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/platform/platform_capabilities.dart';
+import '../../../core/storage/local_storage_service.dart';
 import '../../adaptive/adaptive_layout.dart';
 import '../../providers/generation_layout_mode_provider.dart';
 import '../../providers/image_generation_provider.dart';
@@ -38,6 +39,7 @@ class _GenerationScreenState extends ConsumerState<GenerationScreen> {
       prompt: params.prompt,
       negativePrompt: params.negativePrompt,
       negativeModeNotifier: _webNegativeMode,
+      storage: ref.read(localStorageServiceProvider),
     );
   }
 

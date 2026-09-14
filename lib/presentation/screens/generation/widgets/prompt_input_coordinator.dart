@@ -70,7 +70,7 @@ class PromptInputCoordinator {
       final sourceNegative = consumed.negativePrompt;
       if (sourceNegative != null && sourceNegative.isNotEmpty) {
         final negative = _normalize(sourceNegative);
-        _controller.negativeController.text = negative;
+        _controller.replacePrompt(negative, negative: true);
         updateNegativePrompt(negative);
       }
     }
@@ -80,7 +80,7 @@ class PromptInputCoordinator {
       NaiPromptFormatter.format(SdToNaiConverter.convert(prompt));
 
   void applyToMainPrompt(String prompt) {
-    _controller.promptController.text = prompt;
+    _controller.replacePrompt(prompt, negative: false);
     updatePrompt(prompt);
   }
 
@@ -195,6 +195,7 @@ class PromptInputCoordinator {
     final notifier = _ref.read(characterPromptNotifierProvider.notifier);
     notifier.clearAll();
     notifier.replaceAll(characters);
+    _controller.replacePrompt(globalPrompt, negative: false);
     updatePrompt(globalPrompt);
     if (_mounted()) {
       final context = _context();
@@ -206,13 +207,13 @@ class PromptInputCoordinator {
   }
 
   void clearPrompt() {
-    _controller.promptController.clear();
+    _controller.clearPrompt(negative: false);
     updatePrompt('');
     _ref.read(characterPromptNotifierProvider.notifier).clearAllCharacters();
   }
 
   void clearNegativePrompt() {
-    _controller.negativeController.clear();
+    _controller.clearPrompt(negative: true);
     updateNegativePrompt('');
   }
 

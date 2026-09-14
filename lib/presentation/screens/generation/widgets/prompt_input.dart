@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/constants/api_constants.dart';
+import '../../../../core/storage/local_storage_service.dart';
 import '../../../../core/utils/localization_extension.dart';
 import '../../../providers/image_generation_provider.dart';
 import '../../../providers/pending_prompt_provider.dart';
@@ -12,6 +13,7 @@ import '../../../widgets/prompt/prompt_footer_style.dart';
 import 'prompt_input_controller.dart';
 import 'prompt_input_coordinator.dart';
 import 'prompt_input_editor.dart';
+import 'prompt_editor_mode_switch.dart';
 import 'prompt_input_footer.dart';
 import 'prompt_input_models.dart';
 import 'prompt_input_toolbar.dart';
@@ -62,6 +64,7 @@ class _PromptInputWidgetState extends ConsumerState<PromptInputWidget> {
           prompt: params.prompt,
           negativePrompt: params.negativePrompt,
           negativeModeNotifier: widget.negativeModeNotifier,
+          storage: ref.read(localStorageServiceProvider),
         );
     _controller.addListener(_onControllerChanged);
     _coordinator = PromptInputCoordinator(
@@ -171,6 +174,7 @@ class _PromptInputWidgetState extends ConsumerState<PromptInputWidget> {
     );
     final commands = PromptInputCommands(
       setNegativeMode: _controller.setNegativeMode,
+      setEditorMode: _controller.setEditorMode,
       updatePrompt: _coordinator.updatePrompt,
       updateNegativePrompt: _coordinator.updateNegativePrompt,
       importComfyuiPrompt: _coordinator.importComfyuiPrompt,
@@ -394,17 +398,30 @@ class _CompactPromptInput extends ConsumerWidget {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               if (showModeSwitch) ...[
-                ListenableBuilder(
-                  listenable: Listenable.merge([
-                    controller.promptController,
-                    controller.negativeController,
-                  ]),
-                  builder: (context, _) => _CompactPromptModeSwitch(
-                    negative: negative,
-                    positiveCount: controller.promptCount,
-                    negativeCount: controller.negativePromptCount,
-                    onChanged: commands.setNegativeMode,
-                  ),
+                Row(
+                  children: [
+                    Expanded(
+                      child: PromptEditorModeSwitch(
+                        controller: controller,
+                        commands: commands,
+                      ),
+                    ),
+                    const SizedBox(width: 6),
+                    Expanded(
+                      child: ListenableBuilder(
+                        listenable: Listenable.merge([
+                          controller.promptController,
+                          controller.negativeController,
+                        ]),
+                        builder: (context, _) => _CompactPromptModeSwitch(
+                          negative: negative,
+                          positiveCount: controller.promptCount,
+                          negativeCount: controller.negativePromptCount,
+                          onChanged: commands.setNegativeMode,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
                 const SizedBox(height: 6),
               ],

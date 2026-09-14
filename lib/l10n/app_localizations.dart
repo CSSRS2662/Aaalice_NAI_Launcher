@@ -3041,6 +3041,66 @@ abstract class AppLocalizations {
   /// **'Undesired Content'**
   String get prompt_negative;
 
+  /// No description provided for @prompt_singleEditorMode.
+  ///
+  /// In en, this message translates to:
+  /// **'Single Box'**
+  String get prompt_singleEditorMode;
+
+  /// No description provided for @prompt_groupedEditorMode.
+  ///
+  /// In en, this message translates to:
+  /// **'Grouped'**
+  String get prompt_groupedEditorMode;
+
+  /// No description provided for @prompt_addGroup.
+  ///
+  /// In en, this message translates to:
+  /// **'Add Section'**
+  String get prompt_addGroup;
+
+  /// No description provided for @prompt_groupHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter prompts in this section'**
+  String get prompt_groupHint;
+
+  /// No description provided for @prompt_emptyGroup.
+  ///
+  /// In en, this message translates to:
+  /// **'Empty section'**
+  String get prompt_emptyGroup;
+
+  /// No description provided for @prompt_reorderGroup.
+  ///
+  /// In en, this message translates to:
+  /// **'Drag to reorder section'**
+  String get prompt_reorderGroup;
+
+  /// No description provided for @prompt_expandGroup.
+  ///
+  /// In en, this message translates to:
+  /// **'Expand section'**
+  String get prompt_expandGroup;
+
+  /// No description provided for @prompt_collapseGroup.
+  ///
+  /// In en, this message translates to:
+  /// **'Collapse section'**
+  String get prompt_collapseGroup;
+
+  /// No description provided for @prompt_deleteGroup.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete Section'**
+  String get prompt_deleteGroup;
+
+  /// No description provided for @prompt_deleteGroupConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete this section and its prompts?'**
+  String get prompt_deleteGroupConfirm;
+
   /// No description provided for @prompt_positivePrompt.
   ///
   /// In en, this message translates to:

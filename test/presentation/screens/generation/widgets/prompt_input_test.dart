@@ -17,6 +17,7 @@ import 'package:nai_launcher/presentation/prompt_assistant/providers/prompt_assi
 import 'package:nai_launcher/presentation/prompt_assistant/providers/prompt_assistant_state_provider.dart';
 import 'package:nai_launcher/presentation/providers/character_position_canvas_provider.dart';
 import 'package:nai_launcher/presentation/providers/character_prompt_provider.dart';
+import 'package:nai_launcher/presentation/providers/generation/generation_params_notifier.dart';
 import 'package:nai_launcher/presentation/providers/prompt_token_counter_provider.dart';
 import 'package:nai_launcher/presentation/screens/generation/widgets/prompt_input.dart';
 import 'package:nai_launcher/presentation/themes/core/input_surface_style.dart';
@@ -456,6 +457,67 @@ void main() {
     expect(
       find.descendant(of: bottomActions, matching: find.byIcon(Icons.settings)),
       findsOneWidget,
+    );
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('分组模式拼接启用分区并保留原有提示词工具', (tester) async {
+    tester.view.devicePixelRatio = 1;
+    tester.view.physicalSize = const Size(400, 800);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    addTearDown(tester.view.resetPhysicalSize);
+
+    final container = await _pumpMobilePromptHarness(tester);
+    final modeSwitch = find.byKey(
+      const ValueKey('generation_prompt_editor_mode_switch'),
+    );
+    final l10n = AppLocalizations.of(tester.element(modeSwitch))!;
+
+    await tester.tap(find.text(l10n.prompt_groupedEditorMode));
+    await tester.pump();
+
+    final groups = find.byKey(
+      const ValueKey('generation_positive_prompt_groups'),
+    );
+    expect(groups, findsOneWidget);
+    expect(
+      find.byKey(const ValueKey('generation_prompt_mobile_character_action')),
+      findsOneWidget,
+    );
+    expect(
+      find.byKey(const ValueKey('generation_prompt_mobile_fixed_tags_action')),
+      findsOneWidget,
+    );
+    expect(
+      find.byKey(const ValueKey('generation_prompt_mobile_quality_action')),
+      findsOneWidget,
+    );
+
+    var editors = find.descendant(
+      of: groups,
+      matching: find.byType(EditableText),
+    );
+    expect(editors, findsOneWidget);
+    await tester.enterText(editors.first, '1girl, blue eyes,');
+    await tester.pump();
+
+    await tester.tap(find.byKey(const ValueKey('add_positive_prompt_group')));
+    await tester.pump();
+    editors = find.descendant(of: groups, matching: find.byType(EditableText));
+    expect(editors, findsNWidgets(2));
+    await tester.enterText(editors.last, ', school_uniform');
+    await tester.pump();
+
+    expect(
+      container.read(generationParamsNotifierProvider).prompt,
+      '1girl, blue eyes, school_uniform',
+    );
+
+    await tester.tap(find.byType(Checkbox).first);
+    await tester.pump();
+    expect(
+      container.read(generationParamsNotifierProvider).prompt,
+      'school_uniform',
     );
     expect(tester.takeException(), isNull);
   });

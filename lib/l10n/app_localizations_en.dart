@@ -1626,6 +1626,37 @@ class AppLocalizationsEn extends AppLocalizations {
   String get prompt_negative => 'Undesired Content';
 
   @override
+  String get prompt_singleEditorMode => 'Single Box';
+
+  @override
+  String get prompt_groupedEditorMode => 'Grouped';
+
+  @override
+  String get prompt_addGroup => 'Add Section';
+
+  @override
+  String get prompt_groupHint => 'Enter prompts in this section';
+
+  @override
+  String get prompt_emptyGroup => 'Empty section';
+
+  @override
+  String get prompt_reorderGroup => 'Drag to reorder section';
+
+  @override
+  String get prompt_expandGroup => 'Expand section';
+
+  @override
+  String get prompt_collapseGroup => 'Collapse section';
+
+  @override
+  String get prompt_deleteGroup => 'Delete Section';
+
+  @override
+  String get prompt_deleteGroupConfirm =>
+      'Delete this section and its prompts?';
+
+  @override
   String get prompt_positivePrompt => 'Prompt';
 
   @override

@@ -1565,6 +1565,36 @@ class AppLocalizationsZh extends AppLocalizations {
   String get prompt_negative => '负面';
 
   @override
+  String get prompt_singleEditorMode => '单框模式';
+
+  @override
+  String get prompt_groupedEditorMode => '分组模式';
+
+  @override
+  String get prompt_addGroup => '添加分区';
+
+  @override
+  String get prompt_groupHint => '在此分区输入提示词';
+
+  @override
+  String get prompt_emptyGroup => '空分区';
+
+  @override
+  String get prompt_reorderGroup => '拖动排序分区';
+
+  @override
+  String get prompt_expandGroup => '展开分区';
+
+  @override
+  String get prompt_collapseGroup => '折叠分区';
+
+  @override
+  String get prompt_deleteGroup => '删除分区';
+
+  @override
+  String get prompt_deleteGroupConfirm => '删除这个分区及其中的提示词？';
+
+  @override
   String get prompt_positivePrompt => '正向提示词';
 
   @override
@@ -16137,6 +16167,36 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get prompt_negative => '負面';
+
+  @override
+  String get prompt_singleEditorMode => '單框模式';
+
+  @override
+  String get prompt_groupedEditorMode => '分組模式';
+
+  @override
+  String get prompt_addGroup => '新增分區';
+
+  @override
+  String get prompt_groupHint => '在此分區輸入提示詞';
+
+  @override
+  String get prompt_emptyGroup => '空白分區';
+
+  @override
+  String get prompt_reorderGroup => '拖動排序分區';
+
+  @override
+  String get prompt_expandGroup => '展開分區';
+
+  @override
+  String get prompt_collapseGroup => '收合分區';
+
+  @override
+  String get prompt_deleteGroup => '刪除分區';
+
+  @override
+  String get prompt_deleteGroupConfirm => '刪除這個分區及其中的提示詞？';
 
   @override
   String get prompt_positivePrompt => '正向提示詞';

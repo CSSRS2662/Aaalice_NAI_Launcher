@@ -14,7 +14,9 @@ import '../../../widgets/prompt/quality_tags_selector.dart';
 import '../../../widgets/prompt/regex_rules_dialog.dart';
 import '../../../widgets/prompt/toolbar/toolbar.dart';
 import '../../../widgets/prompt/uc_preset_selector.dart';
+import 'prompt_group_controller.dart';
 import 'prompt_input_controller.dart';
+import 'prompt_editor_mode_switch.dart';
 import 'prompt_input_models.dart';
 import '../../../widgets/prompt/prompt_footer_style.dart';
 import 'prompt_type_switch.dart';
@@ -128,6 +130,11 @@ class PromptInputToolbar extends ConsumerWidget {
             key: const ValueKey('generation_prompt_mobile_toolbar'),
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
+              PromptEditorModeSwitch(
+                controller: controller,
+                commands: commands,
+              ),
+              const SizedBox(height: 4),
               if (stackPrimary) ...[
                 typeSwitch,
                 const SizedBox(height: 4),
@@ -185,7 +192,21 @@ class PromptInputToolbar extends ConsumerWidget {
           alignment: WrapAlignment.spaceBetween,
           crossAxisAlignment: WrapCrossAlignment.center,
           children: [
-            typeSwitch,
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              crossAxisAlignment: WrapCrossAlignment.center,
+              children: [
+                SizedBox(
+                  width: 240,
+                  child: PromptEditorModeSwitch(
+                    controller: controller,
+                    commands: commands,
+                  ),
+                ),
+                typeSwitch,
+              ],
+            ),
             Wrap(
               spacing: 6,
               runSpacing: 6,
@@ -385,26 +406,55 @@ class PromptInputBottomActions extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final showRandomTools = ref.watch(randomPromptToolsVisibilityProvider);
-    return PromptEditorToolbar(
+    final nextMode = controller.isGroupedMode
+        ? PromptEditorMode.single
+        : PromptEditorMode.grouped;
+    return Row(
       key: const ValueKey('generation_prompt_bottom_actions'),
-      buttonStyle: PromptFooterStyle.button(context).copyWith(
-        padding: const WidgetStatePropertyAll(EdgeInsets.zero),
-        fixedSize: WidgetStatePropertyAll(
-          Size.square(PromptFooterStyle.height(context)),
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        IconButton(
+          key: const ValueKey('generation_prompt_editor_mode_compact_action'),
+          style: PromptFooterStyle.button(context).copyWith(
+            padding: const WidgetStatePropertyAll(EdgeInsets.zero),
+            fixedSize: WidgetStatePropertyAll(
+              Size.square(PromptFooterStyle.height(context)),
+            ),
+          ),
+          tooltip: nextMode == PromptEditorMode.grouped
+              ? context.l10n.prompt_groupedEditorMode
+              : context.l10n.prompt_singleEditorMode,
+          onPressed: () => commands.setEditorMode(nextMode),
+          icon: Icon(
+            controller.isGroupedMode
+                ? Icons.notes_rounded
+                : Icons.view_agenda_outlined,
+            size: PromptFooterStyle.iconSize,
+          ),
         ),
-      ),
-      actionIconSize: PromptFooterStyle.iconSize,
-      config: PromptEditorToolbarConfig.mainEditor.copyWith(
-        showRandomButton: showRandomTools,
-        showFullscreenButton: false,
-        showClearButton: showClearButton,
-      ),
-      onRandomPressed: showRandomTools ? commands.generateRandomPrompt : null,
-      onClearPressed: controller.isNegativeMode
-          ? commands.clearNegativePrompt
-          : commands.clearPrompt,
-      onSettingsPressed: () =>
-          PromptInputToolbar._showSettingsMenu(context, ref),
+        PromptEditorToolbar(
+          buttonStyle: PromptFooterStyle.button(context).copyWith(
+            padding: const WidgetStatePropertyAll(EdgeInsets.zero),
+            fixedSize: WidgetStatePropertyAll(
+              Size.square(PromptFooterStyle.height(context)),
+            ),
+          ),
+          actionIconSize: PromptFooterStyle.iconSize,
+          config: PromptEditorToolbarConfig.mainEditor.copyWith(
+            showRandomButton: showRandomTools,
+            showFullscreenButton: false,
+            showClearButton: showClearButton,
+          ),
+          onRandomPressed: showRandomTools
+              ? commands.generateRandomPrompt
+              : null,
+          onClearPressed: controller.isNegativeMode
+              ? commands.clearNegativePrompt
+              : commands.clearPrompt,
+          onSettingsPressed: () =>
+              PromptInputToolbar._showSettingsMenu(context, ref),
+        ),
+      ],
     );
   }
 }
@@ -438,7 +488,37 @@ class _MobileFullscreenToolbar extends StatelessWidget {
         Widget buildWorkbench() => Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            typeSwitch,
+            LayoutBuilder(
+              builder: (context, headerConstraints) {
+                final largeText =
+                    MediaQuery.textScalerOf(context).scale(14) > 21;
+                if (headerConstraints.maxWidth < 360 || largeText) {
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      PromptEditorModeSwitch(
+                        controller: controller,
+                        commands: commands,
+                      ),
+                      const SizedBox(height: 4),
+                      typeSwitch,
+                    ],
+                  );
+                }
+                return Row(
+                  children: [
+                    Expanded(
+                      child: PromptEditorModeSwitch(
+                        controller: controller,
+                        commands: commands,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(child: typeSwitch),
+                  ],
+                );
+              },
+            ),
             const SizedBox(height: 8),
             Expanded(child: editor),
             footer,
