@@ -39,4 +39,19 @@ void main() {
       },
     );
   }
+
+  test('numeric weights support the full negative slider range', () {
+    expect(PromptWeightEditing.withWeight('cat', -4), '-3.00::cat::');
+    expect(PromptWeightEditing.withWeight('cat', -1.25), '-1.25::cat::');
+    expect(PromptWeightEditing.withWeight('cat', 0), '0.00::cat::');
+    expect(
+      PromptWeightEditing.withWeight(
+        'cat',
+        -1.25,
+        numericEmphasisEnabled: false,
+      ),
+      '-1.25::cat::',
+    );
+    expect(PromptWeightEditing.withWeight('cat', 4), '3.00::cat::');
+  });
 }

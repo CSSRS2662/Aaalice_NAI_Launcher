@@ -15,6 +15,9 @@ class PromptWeightValue {
 }
 
 class PromptWeightEditing {
+  static const double minimumWeight = -3;
+  static const double maximumWeight = 3;
+
   static bool protectNegativeBlockSyntax(TextEditingController controller) {
     final selection = controller.selection;
     if (!selection.isValid || selection.isCollapsed) return false;
@@ -157,11 +160,11 @@ class PromptWeightEditing {
     final spans = PromptEditDocument.parse(source);
     final disabled = spans.length == 1 && spans.single.disabled;
     final parsed = parseWeightSyntax(source);
-    final value = weight.clamp(0.1, 3.0);
+    final value = weight.clamp(minimumWeight, maximumWeight);
     String text;
     if ((value - 1).abs() < 0.00001) {
       text = parsed.baseText;
-    } else if (numericEmphasisEnabled) {
+    } else if (numericEmphasisEnabled || value <= 0) {
       text = '${value.toStringAsFixed(2)}::${parsed.baseText}::';
     } else {
       final depth = (math.log(value).abs() / math.log(1.05)).round();

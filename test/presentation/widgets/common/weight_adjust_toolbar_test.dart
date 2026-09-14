@@ -541,7 +541,7 @@ void main() {
     focus.requestFocus();
     prompt.selection = const TextSelection(baseOffset: 0, extentOffset: 3);
     await tester.pump();
-    expect(find.byType(TextField), findsNWidgets(2));
+    expect(find.byKey(const ValueKey('prompt-weight-slider')), findsOneWidget);
 
     await _pumpHarness(
       tester,
@@ -551,9 +551,9 @@ void main() {
       enableWheelAdjustment: false,
     );
     await tester.pump();
-    expect(find.byType(TextField), findsNWidgets(2));
+    expect(find.byKey(const ValueKey('prompt-weight-slider')), findsOneWidget);
 
-    final weightField = find.byType(TextField).last;
+    final weightField = find.byKey(const ValueKey('prompt-weight-slider'));
     final pointer = TestPointer(2, PointerDeviceKind.mouse)
       ..hover(tester.getCenter(weightField));
     await tester.sendEventToBinding(pointer.scroll(const Offset(0, 40)));
@@ -586,7 +586,7 @@ void main() {
     focus.requestFocus();
     controllerA.selection = const TextSelection(baseOffset: 0, extentOffset: 3);
     await tester.pump();
-    expect(find.byType(TextField), findsNWidgets(2));
+    expect(find.byKey(const ValueKey('prompt-weight-slider')), findsOneWidget);
 
     await _pumpHarness(
       tester,
@@ -597,7 +597,7 @@ void main() {
     );
     await tester.pump();
 
-    expect(find.byType(TextField), findsOneWidget);
+    expect(find.byKey(const ValueKey('prompt-weight-slider')), findsNothing);
   });
 
   testWidgets('open toolbar targets selected replacement controller', (
@@ -625,7 +625,7 @@ void main() {
     focus.requestFocus();
     controllerA.selection = const TextSelection(baseOffset: 0, extentOffset: 3);
     await tester.pump();
-    expect(find.byType(TextField), findsNWidgets(2));
+    expect(find.byKey(const ValueKey('prompt-weight-slider')), findsOneWidget);
 
     await _pumpHarness(
       tester,
@@ -675,7 +675,41 @@ void main() {
     );
     await tester.pump();
 
-    expect(find.byType(TextField), findsNWidgets(2));
+    expect(find.byKey(const ValueKey('prompt-weight-slider')), findsOneWidget);
+  });
+
+  testWidgets('slider writes a snapped negative numeric weight', (
+    tester,
+  ) async {
+    final prompt = TextEditingController(text: 'cat');
+    final focus = FocusNode();
+    final page = ScrollController(initialScrollOffset: 100);
+    _registerCleanup(tester, prompt, focus, page);
+
+    await _pumpHarness(
+      tester,
+      prompt: prompt,
+      focus: focus,
+      page: page,
+      enableWheelAdjustment: true,
+    );
+    focus.requestFocus();
+    prompt.selection = const TextSelection(baseOffset: 0, extentOffset: 3);
+    await tester.pump();
+
+    final slider = tester.widget<Slider>(
+      find.byKey(const ValueKey('prompt-weight-slider')),
+    );
+    slider.onChanged!(-1.27);
+    await tester.pump();
+
+    expect(prompt.text, '-1.25::cat::');
+    expect(
+      tester
+          .widget<Slider>(find.byKey(const ValueKey('prompt-weight-slider')))
+          .value,
+      -1.25,
+    );
   });
 
   testWidgets('narrow 3x toolbar stays on-screen and supports keyboard', (
@@ -726,7 +760,8 @@ void main() {
     final toolbarMaterial = find.byKey(
       const ValueKey('weight_adjust_toolbar_surface'),
     );
-    expect(tester.getSize(toolbarMaterial).width, lessThanOrEqualTo(304));
+    expect(tester.getSize(toolbarMaterial).width, closeTo(288, 0.1));
+    expect(find.byKey(const ValueKey('prompt-weight-slider')), findsOneWidget);
     expect(tester.takeException(), isNull);
 
     final resetTooltip = find.ancestor(

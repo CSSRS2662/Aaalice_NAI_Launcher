@@ -193,7 +193,10 @@ class _WeightAdjustToolbarWrapperState
     final result = PromptWeightEditing.parseSelection(widget.controller);
     PromptWeightEditing.applyWeight(
       widget.controller,
-      (result.weight + step).clamp(0.1, 3.0),
+      (result.weight + step).clamp(
+        PromptWeightEditing.minimumWeight,
+        PromptWeightEditing.maximumWeight,
+      ),
     );
     if (mounted && _toolbarVisible) {
       setState(() {});
@@ -345,8 +348,8 @@ class _WeightAdjustToolbar extends StatelessWidget {
 
   void _step(double step) => _weight(
     (PromptWeightEditing.parseSelection(controller).weight + step).clamp(
-      0.1,
-      3.0,
+      PromptWeightEditing.minimumWeight,
+      PromptWeightEditing.maximumWeight,
     ),
   );
   void _wheel(PointerSignalEvent event) {

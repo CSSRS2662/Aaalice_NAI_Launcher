@@ -658,11 +658,9 @@ void main() {
       expect(find.byIcon(Icons.drag_indicator), findsNothing);
       expect(
         tester
-            .widget<TextField>(
-              find.byKey(const ValueKey('prompt-weight-value')),
-            )
-            .enabled,
-        isFalse,
+            .widget<Slider>(find.byKey(const ValueKey('prompt-weight-slider')))
+            .onChanged,
+        isNull,
       );
       await tester.sendEventToBinding(
         PointerScrollEvent(
