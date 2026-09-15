@@ -194,7 +194,17 @@ class _PromptGroupCard extends ConsumerWidget {
         ? PromptHistorySessionIds.generationNegative
         : PromptHistorySessionIds.generationPrompt;
     final historySessionId = '${modeSessionId}_group_${section.id}';
-    final summary = section.controller.text.trim();
+    final summaryParts = section.controller.text
+        .trim()
+        .replaceAll(RegExp(r'\s+'), ' ')
+        .split(',')
+        .map((part) => part.trim())
+        .where((part) => part.isNotEmpty)
+        .toList(growable: false);
+    final summary = summaryParts.isEmpty
+        ? context.l10n.prompt_emptyGroup
+        : summaryParts.first;
+    final remainingSummaryCount = summaryParts.length - 1;
 
     return AnimatedOpacity(
       duration: const Duration(milliseconds: 160),
@@ -224,15 +234,27 @@ class _PromptGroupCard extends ConsumerWidget {
                   ),
                 ),
                 Expanded(
-                  child: Text(
-                    summary.isEmpty
-                        ? context.l10n.prompt_emptyGroup
-                        : summary.replaceAll(RegExp(r'\s+'), ' '),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: colors.onSurfaceVariant,
-                    ),
+                  child: Row(
+                    children: [
+                      Flexible(
+                        child: Text(
+                          summary,
+                          style: Theme.of(context).textTheme.bodySmall
+                              ?.copyWith(color: colors.onSurfaceVariant),
+                        ),
+                      ),
+                      if (remainingSummaryCount > 0) ...[
+                        const SizedBox(width: 4),
+                        Text(
+                          '+$remainingSummaryCount',
+                          style: Theme.of(context).textTheme.labelSmall
+                              ?.copyWith(
+                                color: colors.primary,
+                                fontWeight: FontWeight.w600,
+                              ),
+                        ),
+                      ],
+                    ],
                   ),
                 ),
                 PromptAssistantOverlay(

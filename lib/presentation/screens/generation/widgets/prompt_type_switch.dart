@@ -218,9 +218,8 @@ class _PromptTypeButtonState extends State<PromptTypeButton> {
             final label = Text(
               widget.label,
               maxLines: 1,
-              overflow: TextOverflow.ellipsis,
               style: TextStyle(
-                fontSize: 13,
+                fontSize: 12,
                 fontWeight: widget.isSelected
                     ? FontWeight.w600
                     : FontWeight.w500,

@@ -10,10 +10,12 @@ class PromptEditorModeSwitch extends StatelessWidget {
     super.key,
     required this.controller,
     required this.commands,
+    this.iconOnly = false,
   });
 
   final PromptInputController controller;
   final PromptInputCommands commands;
+  final bool iconOnly;
 
   @override
   Widget build(BuildContext context) {
@@ -25,67 +27,93 @@ class PromptEditorModeSwitch extends StatelessWidget {
     final nextMode = grouped
         ? PromptEditorMode.single
         : PromptEditorMode.grouped;
+    final nextLabel = grouped
+        ? context.l10n.prompt_singleEditorMode
+        : context.l10n.prompt_groupedEditorMode;
+    final icon = grouped
+        ? Icons.view_stream_rounded
+        : Icons.crop_square_rounded;
 
-    return Semantics(
-      button: true,
-      label: label,
-      value: label,
-      child: Material(
-        color: grouped
-            ? colors.primaryContainer.withValues(alpha: 0.72)
-            : colors.surfaceContainerHigh.withValues(alpha: 0.72),
-        borderRadius: BorderRadius.circular(12),
-        clipBehavior: Clip.antiAlias,
-        child: InkWell(
-          key: const ValueKey('generation_prompt_editor_mode_switch'),
-          onTap: () => commands.setEditorMode(nextMode),
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(minHeight: 48),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 6),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(
-                    grouped ? Icons.group_work_rounded : Icons.notes_rounded,
-                    size: 19,
+    final button = Material(
+      color: grouped
+          ? colors.primaryContainer.withValues(alpha: 0.72)
+          : colors.surfaceContainerHigh.withValues(alpha: 0.72),
+      borderRadius: BorderRadius.circular(12),
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        key: const ValueKey('generation_prompt_editor_mode_switch'),
+        onTap: () => commands.setEditorMode(nextMode),
+        child: ConstrainedBox(
+          constraints: BoxConstraints(
+            minWidth: iconOnly ? 48 : 0,
+            minHeight: 48,
+          ),
+          child: Padding(
+            padding: EdgeInsets.symmetric(
+              horizontal: iconOnly ? 0 : 6,
+              vertical: 6,
+            ),
+            child: iconOnly
+                ? Icon(
+                    icon,
+                    size: 22,
                     color: grouped
                         ? colors.onPrimaryContainer
                         : colors.onSurfaceVariant,
-                  ),
-                  const SizedBox(width: 5),
-                  Flexible(
-                    child: Text(
-                      label,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                  )
+                : Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        icon,
+                        size: 19,
                         color: grouped
                             ? colors.onPrimaryContainer
                             : colors.onSurfaceVariant,
-                        fontWeight: FontWeight.w600,
                       ),
-                    ),
+                      const SizedBox(width: 5),
+                      Flexible(
+                        child: Text(
+                          label,
+                          style: Theme.of(context).textTheme.labelLarge
+                              ?.copyWith(
+                                color: grouped
+                                    ? colors.onPrimaryContainer
+                                    : colors.onSurfaceVariant,
+                                fontWeight: FontWeight.w600,
+                              ),
+                        ),
+                      ),
+                    ],
                   ),
-                ],
-              ),
-            ),
           ),
         ),
       ),
+    );
+
+    return Semantics(
+      button: true,
+      label: nextLabel,
+      value: label,
+      child: iconOnly ? Tooltip(message: nextLabel, child: button) : button,
     );
   }
 }
 
 class PromptAddGroupButton extends StatelessWidget {
-  const PromptAddGroupButton({super.key, required this.controller});
+  const PromptAddGroupButton({
+    super.key,
+    required this.controller,
+    this.iconOnly = false,
+  });
 
   final PromptInputController controller;
+  final bool iconOnly;
 
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
-    return Material(
+    final button = Material(
       color: colors.surfaceContainerHigh.withValues(alpha: 0.72),
       borderRadius: BorderRadius.circular(12),
       clipBehavior: Clip.antiAlias,
@@ -102,34 +130,45 @@ class PromptAddGroupButton extends StatelessWidget {
           });
         },
         child: ConstrainedBox(
-          constraints: const BoxConstraints(minHeight: 48),
+          constraints: BoxConstraints(
+            minWidth: iconOnly ? 48 : 0,
+            minHeight: 48,
+          ),
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 6),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(
-                  Icons.add_circle_outline_rounded,
-                  size: 20,
-                  color: colors.onSurface,
-                ),
-                const SizedBox(width: 5),
-                Flexible(
-                  child: Text(
-                    context.l10n.prompt_addGroup,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ),
-              ],
+            padding: EdgeInsets.symmetric(
+              horizontal: iconOnly ? 0 : 6,
+              vertical: 6,
             ),
+            child: iconOnly
+                ? Icon(
+                    Icons.add_box_outlined,
+                    size: 22,
+                    color: colors.onSurface,
+                  )
+                : Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        Icons.add_circle_outline_rounded,
+                        size: 20,
+                        color: colors.onSurface,
+                      ),
+                      const SizedBox(width: 5),
+                      Flexible(
+                        child: Text(
+                          context.l10n.prompt_addGroup,
+                          style: Theme.of(context).textTheme.labelLarge
+                              ?.copyWith(fontWeight: FontWeight.w600),
+                        ),
+                      ),
+                    ],
+                  ),
           ),
         ),
       ),
     );
+    if (!iconOnly) return button;
+    return Tooltip(message: context.l10n.prompt_addGroup, child: button);
   }
 }
 

@@ -517,117 +517,164 @@ class _MobileFullscreenToolbar extends StatelessWidget {
           88.0,
         );
         final effectiveTextScale = (scaledLabelHeight / 14).clamp(1.0, 3.0);
-        final characterActionWidth = 56 + (effectiveTextScale - 1) * 8;
-        final fixedTagsActionWidth = 64 + (effectiveTextScale - 1) * 9;
+        final actionExtent = 56 + (effectiveTextScale - 1) * 16;
+        final typeSwitchWidth = (140 * effectiveTextScale).clamp(140.0, 320.0);
         final typeSwitch = PromptTypeSwitch(
           controller: controller,
           commands: commands,
           compact: true,
           toggleOnly: true,
         );
+        Widget buildTopControls() {
+          final addGroup = controller.isGroupedMode
+              ? SizedBox.square(
+                  dimension: 48,
+                  child: PromptAddGroupButton(
+                    controller: controller,
+                    iconOnly: true,
+                  ),
+                )
+              : const SizedBox.square(dimension: 48);
+          final modeSwitch = SizedBox.square(
+            dimension: 48,
+            child: PromptEditorModeSwitch(
+              controller: controller,
+              commands: commands,
+              iconOnly: true,
+            ),
+          );
+          if (effectiveTextScale >= 2) {
+            final transparentHeight = (scaledLabelHeight * 2.35 + 16).clamp(
+              88.0,
+              128.0,
+            );
+            return Column(
+              key: const ValueKey('generation_prompt_mobile_top_controls'),
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Row(children: [addGroup, const Spacer(), modeSwitch]),
+                const SizedBox(height: 6),
+                SizedBox(
+                  height: transparentHeight,
+                  child: const PromptTransparentBackgroundToggle(
+                    switchStyle: true,
+                  ),
+                ),
+              ],
+            );
+          }
+          return SizedBox(
+            key: const ValueKey('generation_prompt_mobile_top_controls'),
+            height: controlRowHeight,
+            child: Row(
+              children: [
+                addGroup,
+                const SizedBox(width: 8),
+                const Expanded(
+                  child: PromptTransparentBackgroundToggle(switchStyle: true),
+                ),
+                const SizedBox(width: 8),
+                modeSwitch,
+              ],
+            ),
+          );
+        }
+
+        Widget buildPromptRoleActions() => Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            _MobilePromptToolbarAction(
+              actionKey: const ValueKey(
+                'generation_prompt_mobile_character_action',
+              ),
+              width: actionExtent,
+              height: controlRowHeight,
+              child: CharacterPromptButton(
+                onManage: commands.showMobileCharacterManager,
+                compact: true,
+                iconOnly: true,
+                showZeroCount: true,
+              ),
+            ),
+            const SizedBox(width: 4),
+            _MobilePromptToolbarAction(
+              actionKey: const ValueKey(
+                'generation_prompt_mobile_fixed_tags_action',
+              ),
+              width: actionExtent,
+              height: controlRowHeight,
+              child: const FixedTagsButton(
+                compact: true,
+                iconOnly: true,
+                showZeroCount: true,
+              ),
+            ),
+            const SizedBox(width: 4),
+            _MobilePromptToolbarAction(
+              actionKey: const ValueKey(
+                'generation_prompt_mobile_quality_action',
+              ),
+              width: actionExtent,
+              height: controlRowHeight,
+              child: controller.isNegativeMode
+                  ? UcPresetSelector(
+                      model: model,
+                      compact: true,
+                      iconOnly: true,
+                    )
+                  : QualityTagsSelector(
+                      model: model,
+                      compact: true,
+                      iconOnly: true,
+                    ),
+            ),
+          ],
+        );
+
+        Widget buildPrimaryControls() {
+          final content = Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              SizedBox(width: typeSwitchWidth, child: typeSwitch),
+              const SizedBox(width: 4),
+              buildPromptRoleActions(),
+            ],
+          );
+          if (effectiveTextScale >= 2) {
+            return SizedBox(
+              key: const ValueKey('generation_prompt_mobile_primary_row'),
+              height: controlRowHeight,
+              child: SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: content,
+              ),
+            );
+          }
+          return SizedBox(
+            key: const ValueKey('generation_prompt_mobile_primary_row'),
+            height: controlRowHeight,
+            child: Row(
+              children: [
+                SizedBox(width: typeSwitchWidth, child: typeSwitch),
+                const SizedBox(width: 4),
+                Expanded(
+                  child: SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    reverse: true,
+                    child: buildPromptRoleActions(),
+                  ),
+                ),
+              ],
+            ),
+          );
+        }
+
         Widget buildWorkbench() => Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            SizedBox(
-              height: controlRowHeight,
-              child: Row(
-                key: const ValueKey('generation_prompt_mobile_top_controls'),
-                children: [
-                  const Expanded(
-                    flex: 4,
-                    child: PromptTransparentBackgroundToggle(switchStyle: true),
-                  ),
-                  const SizedBox(width: 8),
-                  SizedBox(
-                    height: 30,
-                    child: VerticalDivider(
-                      width: 1,
-                      color: Theme.of(context).dividerColor,
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    flex: 3,
-                    child: PromptEditorModeSwitch(
-                      controller: controller,
-                      commands: commands,
-                    ),
-                  ),
-                  if (controller.isGroupedMode) ...[
-                    const SizedBox(width: 6),
-                    Expanded(
-                      flex: 3,
-                      child: PromptAddGroupButton(controller: controller),
-                    ),
-                  ],
-                ],
-              ),
-            ),
+            buildTopControls(),
             const SizedBox(height: 8),
-            SizedBox(
-              height: controlRowHeight,
-              child: Row(
-                key: const ValueKey('generation_prompt_mobile_primary_row'),
-                children: [
-                  ConstrainedBox(
-                    constraints: const BoxConstraints(maxWidth: 136),
-                    child: typeSwitch,
-                  ),
-                  Expanded(
-                    child: SingleChildScrollView(
-                      scrollDirection: Axis.horizontal,
-                      reverse: true,
-                      child: Row(
-                        children: [
-                          _MobilePromptToolbarAction(
-                            actionKey: const ValueKey(
-                              'generation_prompt_mobile_character_action',
-                            ),
-                            width: characterActionWidth,
-                            child: CharacterPromptButton(
-                              onManage: commands.showMobileCharacterManager,
-                              compact: true,
-                              iconOnly: true,
-                              showZeroCount: true,
-                            ),
-                          ),
-                          const SizedBox(width: 6),
-                          _MobilePromptToolbarAction(
-                            actionKey: const ValueKey(
-                              'generation_prompt_mobile_fixed_tags_action',
-                            ),
-                            width: fixedTagsActionWidth,
-                            child: const FixedTagsButton(
-                              compact: true,
-                              iconOnly: true,
-                              showZeroCount: true,
-                            ),
-                          ),
-                          const SizedBox(width: 6),
-                          _MobilePromptToolbarAction(
-                            actionKey: const ValueKey(
-                              'generation_prompt_mobile_quality_action',
-                            ),
-                            width: 48,
-                            child: controller.isNegativeMode
-                                ? UcPresetSelector(
-                                    model: model,
-                                    compact: true,
-                                    iconOnly: true,
-                                  )
-                                : QualityTagsSelector(
-                                    model: model,
-                                    compact: true,
-                                    iconOnly: true,
-                                  ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
+            buildPrimaryControls(),
             const SizedBox(height: 8),
             Expanded(child: editor),
             footer,
@@ -650,13 +697,15 @@ class _MobilePromptToolbarAction extends StatelessWidget {
     required this.actionKey,
     required this.child,
     this.width,
+    this.height = 48,
   });
 
   final Key actionKey;
   final Widget child;
   final double? width;
+  final double height;
 
   @override
   Widget build(BuildContext context) =>
-      SizedBox(key: actionKey, width: width, height: 48, child: child);
+      SizedBox(key: actionKey, width: width, height: height, child: child);
 }

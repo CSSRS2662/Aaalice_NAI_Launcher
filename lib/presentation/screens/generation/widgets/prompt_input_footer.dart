@@ -150,8 +150,8 @@ class PromptTransparentBackgroundToggle extends ConsumerWidget {
                     Flexible(
                       child: Text(
                         context.l10n.generation_transparentBackground,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
+                        maxLines: 2,
+                        textAlign: TextAlign.center,
                         style: theme.textTheme.labelLarge?.copyWith(
                           fontWeight: FontWeight.w600,
                         ),

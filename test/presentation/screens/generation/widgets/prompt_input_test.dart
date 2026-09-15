@@ -412,6 +412,7 @@ void main() {
     for (final action in secondaryActions) {
       expect(action, findsOneWidget);
       expect(tester.getSize(action).height, 48);
+      expect(tester.getSize(action).width, 56);
       expect(
         tester.getCenter(action).dy,
         closeTo(tester.getCenter(secondaryActions.first).dy, 0.1),
@@ -534,7 +535,29 @@ void main() {
 
     await tester.tap(modeSwitch);
     await tester.pump();
-    expect(find.text(l10n.prompt_groupedEditorMode), findsOneWidget);
+    expect(
+      find.descendant(
+        of: modeSwitch,
+        matching: find.byIcon(Icons.view_stream_rounded),
+      ),
+      findsOneWidget,
+    );
+    expect(find.text(l10n.prompt_groupedEditorMode), findsNothing);
+
+    final topControls = find.byKey(
+      const ValueKey('generation_prompt_mobile_top_controls'),
+    );
+    final addGroup = find.byKey(const ValueKey('add_positive_prompt_group'));
+    expect(
+      find.descendant(
+        of: addGroup,
+        matching: find.byIcon(Icons.add_box_outlined),
+      ),
+      findsOneWidget,
+    );
+    expect(tester.getRect(addGroup).left, tester.getRect(topControls).left);
+    expect(tester.getRect(modeSwitch).right, tester.getRect(topControls).right);
+    expect(find.text(l10n.prompt_addGroup), findsNothing);
 
     final groups = find.byKey(
       const ValueKey('generation_positive_prompt_groups'),
@@ -574,6 +597,8 @@ void main() {
     expect(editors, findsOneWidget);
     await tester.enterText(editors.first, '1girl, blue eyes,');
     await tester.pump();
+    expect(find.text('1girl'), findsOneWidget);
+    expect(find.text('+1'), findsOneWidget);
 
     await tester.tap(find.byKey(const ValueKey('add_positive_prompt_group')));
     await tester.pump();

@@ -76,7 +76,11 @@ class _FixedTagsButtonState extends ConsumerState<FixedTagsButton> {
                   .read(layoutStateNotifierProvider.notifier)
                   .toggleFixedTagsSidebar(),
               padding: EdgeInsets.symmetric(
-                horizontal: widget.compact ? 8 : 10,
+                horizontal: widget.compact && widget.iconOnly
+                    ? 6
+                    : widget.compact
+                    ? 8
+                    : 10,
                 vertical: widget.compact ? 4 : 6,
               ),
               builder: (colors) => Row(
