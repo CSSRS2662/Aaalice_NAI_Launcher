@@ -3,10 +3,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/autocomplete/autocomplete_settings.dart'
     as completion_settings;
+import '../../../../core/constants/model_capabilities.dart';
 import '../../../../core/utils/localization_extension.dart';
 import '../../../adaptive/interaction_policy.dart';
 import '../../../providers/image_generation_provider.dart';
 import '../../../providers/prompt_regex_rules_provider.dart';
+import '../../../themes/theme_extension.dart';
 import '../../../widgets/character/character_prompt_button.dart';
 import '../../../widgets/prompt/fixed_tags_button.dart';
 import '../../../widgets/prompt/quality_tags_selector.dart';
@@ -512,13 +514,19 @@ class _MobileFullscreenToolbar extends StatelessWidget {
       key: const ValueKey('generation_prompt_mobile_workbench'),
       builder: (context, constraints) {
         final scaledLabelHeight = MediaQuery.textScalerOf(context).scale(14);
-        final controlRowHeight = (scaledLabelHeight * 1.35 + 24).clamp(
+        final controlRowHeight = (scaledLabelHeight * 1.25 + 28).clamp(
           48.0,
           88.0,
         );
         final effectiveTextScale = (scaledLabelHeight / 14).clamp(1.0, 3.0);
-        final actionExtent = 56 + (effectiveTextScale - 1) * 16;
-        final typeSwitchWidth = (140 * effectiveTextScale).clamp(140.0, 320.0);
+        final actionExtent = 52 + (effectiveTextScale - 1) * 16;
+        final typeSwitchWidth = (124 * effectiveTextScale).clamp(124.0, 300.0);
+        final showTransparent = ModelCapabilityRegistry.of(
+          model,
+        ).supportsTransparentBackground;
+        final transparentWidth = showTransparent
+            ? (128 + (effectiveTextScale - 1) * 54).clamp(128.0, 240.0)
+            : 0.0;
         final typeSwitch = PromptTypeSwitch(
           controller: controller,
           commands: commands,
@@ -526,15 +534,11 @@ class _MobileFullscreenToolbar extends StatelessWidget {
           toggleOnly: true,
         );
         Widget buildTopControls() {
-          final addGroup = controller.isGroupedMode
-              ? SizedBox.square(
-                  dimension: 48,
-                  child: PromptAddGroupButton(
-                    controller: controller,
-                    iconOnly: true,
-                  ),
-                )
-              : const SizedBox.square(dimension: 48);
+          final grouped = controller.isGroupedMode;
+          final addGroup = SizedBox.square(
+            dimension: 48,
+            child: PromptAddGroupButton(controller: controller, iconOnly: true),
+          );
           final modeSwitch = SizedBox.square(
             dimension: 48,
             child: PromptEditorModeSwitch(
@@ -543,128 +547,137 @@ class _MobileFullscreenToolbar extends StatelessWidget {
               iconOnly: true,
             ),
           );
-          if (effectiveTextScale >= 2) {
-            final transparentHeight = (scaledLabelHeight * 2.35 + 16).clamp(
-              88.0,
-              128.0,
-            );
-            return Column(
-              key: const ValueKey('generation_prompt_mobile_top_controls'),
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Row(children: [addGroup, const Spacer(), modeSwitch]),
-                const SizedBox(height: 6),
-                SizedBox(
-                  height: transparentHeight,
-                  child: const PromptTransparentBackgroundToggle(
-                    switchStyle: true,
-                  ),
-                ),
-              ],
-            );
-          }
+          final addGroupExtent = grouped
+              ? 48.0 + (showTransparent ? 8.0 : 0.0)
+              : 0.0;
+          final trailingGap =
+              (constraints.maxWidth - transparentWidth - addGroupExtent - 48)
+                  .clamp(8.0, double.infinity);
+          final rowWidth = transparentWidth + addGroupExtent + trailingGap + 48;
           return SizedBox(
             key: const ValueKey('generation_prompt_mobile_top_controls'),
             height: controlRowHeight,
-            child: Row(
-              children: [
-                addGroup,
-                const SizedBox(width: 8),
-                const Expanded(
-                  child: PromptTransparentBackgroundToggle(switchStyle: true),
+            child: SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: SizedBox(
+                width: rowWidth,
+                height: controlRowHeight,
+                child: Row(
+                  children: [
+                    if (showTransparent)
+                      SizedBox(
+                        width: transparentWidth,
+                        height: controlRowHeight,
+                        child: const PromptTransparentBackgroundToggle(
+                          switchStyle: true,
+                          compact: true,
+                        ),
+                      ),
+                    if (grouped) ...[
+                      if (showTransparent) const SizedBox(width: 8),
+                      addGroup,
+                    ],
+                    SizedBox(width: trailingGap),
+                    modeSwitch,
+                  ],
                 ),
-                const SizedBox(width: 8),
-                modeSwitch,
-              ],
+              ),
             ),
           );
         }
 
-        Widget buildPromptRoleActions() => Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            _MobilePromptToolbarAction(
-              actionKey: const ValueKey(
-                'generation_prompt_mobile_character_action',
-              ),
-              width: actionExtent,
-              height: controlRowHeight,
-              child: CharacterPromptButton(
-                onManage: commands.showMobileCharacterManager,
-                compact: true,
-                iconOnly: true,
-                showZeroCount: true,
-              ),
+        final roleActionsWidth = actionExtent * 3 + 8;
+        Widget buildPromptRoleActions() => Container(
+          width: roleActionsWidth,
+          height: controlRowHeight,
+          padding: const EdgeInsets.symmetric(horizontal: 2),
+          decoration: BoxDecoration(
+            color: Theme.of(
+              context,
+            ).colorScheme.surfaceContainerHigh.withValues(alpha: 0.5),
+            borderRadius: BorderRadius.circular(
+              Theme.of(context).appTheme.controlRadius + 2,
             ),
-            const SizedBox(width: 4),
-            _MobilePromptToolbarAction(
-              actionKey: const ValueKey(
-                'generation_prompt_mobile_fixed_tags_action',
+          ),
+          child: Row(
+            children: [
+              Expanded(
+                child: _MobilePromptToolbarAction(
+                  actionKey: const ValueKey(
+                    'generation_prompt_mobile_character_action',
+                  ),
+                  height: controlRowHeight,
+                  child: CharacterPromptButton(
+                    onManage: commands.showMobileCharacterManager,
+                    compact: true,
+                    iconOnly: true,
+                    showZeroCount: true,
+                  ),
+                ),
               ),
-              width: actionExtent,
-              height: controlRowHeight,
-              child: const FixedTagsButton(
-                compact: true,
-                iconOnly: true,
-                showZeroCount: true,
+              const SizedBox(width: 2),
+              Expanded(
+                child: _MobilePromptToolbarAction(
+                  actionKey: const ValueKey(
+                    'generation_prompt_mobile_fixed_tags_action',
+                  ),
+                  height: controlRowHeight,
+                  child: const FixedTagsButton(
+                    compact: true,
+                    iconOnly: true,
+                    showZeroCount: true,
+                  ),
+                ),
               ),
-            ),
-            const SizedBox(width: 4),
-            _MobilePromptToolbarAction(
-              actionKey: const ValueKey(
-                'generation_prompt_mobile_quality_action',
+              const SizedBox(width: 2),
+              Expanded(
+                child: _MobilePromptToolbarAction(
+                  actionKey: const ValueKey(
+                    'generation_prompt_mobile_quality_action',
+                  ),
+                  height: controlRowHeight,
+                  child: controller.isNegativeMode
+                      ? UcPresetSelector(
+                          model: model,
+                          compact: true,
+                          iconOnly: true,
+                          showStatusCount: true,
+                        )
+                      : QualityTagsSelector(
+                          model: model,
+                          compact: true,
+                          iconOnly: true,
+                          showStatusCount: true,
+                        ),
+                ),
               ),
-              width: actionExtent,
-              height: controlRowHeight,
-              child: controller.isNegativeMode
-                  ? UcPresetSelector(
-                      model: model,
-                      compact: true,
-                      iconOnly: true,
-                    )
-                  : QualityTagsSelector(
-                      model: model,
-                      compact: true,
-                      iconOnly: true,
-                    ),
-            ),
-          ],
+            ],
+          ),
         );
 
         Widget buildPrimaryControls() {
-          final content = Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              SizedBox(width: typeSwitchWidth, child: typeSwitch),
-              const SizedBox(width: 4),
-              buildPromptRoleActions(),
-            ],
-          );
-          if (effectiveTextScale >= 2) {
-            return SizedBox(
-              key: const ValueKey('generation_prompt_mobile_primary_row'),
-              height: controlRowHeight,
-              child: SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                child: content,
-              ),
-            );
-          }
+          final middleGap =
+              (constraints.maxWidth - typeSwitchWidth - roleActionsWidth).clamp(
+                8.0,
+                double.infinity,
+              );
+          final rowWidth = typeSwitchWidth + middleGap + roleActionsWidth;
           return SizedBox(
             key: const ValueKey('generation_prompt_mobile_primary_row'),
             height: controlRowHeight,
-            child: Row(
-              children: [
-                SizedBox(width: typeSwitchWidth, child: typeSwitch),
-                const SizedBox(width: 4),
-                Expanded(
-                  child: SingleChildScrollView(
-                    scrollDirection: Axis.horizontal,
-                    reverse: true,
-                    child: buildPromptRoleActions(),
-                  ),
+            child: SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: SizedBox(
+                width: rowWidth,
+                height: controlRowHeight,
+                child: Row(
+                  children: [
+                    SizedBox(width: typeSwitchWidth, child: typeSwitch),
+                    SizedBox(width: middleGap),
+                    buildPromptRoleActions(),
+                  ],
                 ),
-              ],
+              ),
             ),
           );
         }
@@ -696,16 +709,14 @@ class _MobilePromptToolbarAction extends StatelessWidget {
   const _MobilePromptToolbarAction({
     required this.actionKey,
     required this.child,
-    this.width,
     this.height = 48,
   });
 
   final Key actionKey;
   final Widget child;
-  final double? width;
   final double height;
 
   @override
   Widget build(BuildContext context) =>
-      SizedBox(key: actionKey, width: width, height: height, child: child);
+      SizedBox(key: actionKey, height: height, child: child);
 }

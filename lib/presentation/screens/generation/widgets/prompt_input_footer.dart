@@ -9,6 +9,7 @@ import '../../../../data/models/image/image_params.dart'
     show ImageParamsExtension;
 import '../../../providers/image_generation_provider.dart';
 import '../../../providers/prompt_token_counter_provider.dart';
+import '../../../themes/theme_extension.dart';
 import '../../../widgets/prompt/prompt_token_count_bar.dart';
 import '../../../widgets/common/translated_tag_text.dart';
 import '../../../widgets/prompt/prompt_footer_style.dart';
@@ -97,9 +98,11 @@ class PromptTransparentBackgroundToggle extends ConsumerWidget {
   const PromptTransparentBackgroundToggle({
     super.key,
     this.switchStyle = false,
+    this.compact = false,
   });
 
   final bool switchStyle;
+  final bool compact;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -121,13 +124,16 @@ class PromptTransparentBackgroundToggle extends ConsumerWidget {
 
     final Widget button;
     if (switchStyle) {
+      final backgroundColor = compact && state.enabled
+          ? colors.primary.withValues(alpha: 0.1)
+          : colors.surfaceContainerHigh.withValues(alpha: 0.72);
       button = Semantics(
         button: true,
         toggled: state.enabled,
         label: context.l10n.generation_transparentBackground,
         child: Material(
-          color: colors.surfaceContainerHigh.withValues(alpha: 0.72),
-          borderRadius: BorderRadius.circular(12),
+          color: backgroundColor,
+          borderRadius: BorderRadius.circular(theme.appTheme.controlRadius),
           clipBehavior: Clip.antiAlias,
           child: InkWell(
             key: const ValueKey('generation_transparent_background_toggle'),
@@ -135,39 +141,59 @@ class PromptTransparentBackgroundToggle extends ConsumerWidget {
             child: ConstrainedBox(
               constraints: const BoxConstraints(minHeight: 48),
               child: Padding(
-                padding: const EdgeInsets.fromLTRB(6, 4, 2, 4),
+                padding: EdgeInsets.fromLTRB(
+                  compact ? 8 : 6,
+                  4,
+                  compact ? 6 : 2,
+                  4,
+                ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Icon(
                       Icons.blur_on_rounded,
-                      size: 20,
+                      size: compact ? 18 : 20,
                       color: state.enabled
                           ? colors.primary
                           : colors.onSurfaceVariant,
                     ),
-                    const SizedBox(width: 4),
+                    SizedBox(width: compact ? 6 : 4),
                     Flexible(
                       child: Text(
                         context.l10n.generation_transparentBackground,
                         maxLines: 2,
                         textAlign: TextAlign.center,
-                        style: theme.textTheme.labelLarge?.copyWith(
-                          fontWeight: FontWeight.w600,
-                        ),
+                        style:
+                            (compact
+                                    ? theme.textTheme.labelMedium
+                                    : theme.textTheme.labelLarge)
+                                ?.copyWith(
+                                  color: state.enabled
+                                      ? colors.primary
+                                      : colors.onSurface,
+                                  fontWeight: FontWeight.w600,
+                                  height: 1.08,
+                                ),
                       ),
                     ),
-                    IgnorePointer(
-                      child: ExcludeSemantics(
-                        child: Transform.scale(
-                          scale: 0.82,
-                          child: Switch(
-                            value: state.enabled,
-                            onChanged: (_) {},
+                    SizedBox(width: compact ? 6 : 0),
+                    if (compact)
+                      _CompactSwitchIndicator(
+                        enabled: state.enabled,
+                        color: colors.primary,
+                      )
+                    else
+                      IgnorePointer(
+                        child: ExcludeSemantics(
+                          child: Transform.scale(
+                            scale: 0.82,
+                            child: Switch(
+                              value: state.enabled,
+                              onChanged: (_) {},
+                            ),
                           ),
                         ),
                       ),
-                    ),
                   ],
                 ),
               ),
@@ -246,6 +272,44 @@ class PromptTransparentBackgroundToggle extends ConsumerWidget {
       ),
       padding: const EdgeInsets.all(12),
       child: button,
+    );
+  }
+}
+
+class _CompactSwitchIndicator extends StatelessWidget {
+  const _CompactSwitchIndicator({required this.enabled, required this.color});
+
+  final bool enabled;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return ExcludeSemantics(
+      child: AnimatedContainer(
+        duration: theme.appTheme.fastDuration,
+        width: 32,
+        height: 18,
+        padding: const EdgeInsets.all(2),
+        decoration: BoxDecoration(
+          color: enabled
+              ? color.withValues(alpha: 0.3)
+              : theme.colorScheme.onSurface.withValues(alpha: 0.12),
+          borderRadius: BorderRadius.circular(999),
+        ),
+        child: AnimatedAlign(
+          duration: theme.appTheme.fastDuration,
+          alignment: enabled ? Alignment.centerRight : Alignment.centerLeft,
+          child: Container(
+            width: 14,
+            height: 14,
+            decoration: BoxDecoration(
+              color: enabled ? color : theme.colorScheme.onSurfaceVariant,
+              shape: BoxShape.circle,
+            ),
+          ),
+        ),
+      ),
     );
   }
 }

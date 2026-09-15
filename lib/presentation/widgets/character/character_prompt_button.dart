@@ -7,6 +7,7 @@ import '../../../core/utils/character_prompt_block_parser.dart';
 import '../../../data/models/character/character_prompt.dart';
 import '../../providers/character_prompt_provider.dart';
 import '../../providers/tag_library_page_provider.dart';
+import '../prompt/prompt_control_button.dart';
 import '../tag_library/tag_library_picker_dialog.dart';
 import 'character_tooltip_content.dart';
 
@@ -54,12 +55,20 @@ class CharacterPromptButton extends ConsumerWidget {
     final buttonContent = Container(
       constraints: BoxConstraints(minHeight: compact ? 36 : 48),
       padding: EdgeInsets.symmetric(
-        horizontal: compact ? 8 : 10,
+        horizontal: compact && iconOnly
+            ? 4
+            : compact
+            ? 8
+            : 10,
         vertical: compact ? 4 : 6,
       ),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(10),
-        color: hasCharacters
+        color: iconOnly
+            ? hasCharacters
+                  ? colorScheme.primary.withValues(alpha: 0.08)
+                  : Colors.transparent
+            : hasCharacters
             ? colorScheme.primary.withValues(alpha: 0.12)
             : colorScheme.surfaceContainerLow,
       ),
@@ -85,7 +94,7 @@ class CharacterPromptButton extends ConsumerWidget {
             ),
           ],
           if (hasCharacters || showZeroCount) ...[
-            const SizedBox(width: 5),
+            SizedBox(width: iconOnly ? 4 : 5),
             _CharacterCountBadge(
               key: const ValueKey('character-count-badge'),
               count: characterCount,
@@ -220,27 +229,11 @@ class _CharacterCountBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
-
-    return Container(
-      constraints: const BoxConstraints(minWidth: 14, minHeight: 14),
-      padding: const EdgeInsets.all(2),
-      decoration: BoxDecoration(
-        color: colorScheme.primary,
-        shape: BoxShape.circle,
-      ),
-      child: Center(
-        child: Text(
-          count.toString(),
-          style: theme.textTheme.labelSmall?.copyWith(
-            color: colorScheme.onPrimary,
-            fontWeight: FontWeight.w600,
-            fontSize: 9,
-            height: 1,
-          ),
-        ),
-      ),
+    final colors = Theme.of(context).colorScheme;
+    return PromptControlCountBadge(
+      count: count,
+      foregroundColor: count > 0 ? colors.primary : colors.onSurfaceVariant,
+      active: count > 0,
     );
   }
 }

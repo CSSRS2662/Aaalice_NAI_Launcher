@@ -389,6 +389,9 @@ void main() {
     final primaryRow = find.byKey(
       const ValueKey('generation_prompt_mobile_primary_row'),
     );
+    final transparent = find.byKey(
+      const ValueKey('generation_transparent_background_toggle'),
+    );
     final secondaryActions = [
       find.byKey(const ValueKey('generation_prompt_mobile_character_action')),
       find.byKey(const ValueKey('generation_prompt_mobile_fixed_tags_action')),
@@ -401,10 +404,7 @@ void main() {
     expect(typeSwitch, findsOneWidget);
     expect(topControls, findsOneWidget);
     expect(primaryRow, findsOneWidget);
-    expect(
-      find.byKey(const ValueKey('generation_transparent_background_toggle')),
-      findsOneWidget,
-    );
+    expect(transparent, findsOneWidget);
     expect(
       find.byKey(const ValueKey('generation_prompt_mobile_context_bar')),
       findsNothing,
@@ -412,13 +412,22 @@ void main() {
     for (final action in secondaryActions) {
       expect(action, findsOneWidget);
       expect(tester.getSize(action).height, 48);
-      expect(tester.getSize(action).width, 56);
+      expect(tester.getSize(action).width, 52);
       expect(
         tester.getCenter(action).dy,
         closeTo(tester.getCenter(secondaryActions.first).dy, 0.1),
       );
       expect(action.hitTestable(), findsOneWidget);
     }
+    expect(tester.getRect(transparent).left, tester.getRect(topControls).left);
+    expect(tester.getSize(transparent).width, lessThan(160));
+    expect(
+      find.descendant(
+        of: find.byKey(const ValueKey('generation_prompt_editor_mode_switch')),
+        matching: find.byIcon(Icons.subject_rounded),
+      ),
+      findsOneWidget,
+    );
     expect(
       tester.getBottomLeft(topControls).dy,
       lessThan(tester.getTopLeft(primaryRow).dy),
@@ -527,7 +536,10 @@ void main() {
     addTearDown(tester.view.resetDevicePixelRatio);
     addTearDown(tester.view.resetPhysicalSize);
 
-    final container = await _pumpMobilePromptHarness(tester);
+    final container = await _pumpMobilePromptHarness(
+      tester,
+      defaultModel: 'nai-diffusion-5-curated',
+    );
     final modeSwitch = find.byKey(
       const ValueKey('generation_prompt_editor_mode_switch'),
     );
@@ -538,7 +550,7 @@ void main() {
     expect(
       find.descendant(
         of: modeSwitch,
-        matching: find.byIcon(Icons.view_stream_rounded),
+        matching: find.byIcon(Icons.view_agenda_rounded),
       ),
       findsOneWidget,
     );
@@ -547,15 +559,22 @@ void main() {
     final topControls = find.byKey(
       const ValueKey('generation_prompt_mobile_top_controls'),
     );
+    final transparent = find.byKey(
+      const ValueKey('generation_transparent_background_toggle'),
+    );
     final addGroup = find.byKey(const ValueKey('add_positive_prompt_group'));
     expect(
       find.descendant(
         of: addGroup,
-        matching: find.byIcon(Icons.add_box_outlined),
+        matching: find.byIcon(Icons.playlist_add_rounded),
       ),
       findsOneWidget,
     );
-    expect(tester.getRect(addGroup).left, tester.getRect(topControls).left);
+    expect(tester.getRect(transparent).left, tester.getRect(topControls).left);
+    expect(
+      tester.getRect(addGroup).left,
+      greaterThan(tester.getRect(transparent).right),
+    );
     expect(tester.getRect(modeSwitch).right, tester.getRect(topControls).right);
     expect(find.text(l10n.prompt_addGroup), findsNothing);
 
@@ -2027,12 +2046,15 @@ void main() {
   }
 }
 
-Future<ProviderContainer> _pumpMobilePromptHarness(WidgetTester tester) async {
+Future<ProviderContainer> _pumpMobilePromptHarness(
+  WidgetTester tester, {
+  String defaultModel = 'nai-diffusion-4-5-full',
+}) async {
   await tester.pumpWidget(
     ProviderScope(
       overrides: [
         localStorageServiceProvider.overrideWith(
-          (ref) => _TestLocalStorageService(),
+          (ref) => _TestLocalStorageService(defaultModel: defaultModel),
         ),
         characterPromptNotifierProvider.overrideWith(
           _TestCharacterPromptNotifier.new,

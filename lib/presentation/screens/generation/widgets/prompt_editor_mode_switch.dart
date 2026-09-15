@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../../core/utils/localization_extension.dart';
+import '../../../themes/theme_extension.dart';
 import 'prompt_group_controller.dart';
 import 'prompt_input_controller.dart';
 import 'prompt_input_models.dart';
@@ -30,15 +31,15 @@ class PromptEditorModeSwitch extends StatelessWidget {
     final nextLabel = grouped
         ? context.l10n.prompt_singleEditorMode
         : context.l10n.prompt_groupedEditorMode;
-    final icon = grouped
-        ? Icons.view_stream_rounded
-        : Icons.crop_square_rounded;
+    final icon = grouped ? Icons.view_agenda_rounded : Icons.subject_rounded;
 
     final button = Material(
       color: grouped
           ? colors.primaryContainer.withValues(alpha: 0.72)
           : colors.surfaceContainerHigh.withValues(alpha: 0.72),
-      borderRadius: BorderRadius.circular(12),
+      borderRadius: BorderRadius.circular(
+        Theme.of(context).appTheme.controlRadius,
+      ),
       clipBehavior: Clip.antiAlias,
       child: InkWell(
         key: const ValueKey('generation_prompt_editor_mode_switch'),
@@ -115,7 +116,9 @@ class PromptAddGroupButton extends StatelessWidget {
     final colors = Theme.of(context).colorScheme;
     final button = Material(
       color: colors.surfaceContainerHigh.withValues(alpha: 0.72),
-      borderRadius: BorderRadius.circular(12),
+      borderRadius: BorderRadius.circular(
+        Theme.of(context).appTheme.controlRadius,
+      ),
       clipBehavior: Clip.antiAlias,
       child: InkWell(
         key: ValueKey(
@@ -141,7 +144,7 @@ class PromptAddGroupButton extends StatelessWidget {
             ),
             child: iconOnly
                 ? Icon(
-                    Icons.add_box_outlined,
+                    Icons.playlist_add_rounded,
                     size: 22,
                     color: colors.onSurface,
                   )

@@ -25,11 +25,13 @@ class UcPresetSelector extends ConsumerStatefulWidget {
     required this.model,
     this.compact = false,
     this.iconOnly = false,
+    this.showStatusCount = false,
     this.maxLabelWidth,
   });
 
   final bool compact;
   final bool iconOnly;
+  final bool showStatusCount;
   final double? maxLabelWidth;
 
   @override
@@ -81,7 +83,11 @@ class _UcPresetSelectorState extends ConsumerState<UcPresetSelector> {
         active: isEnabled,
         onPressed: () => _showMenu(context, presetState, customEntries),
         padding: EdgeInsets.symmetric(
-          horizontal: widget.compact ? 8 : 10,
+          horizontal: widget.iconOnly
+              ? 4
+              : widget.compact
+              ? 8
+              : 10,
           vertical: widget.compact ? 4 : 6,
         ),
         builder: (colors) => Row(
@@ -89,7 +95,7 @@ class _UcPresetSelectorState extends ConsumerState<UcPresetSelector> {
           children: [
             Icon(
               isEnabled ? Icons.block : Icons.block_outlined,
-              size: 16,
+              size: widget.iconOnly ? 18 : 16,
               color: colors.accent,
             ),
             if (!widget.iconOnly) ...[
@@ -111,6 +117,13 @@ class _UcPresetSelectorState extends ConsumerState<UcPresetSelector> {
               ),
               const SizedBox(width: 2),
               Icon(Icons.arrow_drop_down, size: 14, color: colors.accent),
+            ] else if (widget.showStatusCount) ...[
+              const SizedBox(width: 4),
+              PromptControlCountBadge(
+                count: isEnabled ? 1 : 0,
+                foregroundColor: colors.foreground,
+                active: isEnabled,
+              ),
             ],
           ],
         ),

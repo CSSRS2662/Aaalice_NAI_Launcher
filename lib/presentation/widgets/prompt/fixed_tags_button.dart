@@ -77,7 +77,7 @@ class _FixedTagsButtonState extends ConsumerState<FixedTagsButton> {
                   .toggleFixedTagsSidebar(),
               padding: EdgeInsets.symmetric(
                 horizontal: widget.compact && widget.iconOnly
-                    ? 6
+                    ? 4
                     : widget.compact
                     ? 8
                     : 10,
@@ -88,7 +88,11 @@ class _FixedTagsButtonState extends ConsumerState<FixedTagsButton> {
                 children: [
                   Icon(
                     hasEnabled ? Icons.push_pin : Icons.push_pin_outlined,
-                    size: widget.compact ? 15 : 16,
+                    size: widget.iconOnly
+                        ? 18
+                        : widget.compact
+                        ? 15
+                        : 16,
                     color: colors.accent,
                   ),
                   if (!widget.iconOnly) ...[
@@ -112,20 +116,11 @@ class _FixedTagsButtonState extends ConsumerState<FixedTagsButton> {
                     ),
                   ],
                   if (hasEnabled || widget.showZeroCount) ...[
-                    const SizedBox(width: 5),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 6,
-                        vertical: 2,
-                      ),
-                      child: Text(
-                        enabledCount.toString(),
-                        style: TextStyle(
-                          fontSize: 11,
-                          fontWeight: FontWeight.w600,
-                          color: colors.foreground,
-                        ),
-                      ),
+                    SizedBox(width: widget.iconOnly ? 4 : 5),
+                    PromptControlCountBadge(
+                      count: enabledCount,
+                      foregroundColor: colors.foreground,
+                      active: hasEnabled,
                     ),
                   ] else if (hasEntries) ...[
                     const SizedBox(width: 3),

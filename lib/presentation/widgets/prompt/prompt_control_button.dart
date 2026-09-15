@@ -91,3 +91,39 @@ class _PromptControlButtonState extends State<PromptControlButton> {
     );
   }
 }
+
+/// Compact numeric status shared by the mobile prompt role controls.
+class PromptControlCountBadge extends StatelessWidget {
+  const PromptControlCountBadge({
+    super.key,
+    required this.count,
+    required this.foregroundColor,
+    this.active = false,
+  });
+
+  final int count;
+  final Color foregroundColor;
+  final bool active;
+
+  @override
+  Widget build(BuildContext context) => Container(
+    constraints: const BoxConstraints(minWidth: 18, minHeight: 18),
+    padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
+    decoration: BoxDecoration(
+      color: foregroundColor.withValues(alpha: active ? 0.12 : 0.07),
+      borderRadius: BorderRadius.circular(999),
+    ),
+    alignment: Alignment.center,
+    child: Text(
+      '$count',
+      maxLines: 1,
+      style: TextStyle(
+        color: foregroundColor,
+        fontSize: 10,
+        height: 1.15,
+        fontWeight: FontWeight.w700,
+        fontFeatures: const [FontFeature.tabularFigures()],
+      ),
+    ),
+  );
+}
