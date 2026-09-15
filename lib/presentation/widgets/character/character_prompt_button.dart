@@ -33,6 +33,7 @@ class CharacterPromptButton extends ConsumerWidget {
     this.onManage,
     this.compact = false,
     this.iconOnly = false,
+    this.showZeroCount = false,
   });
 
   /// When supplied, the button opens an existing-character manager instead of
@@ -40,6 +41,7 @@ class CharacterPromptButton extends ConsumerWidget {
   final VoidCallback? onManage;
   final bool compact;
   final bool iconOnly;
+  final bool showZeroCount;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -82,7 +84,7 @@ class CharacterPromptButton extends ConsumerWidget {
               ),
             ),
           ],
-          if (hasCharacters) ...[
+          if (hasCharacters || showZeroCount) ...[
             const SizedBox(width: 5),
             _CharacterCountBadge(
               key: const ValueKey('character-count-badge'),

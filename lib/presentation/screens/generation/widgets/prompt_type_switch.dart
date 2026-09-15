@@ -25,12 +25,14 @@ class PromptTypeSwitch extends ConsumerWidget {
     required this.commands,
     this.expand = false,
     this.compact = false,
+    this.toggleOnly = false,
   });
 
   final PromptInputController controller;
   final PromptInputCommands commands;
   final bool expand;
   final bool compact;
+  final bool toggleOnly;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -99,6 +101,56 @@ class PromptTypeSwitch extends ConsumerWidget {
           ),
         );
 
+        if (toggleOnly) {
+          return SizedBox(
+            key: const ValueKey('generation_prompt_type_switch'),
+            child: PromptTypeButton(
+              key: ValueKey(
+                controller.isNegativeMode
+                    ? 'generation_prompt_negative_mode'
+                    : 'generation_prompt_positive_mode',
+              ),
+              icon: controller.isNegativeMode
+                  ? Icons.block
+                  : Icons.auto_awesome,
+              label: controller.isNegativeMode
+                  ? context.l10n.prompt_negative
+                  : context.l10n.prompt_positive,
+              count: controller.isNegativeMode
+                  ? controller.negativePromptCount
+                  : controller.promptCount,
+              isSelected: true,
+              color: controller.isNegativeMode
+                  ? theme.promptSemanticColors.negativePrompt
+                  : theme.promptSemanticColors.positivePrompt,
+              compact: true,
+              trailingIcon: Icons.swap_vert_rounded,
+              onTap: () => commands.setNegativeMode(!controller.isNegativeMode),
+              tooltipBuilder: controller.isNegativeMode
+                  ? (theme) => NegativePromptTooltip(
+                      theme: theme,
+                      userNegativePrompt: controller.negativeController.text,
+                      prefixes: fixedTags.negativeEnabledPrefixes,
+                      suffixes: fixedTags.negativeEnabledSuffixes,
+                      ucPresetContent: ucContent,
+                      l10n: context.l10n,
+                      aliasResolver: aliases,
+                    )
+                  : (theme) => PositivePromptTooltip(
+                      theme: theme,
+                      userPrompt: controller.promptController.text,
+                      prefixes: fixedTags.enabledPrefixes,
+                      suffixes: fixedTags.enabledSuffixes,
+                      qualityContent: qualityContent,
+                      characters: characters.characters,
+                      globalAiChoice: characters.globalAiChoice,
+                      l10n: context.l10n,
+                      aliasResolver: aliases,
+                    ),
+            ),
+          );
+        }
+
         return SizedBox(
           key: const ValueKey('generation_prompt_type_switch'),
           width: expand ? double.infinity : null,
@@ -126,6 +178,7 @@ class PromptTypeButton extends StatefulWidget {
     required this.color,
     required this.onTap,
     this.compact = false,
+    this.trailingIcon,
     this.tooltipBuilder,
   });
 
@@ -136,6 +189,7 @@ class PromptTypeButton extends StatefulWidget {
   final Color color;
   final VoidCallback onTap;
   final bool compact;
+  final IconData? trailingIcon;
   final Widget Function(ThemeData theme)? tooltipBuilder;
 
   @override
@@ -147,7 +201,7 @@ class _PromptTypeButtonState extends State<PromptTypeButton> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final button = ConstrainedBox(
-      constraints: const BoxConstraints(minHeight: 52),
+      constraints: BoxConstraints(minHeight: widget.compact ? 44 : 52),
       child: PromptControlButton(
         color: widget.color,
         active: widget.isSelected,
@@ -193,6 +247,10 @@ class _PromptTypeButtonState extends State<PromptTypeButton> {
                   color: widget.color,
                   compact: widget.compact,
                 ),
+                if (widget.trailingIcon case final icon?) ...[
+                  const SizedBox(width: 3),
+                  Icon(icon, size: 17, color: colors.foreground),
+                ],
               ],
             );
           },

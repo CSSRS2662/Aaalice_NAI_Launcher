@@ -8,7 +8,6 @@ import '../../../adaptive/interaction_policy.dart';
 import '../../../providers/image_generation_provider.dart';
 import '../../../providers/prompt_regex_rules_provider.dart';
 import '../../../widgets/character/character_prompt_button.dart';
-import '../../../widgets/common/horizontal_action_strip.dart';
 import '../../../widgets/prompt/fixed_tags_button.dart';
 import '../../../widgets/prompt/quality_tags_selector.dart';
 import '../../../widgets/prompt/regex_rules_dialog.dart';
@@ -17,6 +16,7 @@ import '../../../widgets/prompt/uc_preset_selector.dart';
 import 'prompt_group_controller.dart';
 import 'prompt_input_controller.dart';
 import 'prompt_editor_mode_switch.dart';
+import 'prompt_input_footer.dart';
 import 'prompt_input_models.dart';
 import '../../../widgets/prompt/prompt_footer_style.dart';
 import 'prompt_type_switch.dart';
@@ -130,7 +130,7 @@ class PromptInputToolbar extends ConsumerWidget {
             key: const ValueKey('generation_prompt_mobile_toolbar'),
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              PromptEditorModeSwitch(
+              PromptEditorModeControls(
                 controller: controller,
                 commands: commands,
               ),
@@ -198,8 +198,8 @@ class PromptInputToolbar extends ConsumerWidget {
               crossAxisAlignment: WrapCrossAlignment.center,
               children: [
                 SizedBox(
-                  width: 240,
-                  child: PromptEditorModeSwitch(
+                  width: controller.isGroupedMode ? 360 : 240,
+                  child: PromptEditorModeControls(
                     controller: controller,
                     commands: commands,
                   ),
@@ -397,11 +397,13 @@ class PromptInputBottomActions extends ConsumerWidget {
     required this.controller,
     required this.commands,
     this.showClearButton = true,
+    this.showEditorModeButton = true,
   });
 
   final PromptInputController controller;
   final PromptInputCommands commands;
   final bool showClearButton;
+  final bool showEditorModeButton;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -413,25 +415,55 @@ class PromptInputBottomActions extends ConsumerWidget {
       key: const ValueKey('generation_prompt_bottom_actions'),
       mainAxisSize: MainAxisSize.min,
       children: [
-        IconButton(
-          key: const ValueKey('generation_prompt_editor_mode_compact_action'),
-          style: PromptFooterStyle.button(context).copyWith(
-            padding: const WidgetStatePropertyAll(EdgeInsets.zero),
-            fixedSize: WidgetStatePropertyAll(
-              Size.square(PromptFooterStyle.height(context)),
+        if (showEditorModeButton)
+          IconButton(
+            key: const ValueKey('generation_prompt_editor_mode_compact_action'),
+            style: PromptFooterStyle.button(context).copyWith(
+              padding: const WidgetStatePropertyAll(EdgeInsets.zero),
+              fixedSize: WidgetStatePropertyAll(
+                Size.square(PromptFooterStyle.height(context)),
+              ),
+            ),
+            tooltip: nextMode == PromptEditorMode.grouped
+                ? context.l10n.prompt_groupedEditorMode
+                : context.l10n.prompt_singleEditorMode,
+            onPressed: () => commands.setEditorMode(nextMode),
+            icon: Icon(
+              controller.isGroupedMode
+                  ? Icons.notes_rounded
+                  : Icons.view_agenda_outlined,
+              size: PromptFooterStyle.iconSize,
             ),
           ),
-          tooltip: nextMode == PromptEditorMode.grouped
-              ? context.l10n.prompt_groupedEditorMode
-              : context.l10n.prompt_singleEditorMode,
-          onPressed: () => commands.setEditorMode(nextMode),
-          icon: Icon(
-            controller.isGroupedMode
-                ? Icons.notes_rounded
-                : Icons.view_agenda_outlined,
-            size: PromptFooterStyle.iconSize,
+        if (showEditorModeButton && controller.isGroupedMode)
+          IconButton(
+            key: ValueKey(
+              controller.isNegativeMode
+                  ? 'add_negative_prompt_group'
+                  : 'add_positive_prompt_group',
+            ),
+            style: PromptFooterStyle.button(context).copyWith(
+              padding: const WidgetStatePropertyAll(EdgeInsets.zero),
+              fixedSize: WidgetStatePropertyAll(
+                Size.square(PromptFooterStyle.height(context)),
+              ),
+            ),
+            tooltip: context.l10n.prompt_addGroup,
+            onPressed: () {
+              final group = controller
+                  .groupsFor(controller.isNegativeMode)
+                  .add();
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                if (group.focusNode.canRequestFocus) {
+                  group.focusNode.requestFocus();
+                }
+              });
+            },
+            icon: const Icon(
+              Icons.add_circle_outline_rounded,
+              size: PromptFooterStyle.iconSize,
+            ),
           ),
-        ),
         PromptEditorToolbar(
           buttonStyle: PromptFooterStyle.button(context).copyWith(
             padding: const WidgetStatePropertyAll(EdgeInsets.zero),
@@ -479,132 +511,126 @@ class _MobileFullscreenToolbar extends StatelessWidget {
     return LayoutBuilder(
       key: const ValueKey('generation_prompt_mobile_workbench'),
       builder: (context, constraints) {
+        final scaledLabelHeight = MediaQuery.textScalerOf(context).scale(14);
+        final controlRowHeight = (scaledLabelHeight * 1.35 + 24).clamp(
+          48.0,
+          88.0,
+        );
+        final effectiveTextScale = (scaledLabelHeight / 14).clamp(1.0, 3.0);
+        final characterActionWidth = 56 + (effectiveTextScale - 1) * 8;
+        final fixedTagsActionWidth = 64 + (effectiveTextScale - 1) * 9;
         final typeSwitch = PromptTypeSwitch(
           controller: controller,
           commands: commands,
-          expand: true,
           compact: true,
+          toggleOnly: true,
         );
         Widget buildWorkbench() => Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            LayoutBuilder(
-              builder: (context, headerConstraints) {
-                final largeText =
-                    MediaQuery.textScalerOf(context).scale(14) > 21;
-                if (headerConstraints.maxWidth < 360 || largeText) {
-                  return Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      PromptEditorModeSwitch(
-                        controller: controller,
-                        commands: commands,
-                      ),
-                      const SizedBox(height: 4),
-                      typeSwitch,
-                    ],
-                  );
-                }
-                return Row(
-                  children: [
-                    Expanded(
-                      child: PromptEditorModeSwitch(
-                        controller: controller,
-                        commands: commands,
-                      ),
+            SizedBox(
+              height: controlRowHeight,
+              child: Row(
+                key: const ValueKey('generation_prompt_mobile_top_controls'),
+                children: [
+                  const Expanded(
+                    flex: 4,
+                    child: PromptTransparentBackgroundToggle(switchStyle: true),
+                  ),
+                  const SizedBox(width: 8),
+                  SizedBox(
+                    height: 30,
+                    child: VerticalDivider(
+                      width: 1,
+                      color: Theme.of(context).dividerColor,
                     ),
-                    const SizedBox(width: 8),
-                    Expanded(child: typeSwitch),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    flex: 3,
+                    child: PromptEditorModeSwitch(
+                      controller: controller,
+                      commands: commands,
+                    ),
+                  ),
+                  if (controller.isGroupedMode) ...[
+                    const SizedBox(width: 6),
+                    Expanded(
+                      flex: 3,
+                      child: PromptAddGroupButton(controller: controller),
+                    ),
                   ],
-                );
-              },
+                ],
+              ),
             ),
             const SizedBox(height: 8),
-            Expanded(child: editor),
-            footer,
-            const SizedBox(height: 8),
             SizedBox(
-              key: const ValueKey('generation_prompt_mobile_context_bar'),
-              height: 48,
+              height: controlRowHeight,
               child: Row(
+                key: const ValueKey('generation_prompt_mobile_primary_row'),
                 children: [
+                  ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 136),
+                    child: typeSwitch,
+                  ),
                   Expanded(
-                    child: HorizontalActionStrip(
-                      minimumExtent: 48,
-                      scrollKey: const ValueKey(
-                        'generation_prompt_mobile_secondary_scroll',
-                      ),
-                      hintKey: const ValueKey(
-                        'generation_prompt_mobile_secondary_scroll_hint',
-                      ),
+                    child: SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      reverse: true,
                       child: Row(
-                        key: const ValueKey(
-                          'generation_prompt_mobile_secondary_row',
-                        ),
                         children: [
                           _MobilePromptToolbarAction(
                             actionKey: const ValueKey(
                               'generation_prompt_mobile_character_action',
                             ),
+                            width: characterActionWidth,
                             child: CharacterPromptButton(
                               onManage: commands.showMobileCharacterManager,
+                              compact: true,
+                              iconOnly: true,
+                              showZeroCount: true,
                             ),
                           ),
                           const SizedBox(width: 6),
-                          const _MobilePromptToolbarAction(
-                            actionKey: ValueKey(
+                          _MobilePromptToolbarAction(
+                            actionKey: const ValueKey(
                               'generation_prompt_mobile_fixed_tags_action',
                             ),
-                            child: FixedTagsButton(),
+                            width: fixedTagsActionWidth,
+                            child: const FixedTagsButton(
+                              compact: true,
+                              iconOnly: true,
+                              showZeroCount: true,
+                            ),
                           ),
                           const SizedBox(width: 6),
                           _MobilePromptToolbarAction(
                             actionKey: const ValueKey(
                               'generation_prompt_mobile_quality_action',
                             ),
-                            child: QualityTagsSelector(model: model),
-                          ),
-                          const SizedBox(width: 6),
-                          _MobilePromptToolbarAction(
-                            actionKey: const ValueKey(
-                              'generation_prompt_mobile_uc_action',
-                            ),
-                            child: UcPresetSelector(model: model),
-                          ),
-                          const SizedBox(width: 6),
-                          _MobilePromptToolbarAction(
-                            actionKey: const ValueKey(
-                              'generation_prompt_mobile_bottom_actions',
-                            ),
-                            child: PromptInputBottomActions(
-                              controller: controller,
-                              commands: commands,
-                              showClearButton: false,
-                            ),
+                            width: 48,
+                            child: controller.isNegativeMode
+                                ? UcPresetSelector(
+                                    model: model,
+                                    compact: true,
+                                    iconOnly: true,
+                                  )
+                                : QualityTagsSelector(
+                                    model: model,
+                                    compact: true,
+                                    iconOnly: true,
+                                  ),
                           ),
                         ],
                       ),
                     ),
                   ),
-                  SizedBox.square(
-                    key: const ValueKey(
-                      'generation_prompt_mobile_clear_action',
-                    ),
-                    dimension: 48,
-                    child: PromptEditorToolbar(
-                      config: PromptEditorToolbarConfig.mainEditor.copyWith(
-                        showRandomButton: false,
-                        showFullscreenButton: false,
-                        showSettingsButton: false,
-                      ),
-                      onClearPressed: controller.isNegativeMode
-                          ? commands.clearNegativePrompt
-                          : commands.clearPrompt,
-                    ),
-                  ),
                 ],
               ),
             ),
+            const SizedBox(height: 8),
+            Expanded(child: editor),
+            footer,
           ],
         );
 
@@ -623,12 +649,14 @@ class _MobilePromptToolbarAction extends StatelessWidget {
   const _MobilePromptToolbarAction({
     required this.actionKey,
     required this.child,
+    this.width,
   });
 
   final Key actionKey;
   final Widget child;
+  final double? width;
 
   @override
   Widget build(BuildContext context) =>
-      SizedBox(key: actionKey, height: 48, child: child);
+      SizedBox(key: actionKey, width: width, height: 48, child: child);
 }

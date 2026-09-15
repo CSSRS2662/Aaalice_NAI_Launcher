@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/utils/localization_extension.dart';
 import '../../../prompt_assistant/providers/prompt_assistant_history_provider.dart';
+import '../../../prompt_assistant/widgets/prompt_assistant_overlay.dart';
 import '../../../providers/image_generation_provider.dart';
 import '../../../themes/core/input_surface_style.dart';
 import '../../../themes/core/layered_surface_style.dart';
@@ -75,79 +76,43 @@ class PromptGroupEditor extends ConsumerWidget {
       ),
     );
 
-    final addButton = SizedBox(
-      width: double.infinity,
-      child: TextButton.icon(
-        key: ValueKey(
-          negative ? 'add_negative_prompt_group' : 'add_positive_prompt_group',
-        ),
-        onPressed: () {
-          final section = groups.add();
-          WidgetsBinding.instance.addPostFrameCallback((_) {
-            if (section.focusNode.canRequestFocus) {
-              section.focusNode.requestFocus();
-            }
-          });
-        },
-        icon: const Icon(Icons.add_circle_outline_rounded),
-        label: Text(context.l10n.prompt_addGroup),
-      ),
-    );
-
     return LayoutBuilder(
       builder: (context, constraints) {
         final bounded =
             constraints.hasBoundedHeight && constraints.maxHeight.isFinite;
         if (bounded) {
-          return Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Expanded(child: list),
-              const SizedBox(height: 4),
-              addButton,
-            ],
-          );
+          return list;
         }
-        return Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            ReorderableListView.builder(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              buildDefaultDragHandles: false,
-              itemCount: sections.length,
-              onReorder: (oldIndex, newIndex) {
-                groups.reorder(oldIndex, newIndex);
+        return ReorderableListView.builder(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          buildDefaultDragHandles: false,
+          itemCount: sections.length,
+          onReorder: (oldIndex, newIndex) {
+            groups.reorder(oldIndex, newIndex);
+            _commit(negative);
+          },
+          itemBuilder: (context, index) => Padding(
+            key: ValueKey('prompt_group_unbounded_${sections[index].id}'),
+            padding: const EdgeInsets.only(bottom: 8),
+            child: _PromptGroupCard(
+              section: sections[index],
+              index: index,
+              negative: negative,
+              viewData: viewData,
+              onChanged: () => _commit(negative),
+              onEnabledChanged: (enabled) {
+                groups.setEnabled(sections[index].id, enabled);
                 _commit(negative);
               },
-              itemBuilder: (context, index) => Padding(
-                key: ValueKey('prompt_group_unbounded_${sections[index].id}'),
-                padding: const EdgeInsets.only(bottom: 8),
-                child: _PromptGroupCard(
-                  section: sections[index],
-                  index: index,
-                  negative: negative,
-                  viewData: viewData,
-                  onChanged: () => _commit(negative),
-                  onEnabledChanged: (enabled) {
-                    groups.setEnabled(sections[index].id, enabled);
-                    _commit(negative);
-                  },
-                  onToggleCollapsed: () =>
-                      groups.toggleCollapsed(sections[index].id),
-                  onDelete: () =>
-                      _delete(context, groups, sections[index], negative),
-                  onOpenAssistantSettings: commands.openAssistantSettings,
-                  onComfyuiImport: negative
-                      ? null
-                      : commands.importComfyuiPrompt,
-                ),
-              ),
+              onToggleCollapsed: () =>
+                  groups.toggleCollapsed(sections[index].id),
+              onDelete: () =>
+                  _delete(context, groups, sections[index], negative),
+              onOpenAssistantSettings: commands.openAssistantSettings,
+              onComfyuiImport: negative ? null : commands.importComfyuiPrompt,
             ),
-            const SizedBox(height: 4),
-            addButton,
-          ],
+          ),
         );
       },
     );
@@ -258,21 +223,31 @@ class _PromptGroupCard extends ConsumerWidget {
                     ),
                   ),
                 ),
-                if (section.collapsed)
-                  Expanded(
-                    child: Text(
-                      summary.isEmpty
-                          ? context.l10n.prompt_emptyGroup
-                          : summary.replaceAll(RegExp(r'\s+'), ' '),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: colors.onSurfaceVariant,
-                      ),
+                Expanded(
+                  child: Text(
+                    summary.isEmpty
+                        ? context.l10n.prompt_emptyGroup
+                        : summary.replaceAll(RegExp(r'\s+'), ' '),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      color: colors.onSurfaceVariant,
                     ),
-                  )
-                else
-                  const Spacer(),
+                  ),
+                ),
+                PromptAssistantOverlay(
+                  key: ValueKey('prompt_group_assistant_${section.id}'),
+                  placement: PromptAssistantPlacement.inline,
+                  expandInPlace: false,
+                  iconOnly: true,
+                  compactDesktopToolbar: true,
+                  supportsTagMode: true,
+                  tagModeSessionId: modeSessionId,
+                  sessionId: historySessionId,
+                  controller: section.controller,
+                  onChanged: (_) => onChanged(),
+                  onOpenSettings: onOpenAssistantSettings,
+                ),
                 PopupMenuButton<String>(
                   key: ValueKey('prompt_group_menu_${section.id}'),
                   tooltip: context.l10n.common_moreActions,
@@ -315,40 +290,49 @@ class _PromptGroupCard extends ConsumerWidget {
             if (!section.collapsed)
               Padding(
                 padding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
-                child: UnifiedPromptInput(
-                  key: ValueKey('prompt_group_input_${section.id}'),
-                  controller: section.controller,
-                  focusNode: section.focusNode,
-                  sessionId: historySessionId,
-                  tagModeSessionId: modeSessionId,
-                  surfaceColor: inputSurfaceFillColor(colors),
-                  config: UnifiedPromptConfig(
-                    enableSyntaxHighlight: enableHighlight,
-                    numericEmphasisEnabled: viewData.numericEmphasisEnabled,
-                    enableAutocomplete: enableAutocomplete,
-                    enableAutoFormat: enableAutoFormat,
-                    enableSdSyntaxAutoConvert: enableSdSyntaxAutoConvert,
-                    enableComfyuiImport: !negative,
-                    enableTagMode: true,
-                    autocompleteConfig: AutocompleteConfig(
-                      showTranslation: true,
-                      showCategory: !negative,
-                      showCount: !negative,
-                      autoInsertComma: true,
+                child: SizedBox(
+                  height: viewData.isMaximized
+                      ? (MediaQuery.sizeOf(context).height * 0.42).clamp(
+                          220.0,
+                          460.0,
+                        )
+                      : null,
+                  child: UnifiedPromptInput(
+                    key: ValueKey('prompt_group_input_${section.id}'),
+                    controller: section.controller,
+                    focusNode: section.focusNode,
+                    sessionId: historySessionId,
+                    tagModeSessionId: modeSessionId,
+                    surfaceColor: inputSurfaceFillColor(colors),
+                    config: UnifiedPromptConfig(
+                      enableSyntaxHighlight: enableHighlight,
+                      numericEmphasisEnabled: viewData.numericEmphasisEnabled,
+                      enableAutocomplete: enableAutocomplete,
+                      enableAutoFormat: enableAutoFormat,
+                      enableSdSyntaxAutoConvert: enableSdSyntaxAutoConvert,
+                      enableComfyuiImport: !negative,
+                      enableTagMode: true,
+                      autocompleteConfig: AutocompleteConfig(
+                        showTranslation: true,
+                        showCategory: !negative,
+                        showCount: !negative,
+                        autoInsertComma: true,
+                      ),
+                      hintText: context.l10n.prompt_groupHint,
                     ),
-                    hintText: context.l10n.prompt_groupHint,
+                    decoration: const InputDecoration(
+                      contentPadding: EdgeInsets.all(12),
+                    ),
+                    minLines: viewData.isMaximized ? null : 4,
+                    maxLines: null,
+                    expands: viewData.isMaximized,
+                    fitContent: !viewData.isMaximized,
+                    enableAssistant: false,
+                    showTagModeSwitch: false,
+                    onOpenAssistantSettings: onOpenAssistantSettings,
+                    onComfyuiImport: onComfyuiImport,
+                    onChanged: (_) => onChanged(),
                   ),
-                  decoration: const InputDecoration(
-                    contentPadding: EdgeInsets.all(12),
-                  ),
-                  minLines: 2,
-                  maxLines: null,
-                  fitContent: true,
-                  enableAssistant: true,
-                  showTagModeSwitch: false,
-                  onOpenAssistantSettings: onOpenAssistantSettings,
-                  onComfyuiImport: onComfyuiImport,
-                  onChanged: (_) => onChanged(),
                 ),
               ),
           ],

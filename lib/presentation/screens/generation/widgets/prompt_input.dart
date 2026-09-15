@@ -227,19 +227,26 @@ class _FullPromptInput extends ConsumerWidget {
       commands: commands,
       viewData: viewData,
     );
-    PromptInputFooter buildFooter({bool includeBottomActions = false}) =>
-        PromptInputFooter(
-          target: negative
-              ? PromptTokenCountTarget.negative
-              : PromptTokenCountTarget.positive,
-          topPadding: 6,
-          leading: includeBottomActions
-              ? PromptInputBottomActions(
-                  controller: controller,
-                  commands: commands,
-                )
-              : null,
-        );
+    PromptInputFooter buildFooter({
+      bool includeBottomActions = false,
+      bool showTransparentBackground = true,
+      bool showEditorModeButton = true,
+      bool showClearButton = true,
+    }) => PromptInputFooter(
+      target: negative
+          ? PromptTokenCountTarget.negative
+          : PromptTokenCountTarget.positive,
+      topPadding: 6,
+      showTransparentBackground: showTransparentBackground,
+      leading: includeBottomActions
+          ? PromptInputBottomActions(
+              controller: controller,
+              commands: commands,
+              showEditorModeButton: showEditorModeButton,
+              showClearButton: showClearButton,
+            )
+          : null,
+    );
     return LayoutBuilder(
       builder: (context, constraints) {
         if (viewData.isMaximized && constraints.maxWidth < 600) {
@@ -249,7 +256,12 @@ class _FullPromptInput extends ConsumerWidget {
             viewData: viewData,
             mobileFullscreen: true,
             mobileEditor: editor,
-            mobileFooter: buildFooter(),
+            mobileFooter: buildFooter(
+              includeBottomActions: true,
+              showTransparentBackground: false,
+              showEditorModeButton: false,
+              showClearButton: false,
+            ),
           );
         }
         return Column(
@@ -401,7 +413,7 @@ class _CompactPromptInput extends ConsumerWidget {
                 Row(
                   children: [
                     Expanded(
-                      child: PromptEditorModeSwitch(
+                      child: PromptEditorModeControls(
                         controller: controller,
                         commands: commands,
                       ),
