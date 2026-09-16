@@ -47,8 +47,8 @@ jobs:
         shell: pwsh
         run: ./scripts/verify_flutter_sources.ps1
 
-      - name: Resolve dependencies
-        run: flutter pub get --enforce-lockfile
+      - name: Prepare locked Android release tooling
+        run: flutter build apk --release --config-only
 
       - name: Validate bundled autocomplete databases
         run: dart run tool/tag_catalog/verify_bundled_databases.dart
@@ -63,7 +63,7 @@ jobs:
         run: git diff --exit-code
 
       - name: Build release-mode APK
-        run: flutter build apk --release
+        run: flutter build apk --release --no-pub
 
       - name: Verify and prepare APK artifact
         id: artifact
@@ -86,14 +86,14 @@ jobs:
           aapt="$(find "$ANDROID_HOME/build-tools" -type f -name aapt | sort -V | tail -n 1)"
           test -x "$aapt"
           package_line="$("$aapt" dump badging "$apk" | head -n 1)"
-          if [[ "$package_line" != *"name='com.aaalice.nai_launcher'"* || \
+          if [[ "$package_line" != *"name='com.cssrs2662.aaalicepocket'"* || \
                 "$package_line" != *"versionCode='$version_code'"* || \
                 "$package_line" != *"versionName='$version'"* ]]; then
             echo "Android APK package/version mismatch: $package_line" >&2
             exit 1
           fi
 
-          file_name="NAI_Launcher_Android_${version}_${GITHUB_SHA::7}.apk"
+          file_name="Aaalice_Pocket_Android_${version}_${GITHUB_SHA::7}.apk"
           output="dist/$file_name"
           mkdir -p dist
           cp "$apk" "$output"
@@ -103,7 +103,7 @@ jobs:
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: NAI-Launcher-Android-${{ github.run_number }}-${{ github.sha }}
+          name: Aaalice-Pocket-Android-${{ github.run_number }}-${{ github.sha }}
           path: |
             ${{ steps.artifact.outputs.path }}
             ${{ steps.artifact.outputs.path }}.sha256

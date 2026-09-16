@@ -473,8 +473,8 @@ jobs:
         shell: pwsh
         run: ./scripts/verify_flutter_sources.ps1
 
-      - name: Resolve dependencies
-        run: flutter pub get --enforce-lockfile
+      - name: Prepare locked Android release tooling
+        run: flutter build apk --release --config-only
 
       - name: Validate bundled autocomplete databases
         run: dart run tool/tag_catalog/verify_bundled_databases.dart
@@ -539,6 +539,7 @@ jobs:
           ONEDRIVE_TENANT_ID: ${{ vars.ONEDRIVE_TENANT_ID || 'common' }}
         run: |
           flutter build apk --release \
+            --no-pub \
             "--dart-define=GOOGLE_DRIVE_ANDROID_CLIENT_ID=$GOOGLE_DRIVE_ANDROID_CLIENT_ID" \
             "--dart-define=ONEDRIVE_ANDROID_CLIENT_ID=$ONEDRIVE_ANDROID_CLIENT_ID" \
             "--dart-define=ONEDRIVE_ANDROID_REDIRECT_URI=$ONEDRIVE_ANDROID_REDIRECT_URI" \
@@ -592,7 +593,7 @@ jobs:
           aapt="$(find "$ANDROID_HOME/build-tools" -type f -name aapt | sort -V | tail -n 1)"
           test -x "$aapt"
           package_line="$("$aapt" dump badging "$apk" | head -n 1)"
-          if [[ "$package_line" != *"name='com.aaalice.nai_launcher'"* || \
+          if [[ "$package_line" != *"name='com.cssrs2662.aaalicepocket'"* || \
                 "$package_line" != *"versionCode='$expected_version_code'"* || \
                 "$package_line" != *"versionName='$expected_version_name'"* ]]; then
             echo "Android APK package/version mismatch: $package_line" >&2
@@ -600,7 +601,7 @@ jobs:
           fi
 
           mkdir -p dist
-          cp "$apk" "dist/NAI_Launcher_Android_${{ needs.prepare.outputs.version }}.apk"
+          cp "$apk" "dist/Aaalice_Pocket_Android_${{ needs.prepare.outputs.version }}.apk"
 
       - name: Remove Android signing key
         if: ${{ always() }}
@@ -610,7 +611,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: android-release
-          path: dist/NAI_Launcher_Android_*.apk
+          path: dist/Aaalice_Pocket_Android_*.apk
           if-no-files-found: error
 
   publish:

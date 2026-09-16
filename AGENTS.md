@@ -55,7 +55,7 @@ pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/run_flutter_tests.ps1
 pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/test_affected.ps1
 flutter analyze
 flutter build windows --release
-flutter build apk --release
+pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/build_android_apk.ps1
 pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/verify_nuget.ps1
 pwsh -NoProfile -ExecutionPolicy Bypass -File .agents/skills/aaalice-dev-sessions/scripts/start.ps1 -Target All -EmulatorId Aaalice_API35
 pwsh -NoProfile -ExecutionPolicy Bypass -File .agents/skills/aaalice-hot-reload/scripts/control.ps1 -Action Status
@@ -67,6 +67,8 @@ pwsh -NoProfile -ExecutionPolicy Bypass -File .agents/skills/aaalice-runtime-ver
 ```
 
 Windows release 产物位于 `build/windows/x64/runner/Release/`。macOS 使用 `flutter build macos --release`，产物位于 `build/macos/Build/Products/Release/Aaalice NAI Launcher.app`；本地 Keychain 反复授权时使用 `scripts/create_macos_dev_cert.sh` 与 `scripts/dev_run_macos_signed.sh debug`。Android 通用 APK 位于 `build/app/outputs/flutter-apk/app-release.apk`；推送 `v*` Tag 时由 `.github/workflows/release.yml` 构建并发布正式签名 APK，`.github/workflows/android-build.yml` 仅用于按需手动构建可安装 APK 与 SHA-256 Actions artifact。
+
+Android 本地发布构建以 `tool/android_build_environment.lock.json` 为冻结基线，统一通过 `scripts/build_android_apk.ps1` 执行。脚本会在构建前核对 Flutter、Dart、JDK、Gradle、AGP、Kotlin、compileSdk 和 Build Tools；依赖声明未变时复用现有 Pub 解析结果，并始终使用 `--no-pub` 增量构建。禁止把 `flutter clean`、删除 Gradle/Pub 缓存、`--refresh-dependencies` 或工具链升级加入常规构建流程；仅有明确损坏证据时才可单独处理。网络失败只修复网络或仓库访问，不借机更改依赖版本。`-RestartGradleDaemon` 只用于修复旧后台进程权限上下文，不会清缓存。
 
 项目热重载与按需运行验收由 `.agents/skills/` 中的三个项目 skill 管理：`aaalice-dev-sessions` 负责让 Codex 创建、复用和关闭唯一的 `PC热重载` / `安卓热重载` 独立 PowerShell 窗口；`aaalice-hot-reload` 负责判定并触发 `r`、`R` 或完整重建，并读取两端控制台验证结果；`aaalice-runtime-verify` 在用户要求自动化验收时自动启动或复用所需会话，完成真实 UI 操作、逐张截图检查与增量日志验证。不得依赖外部终端编排器，不得另开第二个 `flutter run`、`flutter attach` 或新的 Codex task。
 

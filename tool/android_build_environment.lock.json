@@ -1,0 +1,11 @@
+{
+  "flutterVersion": "3.44.2",
+  "dartVersion": "3.12.2",
+  "javaMajorVersion": 17,
+  "gradleVersion": "8.14.3",
+  "androidGradlePluginVersion": "8.11.1",
+  "kotlinVersion": "2.2.20",
+  "compileSdkVersion": 36,
+  "buildToolsVersion": "36.0.0",
+  "applicationId": "com.cssrs2662.aaalicepocket"
+}
