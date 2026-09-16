@@ -1,7 +1,7 @@
 name: nai_launcher
 description: NovelAI Universal Launcher - 跨平台第三方客户端
 publish_to: "none"
-version: 4.2.1-custom5+49
+version: 4.2.1-custom7+51
 
 environment:
   sdk: ">=3.10.7 <4.0.0"
@@ -128,8 +128,6 @@ dependencies:
 
   png_chunks_extract: any
 
-  # 版本号解析
-  pub_semver: ^2.1.4
   web_socket_channel: ^3.0.3
   # Maintained ONNX Runtime fork with Android 16 KB pages and emulator ABIs.
   onnxruntime_v2: ^1.23.2+2
@@ -172,6 +170,7 @@ flutter:
     - assets/data/tokenizers/
     - assets/sounds/
     - assets/databases/
+    - assets/semantic_search/
     - assets/model3d_editor/
     - assets/model3d_editor/vendor/
     - assets/model3d_editor/vendor/addons/controls/
