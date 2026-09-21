@@ -1,6 +1,6 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
+import '../../../../data/models/gallery/prompt_group_snapshot.dart';
 import '../../../widgets/prompt/nai_syntax_controller.dart';
 
 enum PromptEditorMode { single, grouped }
@@ -30,6 +30,13 @@ class PromptGroupSection {
     'enabled': enabled,
     'collapsed': collapsed,
   };
+
+  PromptGroupSectionSnapshot toSnapshot() => PromptGroupSectionSnapshot(
+    id: id,
+    text: controller.text,
+    enabled: enabled,
+    collapsed: collapsed,
+  );
 
   void dispose() {
     controller.dispose();
@@ -142,6 +149,27 @@ class PromptGroupCollection extends ChangeNotifier {
     notifyListeners();
   }
 
+  void restore(Iterable<PromptGroupSectionSnapshot> snapshots) {
+    for (final section in _sections) {
+      section.dispose();
+    }
+    _sections.clear();
+    for (final snapshot in snapshots.take(64)) {
+      _insert(
+        PromptGroupSection(
+          id: snapshot.id.trim().isEmpty ? _newId() : snapshot.id,
+          text: snapshot.text,
+          enabled: snapshot.enabled,
+          collapsed: snapshot.collapsed,
+        ),
+      );
+    }
+    if (_sections.isEmpty) {
+      _insert(PromptGroupSection(id: _newId(), text: ''));
+    }
+    notifyListeners();
+  }
+
   void configureHighlighting({
     required bool enabled,
     required bool numericEmphasisEnabled,
@@ -154,6 +182,10 @@ class PromptGroupCollection extends ChangeNotifier {
 
   List<Map<String, Object?>> toJson() => [
     for (final section in _sections) section.toJson(),
+  ];
+
+  List<PromptGroupSectionSnapshot> toSnapshot() => [
+    for (final section in _sections) section.toSnapshot(),
   ];
 
   PromptGroupSection? _find(String id) {

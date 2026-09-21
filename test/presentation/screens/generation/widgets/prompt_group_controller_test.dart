@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:nai_launcher/data/models/gallery/prompt_group_snapshot.dart';
 import 'package:nai_launcher/presentation/screens/generation/widgets/prompt_group_controller.dart';
 import 'package:nai_launcher/presentation/screens/generation/widgets/prompt_input_controller.dart';
 
@@ -105,5 +106,45 @@ void main() {
       'imported prompt',
     );
     expect(controller.negativeGroups.sections, hasLength(2));
+  });
+
+  test('restores imported partitions without flattening their state', () {
+    final controller = PromptInputController(
+      prompt: 'old positive',
+      negativePrompt: 'old negative',
+    );
+    addTearDown(controller.dispose);
+    const snapshot = PromptGroupSnapshot(
+      groupedMode: true,
+      positiveSections: [
+        PromptGroupSectionSnapshot(id: 'character', text: '1girl'),
+        PromptGroupSectionSnapshot(
+          id: 'clothes',
+          text: 'school uniform',
+          collapsed: true,
+        ),
+        PromptGroupSectionSnapshot(
+          id: 'disabled',
+          text: 'indoors',
+          enabled: false,
+        ),
+      ],
+      negativeSections: [
+        PromptGroupSectionSnapshot(id: 'negative', text: 'lowres'),
+      ],
+    );
+
+    controller.restoreGroupSnapshot(
+      snapshot,
+      restorePositive: true,
+      restoreNegative: false,
+    );
+
+    expect(controller.editorMode, PromptEditorMode.grouped);
+    expect(controller.positiveGroups.sections, hasLength(3));
+    expect(controller.positiveGroups.sections[1].collapsed, isTrue);
+    expect(controller.positiveGroups.sections[2].enabled, isFalse);
+    expect(controller.promptController.text, '1girl, school uniform');
+    expect(controller.negativeController.text, 'old negative');
   });
 }

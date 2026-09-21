@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import '../../../../core/constants/storage_keys.dart';
 import '../../../../core/storage/local_storage_service.dart';
 import '../../../../core/utils/nai_prompt_parser.dart';
+import '../../../../data/models/gallery/prompt_group_snapshot.dart';
 import '../../../widgets/prompt/nai_syntax_controller.dart';
 import 'prompt_group_controller.dart';
 
@@ -45,10 +46,17 @@ class PromptInputController extends ChangeNotifier {
   ValueNotifier<bool>? _negativeModeNotifier;
   bool _isNegativeMode;
   PromptEditorMode _editorMode = PromptEditorMode.single;
+  bool _restoringSnapshot = false;
 
   bool get isNegativeMode => _isNegativeMode;
   PromptEditorMode get editorMode => _editorMode;
   bool get isGroupedMode => _editorMode == PromptEditorMode.grouped;
+
+  PromptGroupSnapshot get groupSnapshot => PromptGroupSnapshot(
+    groupedMode: isGroupedMode,
+    positiveSections: positiveGroups.toSnapshot(),
+    negativeSections: negativeGroups.toSnapshot(),
+  );
 
   PromptGroupCollection groupsFor(bool negative) =>
       negative ? negativeGroups : positiveGroups;
@@ -153,6 +161,38 @@ class PromptInputController extends ChangeNotifier {
   void _notifyFocusChanged() => notifyListeners();
 
   void _onGroupStateChanged() {
+    if (_restoringSnapshot) return;
+    _persistGroupState();
+    notifyListeners();
+  }
+
+  void restoreGroupSnapshot(
+    PromptGroupSnapshot snapshot, {
+    required bool restorePositive,
+    required bool restoreNegative,
+  }) {
+    _restoringSnapshot = true;
+    try {
+      if (restorePositive) {
+        positiveGroups.restore(snapshot.positiveSections);
+        final text = positiveGroups.effectiveText;
+        promptController.value = TextEditingValue(
+          text: text,
+          selection: TextSelection.collapsed(offset: text.length),
+        );
+      }
+      if (restoreNegative) {
+        negativeGroups.restore(snapshot.negativeSections);
+        final text = negativeGroups.effectiveText;
+        negativeController.value = TextEditingValue(
+          text: text,
+          selection: TextSelection.collapsed(offset: text.length),
+        );
+      }
+      if (snapshot.groupedMode) _editorMode = PromptEditorMode.grouped;
+    } finally {
+      _restoringSnapshot = false;
+    }
     _persistGroupState();
     notifyListeners();
   }

@@ -8,6 +8,7 @@ import '../fixed_tag/fixed_tag_usage_snapshot.dart';
 import '../vibe/vibe_reference.dart';
 import 'nai_image_metadata_raw_decoder.dart';
 import 'nai_metadata_prompt_projection.dart';
+import 'prompt_group_snapshot.dart';
 
 part 'nai_image_metadata.freezed.dart';
 part 'nai_image_metadata.g.dart';
@@ -182,6 +183,9 @@ class NaiImageMetadata with _$NaiImageMetadata {
     @HiveField(41, defaultValue: false)
     @Default(false)
     bool hasRecordedFixedTagFields,
+
+    /// Launcher 写入的提示词分区结构；NovelAI 本身仍读取扁平 prompt。
+    @HiveField(42) Map<String, dynamic>? promptGroupData,
   }) = _NaiImageMetadata;
 
   const NaiImageMetadata._();
@@ -194,6 +198,9 @@ class NaiImageMetadata with _$NaiImageMetadata {
 
   bool get hasExplicitFixedTagMetadata =>
       fixedTagUsageData != null || hasRecordedFixedTagFields;
+
+  PromptGroupSnapshot? get promptGroupSnapshot =>
+      PromptGroupSnapshot.fromJson(promptGroupData);
 
   /// 从 PNG Source 字段解析出的可用模型 ID。
   String? get sourceModel =>
@@ -260,6 +267,7 @@ class NaiImageMetadata with _$NaiImageMetadata {
         hasRecordedFixedTagFields:
             base.hasRecordedFixedTagFields ||
             reparsed.hasRecordedFixedTagFields,
+        promptGroupData: base.promptGroupData ?? reparsed.promptGroupData,
         qualityTags: base.qualityTags.isEmpty
             ? reparsed.qualityTags
             : base.qualityTags,
@@ -393,6 +401,7 @@ NaiImageMetadata _metadataFromFields(NaiImageMetadataFields fields) =>
       transparentBackground: fields.transparentBackground,
       fixedTagUsageData: fields.fixedTagUsageData,
       hasRecordedFixedTagFields: fields.hasRecordedFixedTagFields,
+      promptGroupData: fields.promptGroupData,
     );
 
 bool _rawJsonMayContainUpgrade(String raw) {
@@ -413,6 +422,7 @@ bool _rawJsonMayContainUpgrade(String raw) {
     'fixed_negative_prefix',
     'fixed_negative_suffix',
     'aaalice_fixed_tags',
+    'aaalice_prompt_groups',
     'v4_prompt',
     'char_captions',
   ];

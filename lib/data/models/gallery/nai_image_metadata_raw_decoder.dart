@@ -191,6 +191,7 @@ class NaiImageMetadataRawDecoder {
         fixedNegativeSuffixTags: parts['fixedNegativeSuffix'] ?? [],
         fixedTagUsageData: _extractFixedTagUsageData(commentData),
         hasRecordedFixedTagFields: _hasRecordedFixedTagFields(commentData),
+        promptGroupData: _extractPromptGroupData(commentData),
         qualityTags: parts['qualityTags'] ?? [],
         characterInfos: characterInfos,
         characterUseCoords: characterUseCoords,
@@ -227,6 +228,14 @@ class NaiImageMetadataRawDecoder {
     } catch (_) {
       return null;
     }
+  }
+
+  static Map<String, dynamic>? _extractPromptGroupData(
+    Map<String, dynamic> commentData,
+  ) {
+    final raw = commentData['aaalice_prompt_groups'];
+    if (raw is! Map) return null;
+    return Map<String, dynamic>.from(raw);
   }
 
   /// 安全获取布尔字段
@@ -1064,6 +1073,7 @@ class NaiImageMetadataFields {
     this.transparentBackground,
     this.fixedTagUsageData,
     this.hasRecordedFixedTagFields = false,
+    this.promptGroupData,
   });
 
   final String prompt;
@@ -1108,4 +1118,5 @@ class NaiImageMetadataFields {
   final bool? transparentBackground;
   final Map<String, dynamic>? fixedTagUsageData;
   final bool hasRecordedFixedTagFields;
+  final Map<String, dynamic>? promptGroupData;
 }

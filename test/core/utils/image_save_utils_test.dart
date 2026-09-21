@@ -12,6 +12,7 @@ import 'package:nai_launcher/data/models/fixed_tag/fixed_tag_entry.dart';
 import 'package:nai_launcher/data/models/fixed_tag/fixed_tag_prompt_type.dart';
 import 'package:nai_launcher/data/models/fixed_tag/fixed_tag_usage_snapshot.dart';
 import 'package:nai_launcher/data/models/gallery/nai_image_metadata.dart';
+import 'package:nai_launcher/data/models/gallery/prompt_group_snapshot.dart';
 import 'package:nai_launcher/data/models/image/image_params.dart';
 import 'package:nai_launcher/data/services/metadata/unified_metadata_parser.dart';
 import 'package:path/path.dart' as p;
@@ -488,6 +489,71 @@ void main() {
       expect(commentJson['fixed_negative_prefix'], isEmpty);
       expect(commentJson['fixed_negative_suffix'], isEmpty);
     });
+
+    test('writes prompt partitions without changing the request prompt', () {
+      const snapshot = PromptGroupSnapshot(
+        groupedMode: true,
+        positiveSections: [
+          PromptGroupSectionSnapshot(id: 'a', text: '1girl'),
+          PromptGroupSectionSnapshot(id: 'b', text: 'school uniform'),
+        ],
+        negativeSections: [PromptGroupSectionSnapshot(id: 'c', text: 'lowres')],
+      );
+      final commentJson = ImageSaveUtils.buildCommentJson(
+        params: const ImageParams(
+          prompt: '1girl, school uniform',
+          negativePrompt: 'lowres',
+        ),
+        actualSeed: 12,
+        promptGroupSnapshot: snapshot,
+      );
+
+      expect(commentJson['prompt'], '1girl, school uniform');
+      expect(
+        commentJson['aaalice_prompt_groups']['positiveSections'],
+        hasLength(2),
+      );
+    });
+
+    test(
+      'merges prompt partitions into existing NovelAI PNG metadata',
+      () async {
+        final png = img.Image(width: 2, height: 2);
+        final base = await ImageSaveUtils.rebuildImageBytesWithMetadata(
+          imageBytes: Uint8List.fromList(img.encodePng(png)),
+          params: const ImageParams(
+            prompt: '1girl, school uniform',
+            negativePrompt: 'lowres',
+            width: 2,
+            height: 2,
+          ),
+          actualSeed: 12,
+        );
+        const snapshot = PromptGroupSnapshot(
+          groupedMode: true,
+          positiveSections: [
+            PromptGroupSectionSnapshot(id: 'a', text: '1girl'),
+            PromptGroupSectionSnapshot(id: 'b', text: 'school uniform'),
+          ],
+          negativeSections: [
+            PromptGroupSectionSnapshot(id: 'c', text: 'lowres'),
+          ],
+        );
+
+        final merged = await ImageSaveUtils.mergeLauncherMetadata(
+          imageBytes: base,
+          promptGroupSnapshot: snapshot,
+        );
+        final parsed = UnifiedMetadataParser.parseFromPng(merged);
+
+        expect(parsed.success, isTrue);
+        expect(parsed.metadata!.prompt, '1girl, school uniform');
+        expect(
+          parsed.metadata!.promptGroupSnapshot!.positiveSections,
+          hasLength(2),
+        );
+      },
+    );
 
     test(
       'merges fixed-tag provenance without replacing official fields',

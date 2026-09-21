@@ -27,6 +27,7 @@ import '../../data/models/fixed_tag/fixed_tag_entry.dart';
 import '../../data/models/fixed_tag/fixed_tag_prompt_type.dart';
 import '../../data/models/fixed_tag/fixed_tag_usage_snapshot.dart';
 import '../../data/models/gallery/nai_image_metadata.dart';
+import '../../data/models/gallery/prompt_group_snapshot.dart';
 import '../../data/models/image/image_params.dart';
 import '../../data/models/image/image_stream_chunk.dart';
 import '../../data/repositories/gallery_folder_repository.dart';
@@ -50,6 +51,7 @@ import 'generation/stream_preview_snapshot.dart';
 import 'image_save_settings_provider.dart';
 import 'local_gallery_provider.dart';
 import 'prompt_config_provider.dart';
+import 'prompt_group_state_provider.dart';
 import 'quality_preset_provider.dart';
 import 'queue_execution_provider.dart';
 import 'subscription_provider.dart';
@@ -89,6 +91,7 @@ class ImageGenerationNotifier extends _$ImageGenerationNotifier {
   final Set<String> _failedSnapshotKeys = {};
   ImageComparisonSource? _activeComparisonSource;
   FixedTagUsageSnapshot? _activeFixedTagUsageSnapshot;
+  PromptGroupSnapshot? _activePromptGroupSnapshot;
   bool _isDisposed = false;
   int _lifecycleEpoch = 0;
 
@@ -98,6 +101,7 @@ class ImageGenerationNotifier extends _$ImageGenerationNotifier {
       _isDisposed = true;
       _lifecycleEpoch++;
       _activeComparisonSource = null;
+      _activePromptGroupSnapshot = null;
       _streamPreviews.clear();
       final invocationSettled = _generationInvocationSettled;
       _generationInvocationSettled = null;
@@ -313,6 +317,13 @@ class ImageGenerationNotifier extends _$ImageGenerationNotifier {
       final effectiveParams = useRestoredLiveParams
           ? ref.read(generationParamsNotifierProvider)
           : params;
+      final promptGroupCandidate = ref.read(currentPromptGroupSnapshotProvider);
+      final promptGroupSnapshot =
+          promptGroupCandidate?.positivePrompt == effectiveParams.prompt &&
+              promptGroupCandidate?.negativePrompt ==
+                  effectiveParams.negativePrompt
+          ? promptGroupCandidate
+          : null;
       final issue = NaiResolutionAdapter.validateGenerationResolution(
         effectiveParams.width,
         effectiveParams.height,
@@ -372,6 +383,7 @@ class ImageGenerationNotifier extends _$ImageGenerationNotifier {
       final runId = ++_runCounter;
       _activeRunId = runId;
       _activeFixedTagUsageSnapshot = prepared.fixedTagUsageSnapshot;
+      _activePromptGroupSnapshot = promptGroupSnapshot;
       _streamPreviews.clear();
       _failedSnapshotKeys.clear();
       final dlss = ref.read(dlssProvider);
@@ -409,6 +421,7 @@ class ImageGenerationNotifier extends _$ImageGenerationNotifier {
         _setSubmitting(false);
         _activeComparisonSource = null;
         _activeFixedTagUsageSnapshot = null;
+        _activePromptGroupSnapshot = null;
       }
       if (!invocationSettled.isCompleted) {
         invocationSettled.complete();
@@ -613,18 +626,41 @@ class ImageGenerationNotifier extends _$ImageGenerationNotifier {
         :final vibeEncodings,
         :final postprocessErrors,
       ):
-        final generated = images.indexed
-            .map(
-              (entry) => GeneratedImage.create(
-                entry.$2,
-                postprocessError: postprocessErrors[entry.$1],
-                width: params.width,
-                height: params.height,
-                comparisonSource: _activeComparisonSource,
-                fixedTagUsageSnapshot: _activeFixedTagUsageSnapshot,
+        final generated = <GeneratedImage>[];
+        for (final entry in images.indexed) {
+          var bytes = entry.$2;
+          try {
+            bytes = await ImageSaveUtils.mergeLauncherMetadata(
+              imageBytes: bytes,
+              fixedTagUsageSnapshot: _activeFixedTagUsageSnapshot,
+              promptGroupSnapshot: _activePromptGroupSnapshot,
+            );
+          } catch (error, stackTrace) {
+            AppLogger.e(
+              'Failed to attach Launcher prompt metadata',
+              error,
+              stackTrace,
+            );
+          }
+          final outputSize =
+              NaiResolutionAdapter.readImageSize(bytes) ??
+              (params.width, params.height);
+          generated.add(
+            GeneratedImage.create(
+              bytes,
+              postprocessError: postprocessErrors[entry.$1],
+              width: params.width,
+              height: params.height,
+              comparisonSource: _activeComparisonSource,
+              fixedTagUsageSnapshot: _activeFixedTagUsageSnapshot,
+              metadata: _metadataFromParams(
+                params,
+                outputWidth: outputSize.$1,
+                outputHeight: outputSize.$2,
               ),
-            )
-            .toList();
+            ),
+          );
+        }
         final current = [...state.currentImages, ...generated];
         final history = [
           ...generated,
@@ -1244,6 +1280,7 @@ class ImageGenerationNotifier extends _$ImageGenerationNotifier {
       params: effective,
       actualSeed: effective.seed,
       fixedTagUsageSnapshot: _activeFixedTagUsageSnapshot,
+      promptGroupSnapshot: _activePromptGroupSnapshot,
       fixedPrefixTags: _activeFixedTagUsageSnapshot
           ?.entriesFor(
             promptType: FixedTagPromptType.positive,

@@ -5,6 +5,7 @@ import 'dart:typed_data';
 import 'package:path/path.dart' as p;
 
 import '../../data/models/gallery/nai_image_metadata.dart';
+import '../../data/models/gallery/prompt_group_snapshot.dart';
 import '../../data/models/fixed_tag/fixed_tag_usage_snapshot.dart';
 import '../../data/models/fixed_tag/fixed_tag_entry.dart';
 import '../../data/models/fixed_tag/fixed_tag_prompt_type.dart';
@@ -42,6 +43,7 @@ class ImageSaveUtils {
     List<String>? fixedNegativePrefixTags,
     List<String>? fixedNegativeSuffixTags,
     FixedTagUsageSnapshot? fixedTagUsageSnapshot,
+    PromptGroupSnapshot? promptGroupSnapshot,
     List<Map<String, dynamic>>? charCaptions,
     List<Map<String, dynamic>>? charNegCaptions,
     bool useCoords = false,
@@ -98,6 +100,10 @@ class ImageSaveUtils {
 
     if (fixedTagUsageSnapshot != null) {
       commentJson['aaalice_fixed_tags'] = fixedTagUsageSnapshot.toJson();
+    }
+    if (promptGroupSnapshot != null) {
+      commentJson[PromptGroupSnapshot.metadataKey] = promptGroupSnapshot
+          .toJson();
     }
     if (fixedTagUsageSnapshot != null || fixedPrefixTags?.isNotEmpty == true) {
       commentJson['fixed_prefix'] = fixedPrefixTags ?? const <String>[];
@@ -204,6 +210,7 @@ class ImageSaveUtils {
     List<String>? fixedNegativePrefixTags,
     List<String>? fixedNegativeSuffixTags,
     FixedTagUsageSnapshot? fixedTagUsageSnapshot,
+    PromptGroupSnapshot? promptGroupSnapshot,
     List<Map<String, dynamic>>? charCaptions,
     List<Map<String, dynamic>>? charNegCaptions,
     bool useCoords = false,
@@ -236,6 +243,7 @@ class ImageSaveUtils {
       fixedNegativePrefixTags: fixedNegativePrefixTags,
       fixedNegativeSuffixTags: fixedNegativeSuffixTags,
       fixedTagUsageSnapshot: fixedTagUsageSnapshot,
+      promptGroupSnapshot: promptGroupSnapshot,
       charCaptions: charCaptions,
       charNegCaptions: charNegCaptions,
       useCoords: useCoords,
@@ -269,32 +277,51 @@ class ImageSaveUtils {
     required Uint8List imageBytes,
     required FixedTagUsageSnapshot snapshot,
     bool useStealth = false,
+  }) => mergeLauncherMetadata(
+    imageBytes: imageBytes,
+    fixedTagUsageSnapshot: snapshot,
+    useStealth: useStealth,
+  );
+
+  /// Adds Launcher-only metadata while preserving all existing NovelAI fields.
+  static Future<Uint8List> mergeLauncherMetadata({
+    required Uint8List imageBytes,
+    FixedTagUsageSnapshot? fixedTagUsageSnapshot,
+    PromptGroupSnapshot? promptGroupSnapshot,
+    bool useStealth = false,
   }) async {
+    if (fixedTagUsageSnapshot == null && promptGroupSnapshot == null) {
+      return imageBytes;
+    }
     final existing = _extractEmbeddedPngMetadata(imageBytes);
     if (existing?.commentJson == null) return imageBytes;
     final commentJson = <String, dynamic>{
       ...existing!.commentJson,
-      'aaalice_fixed_tags': snapshot.toJson(),
-      'fixed_prefix': _fixedTagContents(
-        snapshot,
-        FixedTagPromptType.positive,
-        FixedTagPosition.prefix,
-      ),
-      'fixed_suffix': _fixedTagContents(
-        snapshot,
-        FixedTagPromptType.positive,
-        FixedTagPosition.suffix,
-      ),
-      'fixed_negative_prefix': _fixedTagContents(
-        snapshot,
-        FixedTagPromptType.negative,
-        FixedTagPosition.prefix,
-      ),
-      'fixed_negative_suffix': _fixedTagContents(
-        snapshot,
-        FixedTagPromptType.negative,
-        FixedTagPosition.suffix,
-      ),
+      if (promptGroupSnapshot != null)
+        PromptGroupSnapshot.metadataKey: promptGroupSnapshot.toJson(),
+      if (fixedTagUsageSnapshot != null) ...{
+        'aaalice_fixed_tags': fixedTagUsageSnapshot.toJson(),
+        'fixed_prefix': _fixedTagContents(
+          fixedTagUsageSnapshot,
+          FixedTagPromptType.positive,
+          FixedTagPosition.prefix,
+        ),
+        'fixed_suffix': _fixedTagContents(
+          fixedTagUsageSnapshot,
+          FixedTagPromptType.positive,
+          FixedTagPosition.suffix,
+        ),
+        'fixed_negative_prefix': _fixedTagContents(
+          fixedTagUsageSnapshot,
+          FixedTagPromptType.negative,
+          FixedTagPosition.prefix,
+        ),
+        'fixed_negative_suffix': _fixedTagContents(
+          fixedTagUsageSnapshot,
+          FixedTagPromptType.negative,
+          FixedTagPosition.suffix,
+        ),
+      },
     };
     return _embedNaiAlignedMetadata(
       imageBytes: imageBytes,

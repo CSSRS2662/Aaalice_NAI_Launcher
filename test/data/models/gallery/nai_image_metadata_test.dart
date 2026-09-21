@@ -63,6 +63,31 @@ void main() {
       );
     });
 
+    test('fromNaiComment preserves launcher prompt partitions', () {
+      final metadata = NaiImageMetadata.fromNaiComment({
+        'prompt': '1girl, school uniform',
+        'uc': 'lowres',
+        'aaalice_prompt_groups': {
+          'version': 1,
+          'mode': 'grouped',
+          'positiveSections': [
+            {'id': 'a', 'text': '1girl', 'enabled': true},
+            {'id': 'b', 'text': 'school uniform', 'enabled': true},
+          ],
+          'negativeSections': [
+            {'id': 'c', 'text': 'lowres', 'enabled': true},
+          ],
+        },
+      });
+
+      expect(metadata.promptGroupSnapshot, isNotNull);
+      expect(metadata.promptGroupSnapshot!.positiveSections, hasLength(2));
+      expect(
+        metadata.promptGroupSnapshot!.positivePrompt,
+        '1girl, school uniform',
+      );
+    });
+
     test('displayNegativePrompt should mirror embedded raw uc text', () {
       final preset = UcPresets.getPresetContent(
         ImageModels.animeDiffusionV45Full,

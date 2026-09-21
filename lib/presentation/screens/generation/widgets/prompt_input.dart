@@ -6,6 +6,7 @@ import '../../../../core/storage/local_storage_service.dart';
 import '../../../../core/utils/localization_extension.dart';
 import '../../../providers/image_generation_provider.dart';
 import '../../../providers/pending_prompt_provider.dart';
+import '../../../providers/prompt_group_state_provider.dart';
 import '../../../providers/prompt_maximize_provider.dart';
 import '../../../providers/prompt_token_counter_provider.dart';
 import '../../../providers/queue_execution_provider.dart';
@@ -67,6 +68,8 @@ class _PromptInputWidgetState extends ConsumerState<PromptInputWidget> {
           storage: ref.read(localStorageServiceProvider),
         );
     _controller.addListener(_onControllerChanged);
+    ref.read(currentPromptGroupSnapshotProvider.notifier).state =
+        _controller.groupSnapshot;
     _coordinator = PromptInputCoordinator(
       ref: ref,
       controller: _controller,
@@ -75,6 +78,7 @@ class _PromptInputWidgetState extends ConsumerState<PromptInputWidget> {
     );
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
+      _restoreImportedGroups(ref.read(promptGroupRestoreRequestProvider));
       _coordinator.consumePendingPrompt();
       if (widget.autofocus) _controller.promptFocusNode.requestFocus();
       setState(() {});
@@ -120,11 +124,33 @@ class _PromptInputWidgetState extends ConsumerState<PromptInputWidget> {
   }
 
   void _onControllerChanged() {
+    ref.read(currentPromptGroupSnapshotProvider.notifier).state =
+        _controller.groupSnapshot;
     if (mounted) setState(() {});
+  }
+
+  void _restoreImportedGroups(PromptGroupRestoreRequest? request) {
+    if (request == null) return;
+    final params = ref.read(generationParamsNotifierProvider);
+    final restorePositive =
+        request.restorePositive &&
+        params.prompt == request.snapshot.positivePrompt;
+    final restoreNegative =
+        request.restoreNegative &&
+        params.negativePrompt == request.snapshot.negativePrompt;
+    if (!restorePositive && !restoreNegative) return;
+    _controller.restoreGroupSnapshot(
+      request.snapshot,
+      restorePositive: restorePositive,
+      restoreNegative: restoreNegative,
+    );
   }
 
   @override
   Widget build(BuildContext context) {
+    ref.listen(promptGroupRestoreRequestProvider, (previous, next) {
+      _restoreImportedGroups(next);
+    });
     ref.listen(
       generationParamsNotifierProvider.select(
         (params) =>

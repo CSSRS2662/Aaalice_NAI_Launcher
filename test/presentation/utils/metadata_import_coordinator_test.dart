@@ -18,6 +18,7 @@ import 'package:nai_launcher/l10n/app_localizations_en.dart';
 import 'package:nai_launcher/presentation/providers/character_prompt_provider.dart';
 import 'package:nai_launcher/presentation/providers/fixed_tags_provider.dart';
 import 'package:nai_launcher/presentation/providers/generation/generation_params_notifier.dart';
+import 'package:nai_launcher/presentation/providers/prompt_group_state_provider.dart';
 import 'package:nai_launcher/presentation/utils/metadata_import_coordinator.dart';
 
 void main() {
@@ -122,6 +123,44 @@ void main() {
       );
     },
   );
+
+  test('publishes stored prompt partitions after parameter reuse', () async {
+    final container = ProviderContainer();
+    addTearDown(container.dispose);
+    final metadata = NaiImageMetadata.fromNaiComment({
+      'prompt': '1girl, school uniform',
+      'uc': 'lowres',
+      'aaalice_prompt_groups': {
+        'version': 1,
+        'mode': 'grouped',
+        'positiveSections': [
+          {'id': 'one', 'text': '1girl', 'enabled': true},
+          {'id': 'two', 'text': 'school uniform', 'enabled': true},
+        ],
+        'negativeSections': [
+          {'id': 'negative', 'text': 'lowres', 'enabled': true},
+        ],
+      },
+    });
+
+    await MetadataImportCoordinator.apply(
+      read: container.read,
+      metadata: metadata,
+      options: const MetadataImportOptions(
+        importPrompt: true,
+        importNegativePrompt: true,
+        importFixedTags: false,
+      ),
+      l10n: AppLocalizationsEn(),
+    );
+
+    final request = container.read(promptGroupRestoreRequestProvider);
+    expect(request, isNotNull);
+    expect(request!.snapshot.positiveSections, hasLength(2));
+    expect(request.snapshot.positivePrompt, '1girl, school uniform');
+    expect(request.restorePositive, isTrue);
+    expect(request.restoreNegative, isTrue);
+  });
 
   test(
     'official centers are retained while use_coords false restores AI mode',
