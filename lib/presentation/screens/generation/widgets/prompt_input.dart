@@ -68,8 +68,6 @@ class _PromptInputWidgetState extends ConsumerState<PromptInputWidget> {
           storage: ref.read(localStorageServiceProvider),
         );
     _controller.addListener(_onControllerChanged);
-    ref.read(currentPromptGroupSnapshotProvider.notifier).state =
-        _controller.groupSnapshot;
     _coordinator = PromptInputCoordinator(
       ref: ref,
       controller: _controller,
@@ -78,6 +76,9 @@ class _PromptInputWidgetState extends ConsumerState<PromptInputWidget> {
     );
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
+      // 构建期间不能修改 provider；首帧后再发布分区快照，生成只会在此之后触发。
+      ref.read(currentPromptGroupSnapshotProvider.notifier).state =
+          _controller.groupSnapshot;
       _restoreImportedGroups(ref.read(promptGroupRestoreRequestProvider));
       _coordinator.consumePendingPrompt();
       if (widget.autofocus) _controller.promptFocusNode.requestFocus();
