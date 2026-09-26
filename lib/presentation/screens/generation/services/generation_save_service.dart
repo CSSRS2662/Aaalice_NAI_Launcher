@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -11,7 +10,6 @@ import '../../../../core/services/android_media_store_service.dart';
 import '../../../../core/utils/localization_extension.dart';
 import '../../../../core/utils/image_save_utils.dart';
 import '../../../../data/models/gallery/nai_image_metadata.dart';
-import '../../../../data/models/fixed_tag/fixed_tag_usage_snapshot.dart';
 import '../../../../data/repositories/gallery_folder_repository.dart';
 import '../../../../data/services/image_metadata_service.dart';
 import '../../../providers/image_generation_provider.dart';
@@ -21,6 +19,7 @@ import '../../../widgets/common/app_toast.dart';
 import '../../../widgets/common/image_detail/file_image_detail_data.dart';
 import '../../../widgets/common/image_detail/image_detail_data.dart';
 import '../../../widgets/common/image_detail/image_detail_viewer.dart';
+import 'generated_image_file_link.dart';
 
 /// 图像保存服务类
 ///
@@ -28,43 +27,6 @@ import '../../../widgets/common/image_detail/image_detail_viewer.dart';
 /// 从 desktop_layout.dart 中提取，减少文件职责
 class GenerationSaveService {
   GenerationSaveService._();
-
-  /// Ensures a generated image has the persistent local-gallery record needed
-  /// by actions such as favorite. Existing files are reused without copying.
-  static Future<String> ensureImageSaved(
-    BuildContext context,
-    WidgetRef ref,
-    GeneratedImage image,
-  ) async {
-    final missingDirectoryMessage =
-        context.l10n.localGallery_saveDirectoryNotSet;
-    final existingPath = image.filePath;
-    if (existingPath != null &&
-        existingPath.isNotEmpty &&
-        await File(existingPath).exists()) {
-      return existingPath;
-    }
-
-    final saveDirPath = await GalleryFolderRepository.instance.getRootPath();
-    if (saveDirPath == null || saveDirPath.isEmpty) {
-      throw StateError(missingDirectoryMessage);
-    }
-    final filePath = await ImageSaveUtils.saveBytesToDatedPath(
-      rootPath: saveDirPath,
-      bytes: image.bytes,
-      seed: await ImageSaveUtils.resolveSeed(
-        metadata: image.metadata,
-        bytes: image.bytes,
-      ),
-    );
-    ref
-        .read(imageGenerationNotifierProvider.notifier)
-        .updateImageFilePath(image.id, filePath);
-    await ref.read(localGalleryNotifierProvider.notifier).addNewlySavedImages([
-      filePath,
-    ]);
-    return filePath;
-  }
 
   /// 显示全屏预览
   ///
@@ -152,11 +114,15 @@ class GenerationSaveService {
     WidgetRef ref,
     GeneratedImage image,
   ) async {
+    // 保存期间调用方可能被卸载，句柄在第一个 await 之前取好。
+    final gallery = ref.read(localGalleryNotifierProvider.notifier);
     try {
-      final path = await ensureImageSaved(context, ref, image);
-      final favorite = await ref
-          .read(localGalleryNotifierProvider.notifier)
-          .toggleFavorite(path);
+      final linked = await GeneratedImageFileLink.ensureSaved(
+        ref,
+        image,
+        context.l10n,
+      );
+      final favorite = await gallery.toggleFavorite(linked.path);
       if (!context.mounted) return;
       AppToast.success(
         context,
@@ -192,47 +158,32 @@ class GenerationSaveService {
       final fixedTagUsageSnapshot = image is GeneratedImageDetailData
           ? image.fixedTagUsageSnapshot
           : existingMetadata?.fixedTagUsageSnapshot;
-      // 构建最终字节：明确要求保留原始字节的外部结果不做补写；
-      // 其他图像优先保留已有 NAI 元数据，缺失时再用已解析数据重建。
-      var finalBytes = imageBytes;
-      final hasEmbeddedMetadata = ImageSaveUtils.hasEmbeddedNovelAiMetadata(
-        imageBytes,
-      );
-      if (!image.preserveOriginalBytesOnSave &&
-          hasEmbeddedMetadata &&
-          fixedTagUsageSnapshot != null) {
-        finalBytes = await ImageSaveUtils.mergeFixedTagUsageMetadata(
-          imageBytes: imageBytes,
-          snapshot: fixedTagUsageSnapshot,
-        );
-      } else if (!image.preserveOriginalBytesOnSave &&
-          !hasEmbeddedMetadata &&
-          existingMetadata != null) {
-        finalBytes = await ImageSaveUtils.buildPrebuiltMetadataBytes(
-          imageBytes: imageBytes,
-          metadata: {
-            'Description': existingMetadata.prompt,
-            'Software': 'NovelAI',
-            'Source': existingMetadata.source ?? 'NovelAI Diffusion',
-            'Comment': jsonEncode(
-              buildCommentJsonFromMetadata(
-                existingMetadata,
-                fixedTagUsageSnapshot: fixedTagUsageSnapshot,
-              ),
-            ),
-          },
-        );
-      }
-
       // 原子保存：日期分类路径 + 独占防冲突 + 失败清理，全部在工具内完成
-      final filePath = await ImageSaveUtils.saveBytesToDatedPath(
+      final saved = await ImageSaveUtils.saveResultImage(
         rootPath: saveDirPath,
-        bytes: finalBytes,
+        imageBytes: imageBytes,
+        preserveOriginalBytes: image.preserveOriginalBytesOnSave,
+        fixedTagUsageSnapshot: fixedTagUsageSnapshot,
         seed: await ImageSaveUtils.resolveSeed(
           metadata: existingMetadata,
           bytes: imageBytes,
         ),
+        rebuild: () async => existingMetadata == null
+            ? imageBytes
+            : ImageSaveUtils.buildPrebuiltMetadataBytes(
+                imageBytes: imageBytes,
+                metadata: {
+                  'Description': existingMetadata.prompt,
+                  'Software': 'NovelAI',
+                  'Source': existingMetadata.source ?? 'NovelAI Diffusion',
+                  'Comment': jsonEncode(
+                    buildCommentJsonFromMetadata(existingMetadata),
+                  ),
+                },
+              ),
       );
+      final finalBytes = saved.bytes;
+      final filePath = saved.path;
 
       Object? systemGalleryError;
       if (PlatformCapabilities.current.supportsSystemGalleryExport) {
@@ -272,9 +223,8 @@ class GenerationSaveService {
 
   /// 从元数据构建 Comment JSON
   static Map<String, dynamic> buildCommentJsonFromMetadata(
-    NaiImageMetadata metadata, {
-    FixedTagUsageSnapshot? fixedTagUsageSnapshot,
-  }) {
+    NaiImageMetadata metadata,
+  ) {
     final commentJson = <String, dynamic>{
       'prompt': metadata.prompt,
       'uc': metadata.negativePrompt,
@@ -290,15 +240,6 @@ class GenerationSaveService {
       'sampler': metadata.sampler ?? 'k_euler_ancestral',
       'sm': metadata.smea ?? false,
       'sm_dyn': metadata.smeaDyn ?? false,
-      if (fixedTagUsageSnapshot != null)
-        'aaalice_fixed_tags': fixedTagUsageSnapshot.toJson(),
-      if (fixedTagUsageSnapshot != null ||
-          metadata.hasRecordedFixedTagFields) ...{
-        'fixed_prefix': metadata.fixedPrefixTags,
-        'fixed_suffix': metadata.fixedSuffixTags,
-        'fixed_negative_prefix': metadata.fixedNegativePrefixTags,
-        'fixed_negative_suffix': metadata.fixedNegativeSuffixTags,
-      },
     };
 
     // 添加 Vibe 数据

@@ -7,13 +7,14 @@ import '../../../../data/models/agent/agent_settings.dart';
 import '../../../../core/utils/localization_extension.dart';
 import '../../../prompt_assistant/models/assistant_model_capability.dart';
 import '../../../agent_settings/providers/agent_settings_provider.dart';
-import '../../../prompt_assistant/models/prompt_assistant_models.dart';
+import '../../../../data/models/prompt_assistant/prompt_assistant_models.dart';
 import '../../../prompt_assistant/providers/prompt_assistant_config_provider.dart';
 import '../../../widgets/common/app_toast.dart';
 import '../../../widgets/common/searchable_model_picker.dart';
 import '../widgets/settings_card.dart';
 import '../widgets/settings_page_layout.dart';
 import 'web_access_settings.dart';
+import 'agent/agent_chat_placement_card.dart';
 import 'agent/agent_profile_actions.dart';
 import 'agent/context_window_field.dart';
 import 'agent/skill_management_panel.dart';
@@ -108,6 +109,7 @@ class _AgentSettingsSectionState extends ConsumerState<AgentSettingsSection> {
           onOpenIntegrations: widget.onOpenIntegrations,
         ),
         _ReadingPreferencesCard(settings: state.settings),
+        const AgentChatPlacementCard(),
         _PermissionCard(settings: state.settings),
         _WebAccessCard(settings: state.settings),
         if (_selectedPanel == 0)

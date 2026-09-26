@@ -1,42 +1,56 @@
-# Android 分支更新取舍（2026-09-08）
+# Android 分支与上游的分叉清单
 
-## 基线与维护边界
+本文件记录 `android-custom` 相对上游有意保留的差异，以及每次合并上游时的处理规则。合并前先读此表，合并后更新“最近一次合并”。
 
-- 官方基线：`6ba6700f`，应用版本 `4.2.1+44`；相对上次 `e7cd616d` 增加 91 个提交。
-- `main` 保持与 `upstream/main` 一致；下列本地修复仅在 `android-custom`。
-- 原有五个定制提交完整保存在 `backup/android-custom-before-upstream-20260905`（`6dc5b2a3`）。
-- 本次更新前基线保存在 `backup/android-custom-before-upstream-20260908`。
-- `origin` 为 CSSRS2662 的 fork；本次不推送、不重写远端历史。
+## 分支与基线
 
-## 取舍
+- 上游：`Aaalice233/Aaalice_NAI_Launcher`，2026-09-15 起由协作者接手维护，仍在持续更新。
+- `main` 只跟随 `upstream/main`；全部定制在 `android-custom`。
+- 每次合并前创建 `backup/android-custom-before-upstream-YYYYMMDD`，在独立本地分支合并验证后再快进 `android-custom`。
+- 本地提交暂不推送 `origin`；需要发布时先确定远端分支，不强制推送。
+- 工具链以 `tool/android_build_environment.lock.json` 为准；上游升级 Flutter 时同步更新该文件。
 
-| 领域 | 决定 | 依据 |
+## 有意分叉与合并规则
+
+| 领域 | 本分支做法 | 合并时的规则 |
 | --- | --- | --- |
-| Android 分享、提示词、软键盘与卡片交互 | 保留官方 | 本次更新已有原生分享通道、触屏更多菜单、多选和布局回归；旧页面级补丁不整批覆盖新实现。 |
-| Danbooru 连接策略 | 移植本地共享网络层 | 官方仍分别创建 Dio。共享可取消的 IO 适配器、桌面代理策略；Android 忽略应用级桌面代理，让系统/VPN 决定路由。各服务独立持有凭据与拦截器，不能共享 NovelAI 认证。 |
-| 网络诊断与认证释放 | 保留官方 | 官方已有 `network_failure_diagnostics.dart`、服务范围标记和认证客户端关闭，不再恢复旧版重复诊断拦截器。 |
-| 设置：网络、快捷键 | 保留本地需求，适配官方结构 | 官方网络分类仍存在；快捷键仅在紧凑布局禁用，宽屏仍可进入。按官方能力矩阵在 Android 全宽度隐藏，并将旧入口回退到账户分类；桌面不变。 |
-| 模拟器启动 | 移植本地判空与备用查询 | 官方新目录中的 Runner 仍对可能为空的 AVD 名称调用 Trim。保留新版会话管理和 Play Services 检查，仅补名称查询；查询失败时不猜测、不重复启动模拟器。 |
-| ComfyUI、Krita、编辑器工具和散落快捷键提示 | 暂保留官方，旧改动留备份 | 新版重构了操作分发与放大流程。旧版强制改用 NovelAI 或直接隐藏工具的做法不能原样覆盖新流程。这不代表官方已彻底清除桌面残留：仍有 ComfyUI 禁用项、Krita 操作及键盘提示，应另行按触屏可达性逐项处理。 |
+| 包名与品牌 | `com.cssrs2662.aaalicepocket`，名称、图标、启动页为 Aaalice Pocket | 保留本分支；MethodChannel 名称与上游保持一致，开发与验收脚本使用新包名 |
+| 应用内更新 | 整套移除（检查、下载、安装、弹窗、横幅） | 上游对更新模块的修改一律丢弃；上游新测试中对更新 provider 的 override 一并删除 |
+| 社区入口 | 导航与“更多”面板不显示 GitHub/Discord | `CommunityLinks` 常量保留，上游其他代码仍在引用 |
+| 网络 | 共享连接工厂；Android 不使用应用级代理，交给系统/VPN | 保留工厂；上游的请求形态（浏览器请求头、JS 兼容 JSON）叠加在工厂创建的 Dio 上 |
+| 设置 | Android 隐藏“网络”“快捷键”分类 | 保留，按能力矩阵判断 |
+| 补全 | 中文否定与多关键词扩展；E5 语义补全 | `e5CompletionSourceProvider` 放在 `e5_completion_source.dart`；只在上游的 `autocompleteServicesProvider` 中补一行 `semanticSource` |
+| Prompt | 分组编辑、权重滑条、移动端工作台、长按权重工具条 | 保留 |
+| 分组持久化 | `PromptGroupRecordStore` 按结果图内容哈希记录分区，不写进 PNG | 与上游固定词记录一致；解析时在 `ImageMetadataService` 挂载，旧版写进 PNG 的 `aaalice_prompt_groups` 仍可读取且优先 |
+| 图片菜单 | “保存 → 复用参数/复用种子 → 收藏”开头，无 Krita/Discord 项 | 与上游新增的复制、删除等操作合并，危险操作排在最后；存盘复用上游 `GeneratedImageFileLink` |
+| 词库头像 | 圆形头像、应用内图库选图 | 保留 |
+| 构建 | `scripts/build_android_apk.ps1` 按锁定文件核对工具链 | 保留；CI 中的包名检查使用新包名 |
 
-## 官方更新注意事项
+## 最近一次合并（2026-09-26）
 
-- 4.1.0 云备份新格式不能由旧版读取；使用同步的其他设备应先更新，再创建新版备份。
-- 4.2.x 新增 Windows 专属 DLSSNR，Android 不获得本地 NVIDIA 增强能力。
-- 作者在 2026-09-08 的 README 公告中宣布暂停更新，原因是其 NovelAI 账号受限；这不是本项目用户账号受限的判断。
+- 上游 `6ba6700f..d1437760`：20 个提交（#295、#316–#329），751 个文件；Flutter 升级到 3.47.5 / Dart 3.13.4。
+- 冲突 13 个文件，按上表处理；另修复 3 处不显示为冲突的悬空引用：旧路径 import、已删除的更新 provider、`CommunityLinks.github`。
+- 与上游重复的实现：生成图收藏前的存盘逻辑改用上游 `GeneratedImageFileLink.ensureSaved`，删除本分支的 `ensureImageSaved`。
+- 设计取舍：提示词分组原先写进 PNG，改为旁路记录库，与上游 #320 的固定词记录方案一致。
+- MCP 服务端、DLSSNR 等桌面能力仍由能力矩阵在 Android 隐藏，桌面代码不删除。
+- 验证：`flutter analyze` 无错误和警告，仅剩合并前已有的 2 条 `onReorder` 弃用提示；按 Git 改动选出的 661 个测试文件逐批运行。
+- 合并后失败的 13 个非环境用例，在合并前的 fork（同一 Flutter 版本）上逐一复现，合并没有引入新失败；其中 11 个已修复（首帧后发布分区快照、删除失去引用的文案、按品牌与菜单更新测试期望）。
+- 仍失败：3 个上游用例需要 Windows 符号链接权限，属环境限制；2 个 fork 窄屏用例见下文“已知注意事项”。
 
-## 后续同步
+## 合并流程
 
-先检查工作区并提交或备份本地改动，再获取 upstream。将 main 快进到 upstream/main；在 android-custom 合并 main，逐项复核上述差异并运行对应回归。不要把旧备份分支整体合并回来。
+1. 工作区干净，创建备份分支；`git fetch upstream`。
+2. 新建本地分支执行 `git merge upstream/main`，按上表解决冲突。
+3. 检查上游移动或删除的文件：旧 import 路径、已删除符号不会显示为冲突，但会导致编译失败；上游的分层测试禁止 `lib/core`、`lib/data` 引用 presentation。
+4. `flutter pub get --enforce-lockfile`；生成输入变化时运行 `build_runner`，ARB 变化时运行 `flutter gen-l10n`。
+5. `flutter analyze`、受影响测试、`scripts/build_android_apk.ps1`，需要时真机验证。
+6. 更新本文件，再快进 `android-custom`。不要把旧备份分支整体合并回来。
 
-本地 android-custom 与旧 origin/android-custom 已分叉；若需发布当前分支，先明确是否用新远端分支承载，不默认强制推送。
+## 已知注意事项
 
-## 本次验证
-
-- 官方依赖锁定安装、依赖来源检查通过；模型代码生成完成。
-- `flutter analyze --no-pub` 无问题。
-- 网络、设置页及原生分享相关 38 项测试通过；Danbooru 认证、API、联想及可取消图片下载 25 项测试通过。
-- 设置测试覆盖 320/600/840/1180/1600 宽度、1x/3x 字号及旧网络/快捷键入口回退。
-- 模拟器 AVD 名称查询 10 项检查通过，测试未启动设备。
-- Android debug APK 编译成功；仍有官方依赖的 Kotlin/SDK 工具兼容预警，本次不升级构建工具链。
-- 更新前 Windows/Android 开发会话均未启动，因此未启动新会话或替换手机应用，未做新版真机联网验证。共享客户端策略不会修复 VPN 的错误 DNS，应继续保留已解决问题的 VPN 配置。
+- 4.1.0 起的云备份新格式不能由旧版读取；多设备同步时先全部更新。
+- 提示词分组记录暂未加入云同步：记录很小，但需要新增同步类型与四语文案，列为后续项。
+- 分组记录按结果图字节哈希匹配；经重新编码的派生图（放大、增强等）不会继承分组，扁平提示词不受影响。
+- 320 宽、3 倍字号下，选中文字后的权重工具条会遮住“标签模式”按钮（`text_mode_enabled_actions_test`），待调整工具条避让。
+- 触屏“更多操作”菜单在前部加入保存、复用、收藏后，800×600 测试视口中的水印项超出可视范围（`local_image_card_thumbnail_test`），待确认菜单高度约束。
+- 分组编辑器仍使用已弃用的 `ReorderableListView.onReorder`，改为 `onReorderItem` 时需同步调整控制器的索引语义与测试。

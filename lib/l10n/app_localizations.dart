@@ -1871,6 +1871,30 @@ abstract class AppLocalizations {
   /// **'Chat'**
   String get agentChat_tab;
 
+  /// No description provided for @agentChat_popOutFloating.
+  ///
+  /// In en, this message translates to:
+  /// **'Pop out as floating window'**
+  String get agentChat_popOutFloating;
+
+  /// No description provided for @agentChat_dockToSidePanel.
+  ///
+  /// In en, this message translates to:
+  /// **'Dock to side panel'**
+  String get agentChat_dockToSidePanel;
+
+  /// No description provided for @agentChat_hideFloating.
+  ///
+  /// In en, this message translates to:
+  /// **'Hide floating window'**
+  String get agentChat_hideFloating;
+
+  /// No description provided for @agentChat_resizeDockSplit.
+  ///
+  /// In en, this message translates to:
+  /// **'Resize chat and history'**
+  String get agentChat_resizeDockSplit;
+
   /// No description provided for @nav_agent.
   ///
   /// In en, this message translates to:
@@ -2555,6 +2579,12 @@ abstract class AppLocalizations {
   /// **'Estimated cost: {cost} Anlas'**
   String agentChat_approvalEstimatedAnlas(int cost);
 
+  /// No description provided for @agentChat_approvalFileTarget.
+  ///
+  /// In en, this message translates to:
+  /// **'Will write file: {path}'**
+  String agentChat_approvalFileTarget(String path);
+
   /// No description provided for @agentChat_needSetup.
   ///
   /// In en, this message translates to:
@@ -2771,6 +2801,24 @@ abstract class AppLocalizations {
   /// **'Deny'**
   String get agentChat_approvalDeny;
 
+  /// No description provided for @mcpApproval_title.
+  ///
+  /// In en, this message translates to:
+  /// **'External agent {client} is requesting approval'**
+  String mcpApproval_title(Object client);
+
+  /// No description provided for @mcpApproval_expiresIn.
+  ///
+  /// In en, this message translates to:
+  /// **'Auto-declines in {seconds}s'**
+  String mcpApproval_expiresIn(Object seconds);
+
+  /// No description provided for @mcpApproval_unknownClient.
+  ///
+  /// In en, this message translates to:
+  /// **'Unknown client'**
+  String get mcpApproval_unknownClient;
+
   /// No description provided for @generation_failedStreamSnapshot.
   ///
   /// In en, this message translates to:
@@ -2800,6 +2848,45 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Are you sure you want to clear all history records? This action cannot be undone.'**
   String get generation_clearHistoryConfirm;
+
+  /// No description provided for @generation_deleteImageConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete this image from history? This action cannot be undone.'**
+  String get generation_deleteImageConfirm;
+
+  /// No description provided for @generation_deleteImageWithFileConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete this image from history and permanently delete the file \"{fileName}\" from the local gallery? This action cannot be undone.'**
+  String generation_deleteImageWithFileConfirm(Object fileName);
+
+  /// No description provided for @generation_deleteImagesConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete the {count} selected images from history? This action cannot be undone.'**
+  String generation_deleteImagesConfirm(Object count);
+
+  /// No description provided for @generation_deleteImagesWithFilesConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete the {count} selected images from history and permanently delete {fileCount} of their files saved in the local gallery? This action cannot be undone.'**
+  String generation_deleteImagesWithFilesConfirm(
+    Object count,
+    Object fileCount,
+  );
+
+  /// No description provided for @generation_deleteConfirmSkipForSession.
+  ///
+  /// In en, this message translates to:
+  /// **'Don\'t ask again until the app restarts'**
+  String get generation_deleteConfirmSkipForSession;
+
+  /// No description provided for @generation_deleteImageFilesFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Removed from history, but {count} local files could not be deleted: {error}'**
+  String generation_deleteImageFilesFailed(Object count, Object error);
 
   /// No description provided for @generation_model.
   ///
@@ -3905,6 +3992,144 @@ abstract class AppLocalizations {
   /// **'Declutter'**
   String get img2img_directorDeclutter;
 
+  /// No description provided for @img2img_directorPixelSnap.
+  ///
+  /// In en, this message translates to:
+  /// **'Pixel Snap'**
+  String get img2img_directorPixelSnap;
+
+  /// No description provided for @img2img_directorPixelSnapHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Runs entirely on your computer. No Anlas, no network. Large images can take a few seconds.'**
+  String get img2img_directorPixelSnapHint;
+
+  /// No description provided for @img2img_directorPixelSnapPalette.
+  ///
+  /// In en, this message translates to:
+  /// **'Palettize'**
+  String get img2img_directorPixelSnapPalette;
+
+  /// No description provided for @img2img_directorPixelSnapPaletteOff.
+  ///
+  /// In en, this message translates to:
+  /// **'Off'**
+  String get img2img_directorPixelSnapPaletteOff;
+
+  /// No description provided for @img2img_directorPixelSnapPaletteAuto.
+  ///
+  /// In en, this message translates to:
+  /// **'Auto'**
+  String get img2img_directorPixelSnapPaletteAuto;
+
+  /// No description provided for @img2img_directorPixelSnapPaletteCustom.
+  ///
+  /// In en, this message translates to:
+  /// **'Custom'**
+  String get img2img_directorPixelSnapPaletteCustom;
+
+  /// No description provided for @img2img_directorPixelSnapColors.
+  ///
+  /// In en, this message translates to:
+  /// **'Colors'**
+  String get img2img_directorPixelSnapColors;
+
+  /// No description provided for @img2img_directorPixelSnapAvoidOverRefining.
+  ///
+  /// In en, this message translates to:
+  /// **'Avoid Over-Refining'**
+  String get img2img_directorPixelSnapAvoidOverRefining;
+
+  /// No description provided for @img2img_directorPixelSnapAvoidOverRefiningOn.
+  ///
+  /// In en, this message translates to:
+  /// **'The detected pixel size is always kept.'**
+  String get img2img_directorPixelSnapAvoidOverRefiningOn;
+
+  /// No description provided for @img2img_directorPixelSnapAvoidOverRefiningOff.
+  ///
+  /// In en, this message translates to:
+  /// **'A finer pixel size may be used when it matches the image better.'**
+  String get img2img_directorPixelSnapAvoidOverRefiningOff;
+
+  /// No description provided for @img2img_directorPixelSnapUpscale.
+  ///
+  /// In en, this message translates to:
+  /// **'Upscale'**
+  String get img2img_directorPixelSnapUpscale;
+
+  /// No description provided for @img2img_directorPixelSnapUpscaleOn.
+  ///
+  /// In en, this message translates to:
+  /// **'The result is scaled back up to roughly the input size.'**
+  String get img2img_directorPixelSnapUpscaleOn;
+
+  /// No description provided for @img2img_directorPixelSnapUpscaleOff.
+  ///
+  /// In en, this message translates to:
+  /// **'The result is kept at its snapped pixel size.'**
+  String get img2img_directorPixelSnapUpscaleOff;
+
+  /// No description provided for @img2img_directorPixelSnapSummary.
+  ///
+  /// In en, this message translates to:
+  /// **'{width}×{height} pixels · {colors} colors'**
+  String img2img_directorPixelSnapSummary(int width, int height, int colors);
+
+  /// No description provided for @img2img_directorPixelSnapSummaryNoPalette.
+  ///
+  /// In en, this message translates to:
+  /// **'{width}×{height} pixels'**
+  String img2img_directorPixelSnapSummaryNoPalette(int width, int height);
+
+  /// No description provided for @img2img_directorPixelSnapNoGrid.
+  ///
+  /// In en, this message translates to:
+  /// **'No repeating pixel grid was found in this image.'**
+  String get img2img_directorPixelSnapNoGrid;
+
+  /// No description provided for @img2img_directorPixelSnapBlank.
+  ///
+  /// In en, this message translates to:
+  /// **'This image is fully transparent.'**
+  String get img2img_directorPixelSnapBlank;
+
+  /// No description provided for @img2img_directorPixelSnapDownscaled.
+  ///
+  /// In en, this message translates to:
+  /// **'The image was downscaled before analysis because it exceeds the size limit.'**
+  String get img2img_directorPixelSnapDownscaled;
+
+  /// No description provided for @img2img_directorCancel.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel'**
+  String get img2img_directorCancel;
+
+  /// No description provided for @img2img_directorStageAnalyzing.
+  ///
+  /// In en, this message translates to:
+  /// **'Analyzing image'**
+  String get img2img_directorStageAnalyzing;
+
+  /// No description provided for @img2img_directorStageSearchingPitch.
+  ///
+  /// In en, this message translates to:
+  /// **'Searching pixel size'**
+  String get img2img_directorStageSearchingPitch;
+
+  /// No description provided for @img2img_directorStageRefiningGrid.
+  ///
+  /// In en, this message translates to:
+  /// **'Refining grid'**
+  String get img2img_directorStageRefiningGrid;
+
+  /// No description provided for @img2img_directorStageFinishing.
+  ///
+  /// In en, this message translates to:
+  /// **'Building result'**
+  String get img2img_directorStageFinishing;
+
   /// No description provided for @img2img_enhance.
   ///
   /// In en, this message translates to:
@@ -4328,13 +4553,13 @@ abstract class AppLocalizations {
   /// No description provided for @editor_magicWandSmartObject.
   ///
   /// In en, this message translates to:
-  /// **'Smart object (EfficientViT)'**
+  /// **'Smart object'**
   String get editor_magicWandSmartObject;
 
   /// No description provided for @editor_magicWandColorArea.
   ///
   /// In en, this message translates to:
-  /// **'Color area (flood fill)'**
+  /// **'Color area'**
   String get editor_magicWandColorArea;
 
   /// No description provided for @editor_magicWandSmartHelp.
@@ -10475,12 +10700,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'No statistics available'**
   String get statistics_noData;
-
-  /// No description provided for @statistics_noTagData.
-  ///
-  /// In en, this message translates to:
-  /// **'No tag data'**
-  String get statistics_noTagData;
 
   /// No description provided for @statistics_generateFirst.
   ///
@@ -17001,12 +17220,6 @@ abstract class AppLocalizations {
   /// **'Maximum 16 vibes reached'**
   String get vibe_maxReached;
 
-  /// No description provided for @vibe_addedNamed.
-  ///
-  /// In en, this message translates to:
-  /// **'Added Vibe: {name}'**
-  String vibe_addedNamed(String name);
-
   /// No description provided for @vibe_addedCount.
   ///
   /// In en, this message translates to:
@@ -17384,6 +17597,282 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Client: {client}'**
   String settings_kritaBridgeClient(Object client);
+
+  /// No description provided for @settings_mcpServerPermissionSection.
+  ///
+  /// In en, this message translates to:
+  /// **'Permissions'**
+  String get settings_mcpServerPermissionSection;
+
+  /// No description provided for @settings_mcpServerClientsSection.
+  ///
+  /// In en, this message translates to:
+  /// **'Clients'**
+  String get settings_mcpServerClientsSection;
+
+  /// No description provided for @settings_mcpServerEnable.
+  ///
+  /// In en, this message translates to:
+  /// **'Enable MCP server'**
+  String get settings_mcpServerEnable;
+
+  /// No description provided for @settings_mcpServerDisabledText.
+  ///
+  /// In en, this message translates to:
+  /// **'Off by default; listens only on local 127.0.0.1 when enabled'**
+  String get settings_mcpServerDisabledText;
+
+  /// No description provided for @settings_mcpServerStartingText.
+  ///
+  /// In en, this message translates to:
+  /// **'Starting the local MCP server...'**
+  String get settings_mcpServerStartingText;
+
+  /// No description provided for @settings_mcpServerListeningText.
+  ///
+  /// In en, this message translates to:
+  /// **'Waiting for MCP client connections'**
+  String get settings_mcpServerListeningText;
+
+  /// No description provided for @settings_mcpServerErrorText.
+  ///
+  /// In en, this message translates to:
+  /// **'Startup failed, check the error message'**
+  String get settings_mcpServerErrorText;
+
+  /// No description provided for @settings_mcpServerDisabled.
+  ///
+  /// In en, this message translates to:
+  /// **'Disabled'**
+  String get settings_mcpServerDisabled;
+
+  /// No description provided for @settings_mcpServerStarting.
+  ///
+  /// In en, this message translates to:
+  /// **'Starting'**
+  String get settings_mcpServerStarting;
+
+  /// No description provided for @settings_mcpServerListening.
+  ///
+  /// In en, this message translates to:
+  /// **'Listening'**
+  String get settings_mcpServerListening;
+
+  /// No description provided for @settings_mcpServerError.
+  ///
+  /// In en, this message translates to:
+  /// **'Error'**
+  String get settings_mcpServerError;
+
+  /// No description provided for @settings_mcpServerEndpoint.
+  ///
+  /// In en, this message translates to:
+  /// **'Endpoint'**
+  String get settings_mcpServerEndpoint;
+
+  /// No description provided for @settings_mcpServerCopyEndpoint.
+  ///
+  /// In en, this message translates to:
+  /// **'Copy endpoint'**
+  String get settings_mcpServerCopyEndpoint;
+
+  /// No description provided for @settings_mcpServerPort.
+  ///
+  /// In en, this message translates to:
+  /// **'Port'**
+  String get settings_mcpServerPort;
+
+  /// No description provided for @settings_mcpServerPortHelper.
+  ///
+  /// In en, this message translates to:
+  /// **'Changing it disconnects connected clients'**
+  String get settings_mcpServerPortHelper;
+
+  /// No description provided for @settings_mcpServerPortInvalid.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a port between {min} and {max}'**
+  String settings_mcpServerPortInvalid(Object min, Object max);
+
+  /// No description provided for @settings_mcpServerPortInUseHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Port {port} is already in use, pick another port below'**
+  String settings_mcpServerPortInUseHint(Object port);
+
+  /// No description provided for @settings_mcpServerDiscoveryFile.
+  ///
+  /// In en, this message translates to:
+  /// **'Discovery file'**
+  String get settings_mcpServerDiscoveryFile;
+
+  /// No description provided for @settings_mcpServerToken.
+  ///
+  /// In en, this message translates to:
+  /// **'Access token'**
+  String get settings_mcpServerToken;
+
+  /// No description provided for @settings_mcpServerRevealToken.
+  ///
+  /// In en, this message translates to:
+  /// **'Show token'**
+  String get settings_mcpServerRevealToken;
+
+  /// No description provided for @settings_mcpServerHideToken.
+  ///
+  /// In en, this message translates to:
+  /// **'Hide token'**
+  String get settings_mcpServerHideToken;
+
+  /// No description provided for @settings_mcpServerCopyToken.
+  ///
+  /// In en, this message translates to:
+  /// **'Copy token'**
+  String get settings_mcpServerCopyToken;
+
+  /// No description provided for @settings_mcpServerRegenerateToken.
+  ///
+  /// In en, this message translates to:
+  /// **'Regenerate token'**
+  String get settings_mcpServerRegenerateToken;
+
+  /// No description provided for @settings_mcpServerRegenerateTokenTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Regenerate access token'**
+  String get settings_mcpServerRegenerateTokenTitle;
+
+  /// No description provided for @settings_mcpServerRegenerateTokenMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'The current token stops working immediately and connected clients are disconnected. Update every client configuration with the new token.'**
+  String get settings_mcpServerRegenerateTokenMessage;
+
+  /// No description provided for @settings_mcpServerAnlasNotice.
+  ///
+  /// In en, this message translates to:
+  /// **'Anything that may spend Anlas is confirmed separately inside the launcher, regardless of the permission mode.'**
+  String get settings_mcpServerAnlasNotice;
+
+  /// No description provided for @settings_mcpServerPendingApproval.
+  ///
+  /// In en, this message translates to:
+  /// **'{client} is requesting {tool}'**
+  String settings_mcpServerPendingApproval(Object client, Object tool);
+
+  /// No description provided for @settings_mcpServerPendingApprovalHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Respond in the approval banner at the top of the page'**
+  String get settings_mcpServerPendingApprovalHint;
+
+  /// No description provided for @settings_mcpServerConnectedClients.
+  ///
+  /// In en, this message translates to:
+  /// **'Connected clients'**
+  String get settings_mcpServerConnectedClients;
+
+  /// No description provided for @settings_mcpServerSessionsEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No clients connected yet'**
+  String get settings_mcpServerSessionsEmpty;
+
+  /// No description provided for @settings_mcpServerSessionConnectedAt.
+  ///
+  /// In en, this message translates to:
+  /// **'Connected at {time}'**
+  String settings_mcpServerSessionConnectedAt(Object time);
+
+  /// No description provided for @settings_mcpServerSessionLastActivity.
+  ///
+  /// In en, this message translates to:
+  /// **'Last activity {time}'**
+  String settings_mcpServerSessionLastActivity(Object time);
+
+  /// No description provided for @settings_mcpServerClientConfigs.
+  ///
+  /// In en, this message translates to:
+  /// **'Client configuration'**
+  String get settings_mcpServerClientConfigs;
+
+  /// No description provided for @settings_mcpServerConfigUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Client configuration appears once the server is running'**
+  String get settings_mcpServerConfigUnavailable;
+
+  /// No description provided for @settings_mcpServerCopyConfig.
+  ///
+  /// In en, this message translates to:
+  /// **'Copy configuration'**
+  String get settings_mcpServerCopyConfig;
+
+  /// No description provided for @settings_mcpServerTokenMaskNotice.
+  ///
+  /// In en, this message translates to:
+  /// **'The token is masked in the preview; copying writes the real token.'**
+  String get settings_mcpServerTokenMaskNotice;
+
+  /// No description provided for @settings_mcpServerCliMissing.
+  ///
+  /// In en, this message translates to:
+  /// **'Bundled CLI not found (expected at {path}), which is normal in development runs'**
+  String settings_mcpServerCliMissing(Object path);
+
+  /// No description provided for @settings_mcpServerViewDocs.
+  ///
+  /// In en, this message translates to:
+  /// **'View documentation'**
+  String get settings_mcpServerViewDocs;
+
+  /// No description provided for @settings_mcpServerAgentPromptTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Recommended: let the agent configure itself'**
+  String get settings_mcpServerAgentPromptTitle;
+
+  /// No description provided for @settings_mcpServerAgentPromptHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Send this prompt to the agent you want to connect; it reads the setup documentation and installs the configuration itself. The prompt carries no token — the bundled CLI reads it locally.'**
+  String get settings_mcpServerAgentPromptHint;
+
+  /// No description provided for @settings_mcpServerClaudeCodeHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Run this command in a terminal to register the server.'**
+  String get settings_mcpServerClaudeCodeHint;
+
+  /// No description provided for @settings_mcpServerCodexHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Run the command to register the server, then set the token in the environment variable below.'**
+  String get settings_mcpServerCodexHint;
+
+  /// No description provided for @settings_mcpServerCursorHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Merge this into the Cursor mcp.json configuration file.'**
+  String get settings_mcpServerCursorHint;
+
+  /// No description provided for @settings_mcpServerCherryStudioHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Paste this into Cherry Studio\'s MCP server settings with “Import from JSON”; timeout is in seconds and already covers the in-app approval wait.'**
+  String get settings_mcpServerCherryStudioHint;
+
+  /// No description provided for @settings_mcpServerPiHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Pi has no built-in MCP: install the pi-mcp-adapter package first, then merge this into ~/.pi/agent/mcp.json.'**
+  String get settings_mcpServerPiHint;
+
+  /// No description provided for @settings_mcpServerClaudeDesktopHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Merge this into the Claude Desktop configuration; it connects over stdio through the bundled CLI.'**
+  String get settings_mcpServerClaudeDesktopHint;
 
   /// No description provided for @settings_fontScale.
   ///
@@ -17814,7 +18303,7 @@ abstract class AppLocalizations {
   /// No description provided for @settings_stripMetadataSubtitle.
   ///
   /// In en, this message translates to:
-  /// **'Create a sanitized copy, remove PNG text chunks, EXIF, and NAI steganographic watermark data, and avoid exposing the original path while dragging.'**
+  /// **'Remove PNG text chunks, EXIF, and NAI steganographic watermark data when copying, dragging, or returning MCP images. Local originals stay unchanged; MCP keeps the original resolution, and the gallery original it reports as saved_path is not sanitized.'**
   String get settings_stripMetadataSubtitle;
 
   /// No description provided for @settings_confirmDangerousActionsTitle.
@@ -22155,6 +22644,114 @@ abstract class AppLocalizations {
   /// **'Applied dimensions must not exceed {max}.'**
   String editor_appliedDimensionLimit(int max);
 
+  /// No description provided for @editor_toolFrame.
+  ///
+  /// In en, this message translates to:
+  /// **'Frame'**
+  String get editor_toolFrame;
+
+  /// No description provided for @editor_frameToolHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Drag inside the frame to move it, or drag its edges to resize. Content outside the frame is kept and dimmed; only the area inside is sent for generation. A moved frame keeps at least 64 px of overlap with the image.'**
+  String get editor_frameToolHint;
+
+  /// No description provided for @editor_frameSizeReadout.
+  ///
+  /// In en, this message translates to:
+  /// **'Size: {width} x {height}'**
+  String editor_frameSizeReadout(int width, int height);
+
+  /// No description provided for @editor_frameOffsetReadout.
+  ///
+  /// In en, this message translates to:
+  /// **'Offset from image: X {x}, Y {y}'**
+  String editor_frameOffsetReadout(int x, int y);
+
+  /// No description provided for @editor_frameMoveLockedByView.
+  ///
+  /// In en, this message translates to:
+  /// **'The frame can\'t be moved while the view is rotated or mirrored. Press R to reset the view, then try again.'**
+  String get editor_frameMoveLockedByView;
+
+  /// No description provided for @editor_resetFrame.
+  ///
+  /// In en, this message translates to:
+  /// **'Reset Frame'**
+  String get editor_resetFrame;
+
+  /// No description provided for @editor_cropToFrame.
+  ///
+  /// In en, this message translates to:
+  /// **'Crop to Frame'**
+  String get editor_cropToFrame;
+
+  /// No description provided for @editor_cropToFrameHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Discard the image and mask outside the frame. This can be undone.'**
+  String get editor_cropToFrameHint;
+
+  /// No description provided for @editor_cropToFrameFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Crop to frame failed: {error}'**
+  String editor_cropToFrameFailed(Object error);
+
+  /// No description provided for @editor_changeFrameSize.
+  ///
+  /// In en, this message translates to:
+  /// **'Change Frame Size'**
+  String get editor_changeFrameSize;
+
+  /// No description provided for @editor_frameResized.
+  ///
+  /// In en, this message translates to:
+  /// **'Frame resized to {width} x {height}'**
+  String editor_frameResized(int width, int height);
+
+  /// No description provided for @editor_frameToolHintPasteBack.
+  ///
+  /// In en, this message translates to:
+  /// **'Drag inside the frame to move it in 64 px steps, or drag its edges to resize. Only the area inside is sent for generation; when part of the image lies outside the frame, the result is pasted back into the full image through the mask and the outside stays unchanged. The frame keeps at least 64 px of overlap with the image.'**
+  String get editor_frameToolHintPasteBack;
+
+  /// No description provided for @editor_frameRequestReadout.
+  ///
+  /// In en, this message translates to:
+  /// **'Request: {width} x {height}'**
+  String editor_frameRequestReadout(int width, int height);
+
+  /// No description provided for @editor_frameRequestFree.
+  ///
+  /// In en, this message translates to:
+  /// **'Free'**
+  String get editor_frameRequestFree;
+
+  /// No description provided for @editor_frameRequestCost.
+  ///
+  /// In en, this message translates to:
+  /// **'~{cost} Anlas'**
+  String editor_frameRequestCost(int cost);
+
+  /// No description provided for @editor_frameResizeRejected.
+  ///
+  /// In en, this message translates to:
+  /// **'Can\'t resize the frame: it must overlap the image by at least {overlap} px, and the frame and image together can\'t exceed {max} px per side.'**
+  String editor_frameResizeRejected(int overlap, int max);
+
+  /// No description provided for @editor_compressionFrameLimited.
+  ///
+  /// In en, this message translates to:
+  /// **'Higher resolutions are unavailable because the frame would exceed the request area limit.'**
+  String get editor_compressionFrameLimited;
+
+  /// No description provided for @img2img_focusOutpaintHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Focus outpaint: only the frame is sent, and the result is pasted back into the full image through the mask. Adjust the frame with the Frame tool in the inpaint editor.'**
+  String get img2img_focusOutpaintHint;
+
   /// No description provided for @savePreset_title.
   ///
   /// In en, this message translates to:
@@ -23383,6 +23980,18 @@ abstract class AppLocalizations {
   /// **'Stores album structure and image references, never original images'**
   String get cloudSync_galleryAlbumsDescription;
 
+  /// No description provided for @cloudSync_fixedTagUsage.
+  ///
+  /// In en, this message translates to:
+  /// **'Fixed-tag usage records'**
+  String get cloudSync_fixedTagUsage;
+
+  /// No description provided for @cloudSync_fixedTagUsageDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Stores a lightweight record of which fixed tags each image used, never the images'**
+  String get cloudSync_fixedTagUsageDescription;
+
   /// No description provided for @cloudSync_optionalResources.
   ///
   /// In en, this message translates to:
@@ -24246,6 +24855,60 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Compact'**
   String get agentSettings_densityCompact;
+
+  /// No description provided for @agentSettings_chatPlacement.
+  ///
+  /// In en, this message translates to:
+  /// **'Chat placement'**
+  String get agentSettings_chatPlacement;
+
+  /// No description provided for @agentSettings_chatPlacementDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Applies to wide windows only; narrow screens keep the full-screen chat.'**
+  String get agentSettings_chatPlacementDescription;
+
+  /// No description provided for @agentSettings_dockLayout.
+  ///
+  /// In en, this message translates to:
+  /// **'Right panel layout'**
+  String get agentSettings_dockLayout;
+
+  /// No description provided for @agentSettings_dockLayoutDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Switch shows either chat or history in the right panel; split layouts show both at once.'**
+  String get agentSettings_dockLayoutDescription;
+
+  /// No description provided for @agentSettings_dockExclusive.
+  ///
+  /// In en, this message translates to:
+  /// **'Switch'**
+  String get agentSettings_dockExclusive;
+
+  /// No description provided for @agentSettings_dockStacked.
+  ///
+  /// In en, this message translates to:
+  /// **'Stacked'**
+  String get agentSettings_dockStacked;
+
+  /// No description provided for @agentSettings_dockSideBySide.
+  ///
+  /// In en, this message translates to:
+  /// **'Side by side'**
+  String get agentSettings_dockSideBySide;
+
+  /// No description provided for @agentSettings_floatingWindow.
+  ///
+  /// In en, this message translates to:
+  /// **'Show chat in a floating window'**
+  String get agentSettings_floatingWindow;
+
+  /// No description provided for @agentSettings_floatingWindowDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'The floating window stays on every page and can be moved and resized; the right panel then shows only history.'**
+  String get agentSettings_floatingWindowDescription;
 
   /// No description provided for @agentSettings_chatModel.
   ///

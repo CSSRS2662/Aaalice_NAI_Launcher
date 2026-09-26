@@ -6,9 +6,10 @@ import 'package:nai_launcher/core/utils/localization_extension.dart';
 
 import '../../../core/constants/app_version.dart';
 import '../../../data/models/auth/saved_account.dart';
-import '../../providers/account_manager_provider.dart';
+import '../../../data/services/account_manager_provider.dart';
 import '../../providers/auth_mode_provider.dart';
-import '../../providers/auth_provider.dart';
+import '../../../data/services/auth_provider.dart';
+import '../../../core/services/auth_error_service.dart';
 import '../../providers/layout_state_provider.dart';
 import '../../providers/queue_execution_provider.dart';
 import '../../providers/replication_queue_provider.dart';

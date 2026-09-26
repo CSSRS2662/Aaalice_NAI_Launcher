@@ -5,11 +5,18 @@ import 'dart:isolate';
 
 import 'package:crypto/crypto.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:path_provider/path_provider.dart';
 
 import '../services/android_asset_copy_service.dart';
 import 'completion_models.dart';
 import 'e5_search_worker.dart';
+
+final e5CompletionSourceProvider = Provider<E5CompletionSource>((ref) {
+  final source = E5CompletionSource();
+  ref.onDispose(source.dispose);
+  return source;
+});
 
 /// Local E5 retrieval pack; no user text or model state enters cloud backup.
 class E5CompletionSource implements CompletionSource {

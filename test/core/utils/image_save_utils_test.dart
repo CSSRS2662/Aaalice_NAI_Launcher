@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
 
+import 'package:hive/hive.dart';
 import 'package:image/image.dart' as img;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:nai_launcher/core/constants/api_constants.dart';
@@ -12,8 +13,9 @@ import 'package:nai_launcher/data/models/fixed_tag/fixed_tag_entry.dart';
 import 'package:nai_launcher/data/models/fixed_tag/fixed_tag_prompt_type.dart';
 import 'package:nai_launcher/data/models/fixed_tag/fixed_tag_usage_snapshot.dart';
 import 'package:nai_launcher/data/models/gallery/nai_image_metadata.dart';
-import 'package:nai_launcher/data/models/gallery/prompt_group_snapshot.dart';
 import 'package:nai_launcher/data/models/image/image_params.dart';
+import 'package:nai_launcher/data/services/fixed_tag/fixed_tag_usage_record_store.dart';
+import 'package:nai_launcher/data/services/metadata/image_metadata_container_codec.dart';
 import 'package:nai_launcher/data/services/metadata/unified_metadata_parser.dart';
 import 'package:path/path.dart' as p;
 
@@ -448,157 +450,144 @@ void main() {
       },
     );
 
-    test(
-      'should include structured positive and negative fixed tag metadata',
-      () {
-        const params = ImageParams(
-          prompt: '1girl',
-          negativePrompt: 'bad hands',
-          model: ImageModels.animeDiffusionV45Full,
-        );
-
-        final commentJson = ImageSaveUtils.buildCommentJson(
-          params: params,
-          actualSeed: 123,
-          fixedPrefixTags: const ['masterpiece'],
-          fixedSuffixTags: const ['cinematic lighting'],
-          fixedNegativePrefixTags: const ['lowres'],
-          fixedNegativeSuffixTags: const ['text'],
-        );
-
-        expect(commentJson['fixed_prefix'], equals(['masterpiece']));
-        expect(commentJson['fixed_suffix'], equals(['cinematic lighting']));
-        expect(commentJson['fixed_negative_prefix'], equals(['lowres']));
-        expect(commentJson['fixed_negative_suffix'], equals(['text']));
-      },
-    );
-
-    test('writes an explicit empty fixed-tag snapshot', () {
-      final commentJson = ImageSaveUtils.buildCommentJson(
-        params: const ImageParams(prompt: 'subject'),
+    test('launcher rebuilt comment keeps no launcher-private keys', () async {
+      final png = img.Image(width: 2, height: 2);
+      final rebuilt = await ImageSaveUtils.rebuildImageBytesWithMetadata(
+        imageBytes: Uint8List.fromList(img.encodePng(png)),
+        params: const ImageParams(prompt: 'subject', width: 2, height: 2),
         actualSeed: 12,
-        fixedTagUsageSnapshot: const FixedTagUsageSnapshot(),
       );
+      final commentJson =
+          jsonDecode(
+                UnifiedMetadataParser.extractPngTextData(rebuilt)['Comment']!,
+              )
+              as Map<String, dynamic>;
 
-      expect(commentJson['aaalice_fixed_tags'], {
-        'version': 1,
-        'entries': <dynamic>[],
+      expect(commentJson, isNot(contains('aaalice_fixed_tags')));
+      expect(commentJson, isNot(contains('fixed_prefix')));
+      expect(commentJson, isNot(contains('fixed_suffix')));
+      expect(commentJson, isNot(contains('fixed_negative_prefix')));
+      expect(commentJson, isNot(contains('fixed_negative_suffix')));
+    });
+
+    test('embedded NovelAI bytes survive a save untouched', () async {
+      final hiveDirectory = await Directory.systemTemp.createTemp(
+        'image-save-hive-',
+      );
+      Hive.init(hiveDirectory.path);
+      addTearDown(() async {
+        await Hive.close();
+        await hiveDirectory.delete(recursive: true);
       });
-      expect(commentJson['fixed_prefix'], isEmpty);
-      expect(commentJson['fixed_suffix'], isEmpty);
-      expect(commentJson['fixed_negative_prefix'], isEmpty);
-      expect(commentJson['fixed_negative_suffix'], isEmpty);
-    });
+      final root = await Directory.systemTemp.createTemp('image-save-root-');
+      addTearDown(() => root.delete(recursive: true));
 
-    test('writes prompt partitions without changing the request prompt', () {
-      const snapshot = PromptGroupSnapshot(
-        groupedMode: true,
-        positiveSections: [
-          PromptGroupSectionSnapshot(id: 'a', text: '1girl'),
-          PromptGroupSectionSnapshot(id: 'b', text: 'school uniform'),
-        ],
-        negativeSections: [PromptGroupSectionSnapshot(id: 'c', text: 'lowres')],
-      );
-      final commentJson = ImageSaveUtils.buildCommentJson(
+      final png = img.Image(width: 2, height: 2);
+      final base = await ImageSaveUtils.rebuildImageBytesWithMetadata(
+        imageBytes: Uint8List.fromList(img.encodePng(png)),
         params: const ImageParams(
-          prompt: '1girl, school uniform',
-          negativePrompt: 'lowres',
+          prompt: 'original prompt',
+          negativePrompt: 'original negative',
+          width: 2,
+          height: 2,
         ),
-        actualSeed: 12,
-        promptGroupSnapshot: snapshot,
+        actualSeed: 777,
+      );
+      const snapshot = FixedTagUsageSnapshot(
+        entries: [
+          FixedTagUsageEntry(
+            fixedTagId: 'fixed-a',
+            name: 'A',
+            content: 'masterpiece',
+            weight: 1,
+            renderedContent: 'masterpiece',
+            position: FixedTagPosition.prefix,
+            promptType: FixedTagPromptType.positive,
+            order: 0,
+          ),
+        ],
       );
 
-      expect(commentJson['prompt'], '1girl, school uniform');
+      final saved = await ImageSaveUtils.saveResultImage(
+        rootPath: root.path,
+        imageBytes: base,
+        preserveOriginalBytes: false,
+        fixedTagUsageSnapshot: snapshot,
+        seed: 777,
+        rebuild: () async => fail('NovelAI bytes must not be rebuilt'),
+      );
+
+      expect(saved.bytes, orderedEquals(base));
+      expect(await File(saved.path).readAsBytes(), orderedEquals(base));
       expect(
-        commentJson['aaalice_prompt_groups']['positiveSections'],
-        hasLength(2),
+        FixedTagUsageRecordStore()
+            .lookup(saved.contentHash)
+            ?.entries
+            .single
+            .fixedTagId,
+        'fixed-a',
       );
+      final metadata = UnifiedMetadataParser.parseFromPng(
+        saved.bytes,
+      ).metadata!;
+      expect(metadata.prompt, 'original prompt');
+      expect(metadata.fixedTagUsageData, isNull);
+      expect(metadata.fixedPrefixTags, isEmpty);
     });
+  });
 
-    test(
-      'merges prompt partitions into existing NovelAI PNG metadata',
-      () async {
-        final png = img.Image(width: 2, height: 2);
-        final base = await ImageSaveUtils.rebuildImageBytesWithMetadata(
-          imageBytes: Uint8List.fromList(img.encodePng(png)),
-          params: const ImageParams(
-            prompt: '1girl, school uniform',
-            negativePrompt: 'lowres',
-            width: 2,
-            height: 2,
-          ),
-          actualSeed: 12,
-        );
-        const snapshot = PromptGroupSnapshot(
-          groupedMode: true,
-          positiveSections: [
-            PromptGroupSectionSnapshot(id: 'a', text: '1girl'),
-            PromptGroupSectionSnapshot(id: 'b', text: 'school uniform'),
-          ],
-          negativeSections: [
-            PromptGroupSectionSnapshot(id: 'c', text: 'lowres'),
-          ],
-        );
+  test(
+    'background metadata failure does not overwrite the destination',
+    () async {
+      final parent = Directory('tool/.tmp/single-pass-save-tests');
+      await parent.create(recursive: true);
+      final root = await parent.createTemp('damaged-');
+      addTearDown(() => root.delete(recursive: true));
+      final file = File(p.join(root.path, 'existing.png'));
+      final original = Uint8List.fromList(
+        img.encodePng(img.Image(width: 8, height: 8)),
+      );
+      await file.writeAsBytes(original);
+      final damaged = Uint8List.fromList(original)..[original.length - 1] ^= 1;
+      await expectLater(
+        ImageSaveUtils.saveImageWithMetadata(
+          imageBytes: damaged,
+          filePath: file.path,
+          params: const ImageParams(seed: 123),
+          actualSeed: 123,
+          preserveExistingNovelAiMetadata: false,
+        ),
+        throwsFormatException,
+      );
+      expect(await file.readAsBytes(), orderedEquals(original));
+    },
+  );
 
-        final merged = await ImageSaveUtils.mergeLauncherMetadata(
-          imageBytes: base,
-          promptGroupSnapshot: snapshot,
-        );
-        final parsed = UnifiedMetadataParser.parseFromPng(merged);
-
-        expect(parsed.success, isTrue);
-        expect(parsed.metadata!.prompt, '1girl, school uniform');
-        expect(
-          parsed.metadata!.promptGroupSnapshot!.positiveSections,
-          hasLength(2),
-        );
-      },
+  test('background batch writer preserves the optional stealth mode', () async {
+    final source = Uint8List.fromList(
+      img.encodePng(img.Image(width: 128, height: 128, numChannels: 4)),
     );
-
-    test(
-      'merges fixed-tag provenance without replacing official fields',
-      () async {
-        final png = img.Image(width: 2, height: 2);
-        final base = await ImageSaveUtils.rebuildImageBytesWithMetadata(
-          imageBytes: Uint8List.fromList(img.encodePng(png)),
-          params: const ImageParams(
-            prompt: 'original prompt',
-            negativePrompt: 'original negative',
-            width: 2,
-            height: 2,
-          ),
-          actualSeed: 777,
-        );
-        const snapshot = FixedTagUsageSnapshot(
-          entries: [
-            FixedTagUsageEntry(
-              fixedTagId: 'fixed-a',
-              name: 'A',
-              content: 'masterpiece',
-              weight: 1,
-              renderedContent: 'masterpiece',
-              position: FixedTagPosition.prefix,
-              promptType: FixedTagPromptType.positive,
-              order: 0,
-            ),
-          ],
-        );
-
-        final merged = await ImageSaveUtils.mergeFixedTagUsageMetadata(
-          imageBytes: base,
-          snapshot: snapshot,
-        );
-        final metadata = UnifiedMetadataParser.parseFromPng(merged).metadata!;
-
-        expect(metadata.prompt, 'original prompt');
-        expect(metadata.negativePrompt, 'original negative');
-        expect(metadata.seed, 777);
-        expect(metadata.fixedPrefixTags, ['masterpiece']);
-        expect(
-          metadata.fixedTagUsageSnapshot?.entries.single.fixedTagId,
-          'fixed-a',
-        );
-      },
+    final result = await ImageSaveUtils.rebuildImageBytesWithMetadata(
+      imageBytes: source,
+      params: const ImageParams(
+        prompt: 'stealth round trip',
+        seed: 456,
+        width: 128,
+        height: 128,
+      ),
+      actualSeed: 456,
+      useStealth: true,
+    );
+    final hidden = ImageMetadataContainerCodec.extractStealthMetadataText(
+      result,
+    );
+    expect(hidden, isNotNull);
+    expect(jsonDecode(hidden!)['seed'], 456);
+    expect(
+      jsonDecode(
+        UnifiedMetadataParser.extractPngTextData(result)['Comment']!,
+      )['seed'],
+      456,
     );
   });
 

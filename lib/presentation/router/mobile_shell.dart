@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../core/platform/platform_capabilities.dart';
 import '../../core/utils/localization_extension.dart';
+import '../mcp/widgets/mcp_approval_banner.dart';
 import '../providers/mobile_shell_overlay_provider.dart';
 import '../providers/replication_queue_provider.dart';
 import '../widgets/common/app_toast.dart';
@@ -83,6 +84,9 @@ class MobileShell extends ConsumerWidget {
                     navigationShell.goBranch(AppBranch.generation.index),
                 onOpenAgentSettings: () =>
                     navigationShell.goBranch(AppBranch.settings.index),
+              ),
+              const McpApprovalOverlay(
+                key: ValueKey('mobile-approval-overlay-layer'),
               ),
             ],
           ),

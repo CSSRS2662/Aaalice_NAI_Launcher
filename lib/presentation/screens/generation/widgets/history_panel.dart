@@ -3,9 +3,10 @@ import '../../../selection/card_selection_scope.dart';
 import '../../../widgets/common/image_card_action.dart';
 import '../../../widgets/common/image_card_action_dispatch.dart';
 import '../../../widgets/common/image_card_batch_scope.dart';
+import '../services/generated_image_file_link.dart';
 import '../services/generation_image_batch_actions.dart';
+import '../services/generation_image_deletion.dart';
 import 'dart:async';
-import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
@@ -17,16 +18,14 @@ import '../../../../core/enums/precise_ref_type.dart';
 import '../../../../core/platform/platform_capabilities.dart';
 import '../../../../core/utils/localization_extension.dart';
 import '../../../../core/utils/file_explorer_utils.dart';
-import '../../../../core/utils/image_save_utils.dart';
 import '../../../../core/utils/image_share_sanitizer.dart';
 import '../../../../core/utils/vibe_file_parser.dart';
-import '../../../../data/services/alias_resolver_service.dart';
+import '../../../providers/alias_resolver_service.dart';
 import '../../../adaptive/interaction_policy.dart';
 import '../../../providers/layout_state_provider.dart';
 import '../../../providers/tag_library_page_provider.dart';
 
 import '../../../../data/services/image_metadata_service.dart';
-import '../../../../data/repositories/gallery_folder_repository.dart';
 import '../../../providers/generation/generation_params_selectors.dart';
 import '../../../providers/generation/preview_selection_provider.dart';
 import '../../../providers/history_click_behavior_provider.dart';
@@ -85,6 +84,7 @@ class HistoryPanel extends ConsumerStatefulWidget {
   const HistoryPanel({
     super.key,
     this.onClose,
+    this.onCollapse,
     this.embedded = false,
     this.viewportOffset,
     this.sharePreparationService,
@@ -92,6 +92,9 @@ class HistoryPanel extends ConsumerStatefulWidget {
 
   final ShareImagePreparationService? sharePreparationService;
   final VoidCallback? onClose;
+
+  /// 替换默认的“收起右栏”行为，按钮仍表达收起而非关闭。
+  final VoidCallback? onCollapse;
 
   /// 嵌入模式：隐藏自带标题行，由外层 Tab 栏承担标题职责。
   final bool embedded;
@@ -102,6 +105,11 @@ class HistoryPanel extends ConsumerStatefulWidget {
 }
 
 class _HistoryPanelState extends ConsumerState<HistoryPanel> {
+  static const _pinnedHoverActions = [
+    ImageCardActionId.copy,
+    ImageCardActionId.delete,
+  ];
+
   Set<String> get _selectedIds =>
       ref.read(generationImageCardSelectionProvider).selectedIds;
   GenerationImageCardSelection get _selection =>
@@ -117,6 +125,7 @@ class _HistoryPanelState extends ConsumerState<HistoryPanel> {
   final Set<String> _favoriteStatusLoadingIds = {};
   final Set<String> _favoriteToggleLoadingIds = {};
   late final OwnedScrollController _scrollController;
+  late final GenerationImageDeletion _deletion;
   final Map<String, GlobalKey> _imageKeys = {};
   List<_HistoryRowDescriptor> _rowDescriptors = const [];
   ProviderSubscription<String?>? _selectionSubscription;
@@ -128,6 +137,7 @@ class _HistoryPanelState extends ConsumerState<HistoryPanel> {
     _sharePreparationService =
         widget.sharePreparationService ?? ShareImagePreparationService.instance;
     _scrollController = OwnedScrollController(viewport: widget.viewportOffset);
+    _deletion = GenerationImageDeletion(context: context, ref: ref);
     _sharePreparationService.addListener(_handleSharePreparationChanged);
     _selectionSubscription = ref.listenManual(
       generationPreviewSelectionProvider,
@@ -154,6 +164,7 @@ class _HistoryPanelState extends ConsumerState<HistoryPanel> {
 
   @override
   Widget build(BuildContext context) {
+    // 面板自身渲染流式预览卡片，字段投影覆盖不到，只能整状态订阅。
     final state = ref.watch(imageGenerationNotifierProvider);
     final selection = ref.watch(generationImageCardSelectionProvider);
     ref.watch(copyDragWatermarkProvider);
@@ -181,6 +192,7 @@ class _HistoryPanelState extends ConsumerState<HistoryPanel> {
         images: selectedImages,
         gallery: ref.read(localGalleryNotifierProvider.notifier),
         selection: _selection,
+        deletion: _deletion,
       ).build(),
       child: CardSelectionScope(
         selection: selection,
@@ -415,6 +427,7 @@ class _HistoryPanelState extends ConsumerState<HistoryPanel> {
       key: const ValueKey('generation-history-collapse'),
       onPressed:
           onClose ??
+          widget.onCollapse ??
           () => ref
               .read(layoutStateNotifierProvider.notifier)
               .setRightPanelExpanded(false),
@@ -823,6 +836,10 @@ class _HistoryPanelState extends ConsumerState<HistoryPanel> {
                                     historyImage,
                                   )
                                 : null,
+                            showHoverActionBar: false,
+                            pinnedHoverActions: _pinnedHoverActions,
+                            onDelete: () =>
+                                _deletion.confirmAndDelete([historyImage]),
                             onSelectionChanged: (selected) {
                               if (!historyImage.canBulkSelect) {
                                 return;
@@ -1064,6 +1081,9 @@ class _HistoryPanelState extends ConsumerState<HistoryPanel> {
           onReuseSeed: image.canUseAsGenerationInput
               ? () => _reuseGeneratedSeed(context, image)
               : null,
+          showHoverActionBar: false,
+          pinnedHoverActions: _pinnedHoverActions,
+          onDelete: () => _deletion.confirmAndDelete([image]),
           onSelectionChanged: (selected) {
             if (!image.canBulkSelect) {
               return;
@@ -1341,15 +1361,15 @@ class _HistoryPanelState extends ConsumerState<HistoryPanel> {
   ) async {
     if (!_favoriteToggleLoadingIds.add(image.id)) return;
 
+    final gallery = ref.read(localGalleryNotifierProvider.notifier);
     try {
-      final filePath = await GenerationSaveService.ensureImageSaved(
-        context,
+      final linked = await GeneratedImageFileLink.ensureSaved(
         ref,
         image,
+        context.l10n,
       );
-      final isFavorite = await ref
-          .read(localGalleryNotifierProvider.notifier)
-          .toggleFavorite(filePath);
+      final filePath = linked.path;
+      final isFavorite = await gallery.toggleFavorite(filePath);
 
       if (!mounted) return;
       setState(() {
@@ -1484,6 +1504,12 @@ class _HistoryPanelState extends ConsumerState<HistoryPanel> {
     builder: (context) {
       final batch = ImageCardBatchScope.maybeOf(context)!;
       final extent = context.interactionPolicy.minimumControlExtent;
+      final height = extent < 44 ? 44.0 : extent;
+      final count = batch.targetIds.length;
+      final rows = [
+        batch.actions.where((action) => !action.isDanger).toList(),
+        batch.actions.where((action) => action.isDanger).toList(),
+      ].where((row) => row.isNotEmpty);
       return Container(
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
@@ -1492,19 +1518,21 @@ class _HistoryPanelState extends ConsumerState<HistoryPanel> {
             top: BorderSide(color: theme.dividerColor.withValues(alpha: 0.3)),
           ),
         ),
-        child: Row(
+        // 危险动作单独占一行：与主要动作隔开，窄面板里也不挤压文字按钮。
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          spacing: 8,
           children: [
-            for (var i = 0; i < batch.actions.length; i++) ...[
-              if (i > 0) const SizedBox(width: 8),
-              Expanded(
-                child: _buildBatchButton(
-                  context,
-                  batch.actions[i],
-                  batch.targetIds.length,
-                  extent < 44 ? 44 : extent,
-                ),
+            for (final row in rows)
+              Row(
+                spacing: 8,
+                children: [
+                  for (final action in row)
+                    Expanded(
+                      child: _buildBatchButton(context, action, count, height),
+                    ),
+                ],
               ),
-            ],
           ],
         ),
       );
@@ -1520,20 +1548,28 @@ class _HistoryPanelState extends ConsumerState<HistoryPanel> {
     final onPressed = action.canInvoke
         ? () => unawaited(dispatchImageCardAction(context, action))
         : null;
+    final key = ValueKey('history-batch-action-${action.id.name}');
     final label = Text('${action.label} ($count)');
     final icon = Icon(action.icon, size: 20);
     return action.isPrimary
         ? FilledButton.icon(
+            key: key,
             onPressed: onPressed,
             icon: icon,
             label: label,
             style: FilledButton.styleFrom(minimumSize: Size(0, height)),
           )
         : OutlinedButton.icon(
+            key: key,
             onPressed: onPressed,
             icon: icon,
             label: label,
-            style: OutlinedButton.styleFrom(minimumSize: Size(0, height)),
+            style: OutlinedButton.styleFrom(
+              minimumSize: Size(0, height),
+              foregroundColor: action.isDanger
+                  ? Theme.of(context).colorScheme.error
+                  : null,
+            ),
           );
   }
 
@@ -1543,34 +1579,14 @@ class _HistoryPanelState extends ConsumerState<HistoryPanel> {
     GeneratedImage image,
   ) async {
     try {
-      final existingPath = image.filePath;
-      if (existingPath != null &&
-          existingPath.isNotEmpty &&
-          await File(existingPath).exists()) {
-        await FileExplorerUtils.revealFile(existingPath);
-        return;
-      }
-
-      final saveDirPath = await GalleryFolderRepository.instance.getRootPath();
-      if (saveDirPath == null) return;
-
-      // 原子保存：日期分类路径 + 独占防冲突 + 失败清理，全部在工具内完成
-      final filePath = await ImageSaveUtils.saveBytesToDatedPath(
-        rootPath: saveDirPath,
-        bytes: image.bytes,
-        seed: await ImageSaveUtils.resolveSeed(
-          metadata: image.metadata,
-          bytes: image.bytes,
-        ),
+      final linked = await GeneratedImageFileLink.ensureSaved(
+        ref,
+        image,
+        context.l10n,
       );
-
-      ref.read(localGalleryNotifierProvider.notifier).refresh();
-
-      // 在文件夹中打开并选中文件
-      await FileExplorerUtils.revealFile(filePath);
-
-      if (context.mounted) {
-        AppToast.success(context, context.l10n.image_imageSaved(saveDirPath));
+      await FileExplorerUtils.revealFile(linked.path);
+      if (linked.newlySavedRoot case final root? when context.mounted) {
+        AppToast.success(context, context.l10n.image_imageSaved(root));
       }
     } catch (e) {
       if (context.mounted) {

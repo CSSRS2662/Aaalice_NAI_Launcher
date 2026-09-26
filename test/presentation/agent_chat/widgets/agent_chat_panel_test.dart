@@ -12,7 +12,7 @@ import 'package:flutter_markdown_plus/flutter_markdown_plus.dart' as md;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:nai_launcher/core/agent/agent_types.dart';
-import 'package:nai_launcher/core/windowing/agent_chat_session_picker.dart';
+import 'package:nai_launcher/presentation/agent_chat/widgets/agent_chat_session_picker.dart';
 import 'package:nai_launcher/core/shortcuts/shortcut_config.dart';
 import 'package:hive/hive.dart';
 import 'package:nai_launcher/core/constants/storage_keys.dart';
@@ -42,11 +42,13 @@ void main() {
   setUpAll(() async {
     hiveDir = Directory.systemTemp.createTempSync('agent_chat_panel_hive_');
     Hive.init(hiveDir.path);
-    await Hive.openBox(StorageKeys.settingsBox);
+    // Memory backend: writes under FakeAsync never finish and lock the box
+    await Hive.openBox(StorageKeys.settingsBox, bytes: Uint8List(0));
   });
 
   tearDownAll(() async {
-    await Hive.close();
+    // Bounded wait: a locked box fails fast instead of hitting the watchdog
+    await Hive.close().timeout(const Duration(seconds: 10));
     if (hiveDir.existsSync()) hiveDir.deleteSync(recursive: true);
   });
 
@@ -909,11 +911,10 @@ void main() {
                     onOpenSettings: () => settingsOpened = true,
                     // Session picker scaling is covered by its own shared-widget
                     // tests; keep this regression focused on the composer.
-                    mobileHeaderWrapper: (child) =>
-                        MediaQuery.withClampedTextScaling(
-                          maxScaleFactor: 1.6,
-                          child: child,
-                        ),
+                    headerWrapper: (child) => MediaQuery.withClampedTextScaling(
+                      maxScaleFactor: 1.6,
+                      child: child,
+                    ),
                   ),
                 ),
               ),

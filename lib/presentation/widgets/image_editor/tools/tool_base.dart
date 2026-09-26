@@ -30,6 +30,9 @@ abstract class EditorTool {
   /// 工具是否自行处理 Alt 键（跳过临时拾色器切换）
   bool get handlesAltKey => false;
 
+  /// 当前编辑会话能否使用此工具；不可用时不出现在工具栏，也不响应快捷键
+  bool isAvailableIn(EditorState state) => true;
+
   /// 指针按下
   void onPointerDown(PointerDownEvent event, EditorState state);
 
@@ -136,34 +139,6 @@ enum SelectionMode {
 
   /// 交叉
   intersect,
-}
-
-extension SelectionModeExtension on SelectionMode {
-  String get label {
-    switch (this) {
-      case SelectionMode.replace:
-        return 'Replace';
-      case SelectionMode.add:
-        return 'Add';
-      case SelectionMode.subtract:
-        return 'Subtract';
-      case SelectionMode.intersect:
-        return 'Intersect';
-    }
-  }
-
-  IconData get icon {
-    switch (this) {
-      case SelectionMode.replace:
-        return Icons.crop_square;
-      case SelectionMode.add:
-        return Icons.add_box_outlined;
-      case SelectionMode.subtract:
-        return Icons.indeterminate_check_box_outlined;
-      case SelectionMode.intersect:
-        return Icons.filter_none;
-    }
-  }
 }
 
 /// 选区设置

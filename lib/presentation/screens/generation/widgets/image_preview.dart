@@ -2,8 +2,9 @@ import '../../../providers/generation/image_card_selection_provider.dart';
 import '../../../selection/card_selection_scope.dart';
 import '../../../widgets/common/image_card_batch_scope.dart';
 import '../../../widgets/bulk_action_bar.dart';
+import '../services/generated_image_file_link.dart';
 import '../services/generation_image_batch_actions.dart';
-import '../services/generation_save_service.dart';
+import '../services/generation_image_deletion.dart';
 import 'package:nai_launcher/data/models/image/image_postprocess_phase.dart';
 import 'dart:async';
 import 'dart:io';
@@ -29,16 +30,15 @@ import '../../../../core/utils/localization_extension.dart';
 import '../../../../core/utils/nai_resolution_adapter.dart';
 import '../../../../core/utils/prompt_preset_resolution.dart';
 import '../../../../core/utils/vibe_file_parser.dart';
-import '../../../../data/models/fixed_tag/fixed_tag_entry.dart';
-import '../../../../data/models/fixed_tag/fixed_tag_prompt_type.dart';
 import '../../../../data/models/fixed_tag/fixed_tag_usage_snapshot.dart';
 import '../../../../data/models/image/image_stream_chunk.dart';
 import '../../../../data/repositories/gallery_folder_repository.dart';
-import '../../../../data/services/alias_resolver_service.dart';
+import '../../../providers/alias_resolver_service.dart';
 import '../../../../data/services/image_metadata_service.dart';
 import '../../../adaptive/window_size_class.dart';
 import '../../../providers/generation/generation_error_classifier.dart';
 import '../../../providers/generation/generation_params_selectors.dart';
+import '../../../providers/generation/image_generation_selectors.dart';
 import '../../../providers/generation/generation_view_state_provider.dart';
 import '../../../providers/generation/preview_selection_provider.dart';
 import '../../../providers/history_click_behavior_provider.dart';
@@ -152,17 +152,20 @@ class ImagePreviewWidget extends ConsumerStatefulWidget {
 class _ImagePreviewWidgetState extends ConsumerState<ImagePreviewWidget> {
   @override
   Widget build(BuildContext context) {
-    final state = ref.watch(imageGenerationNotifierProvider);
+    // 外壳只随图像集合变化重建；流式预览帧由内层 Consumer 单独承担。
+    final panelImages = ref.watch(
+      imageGenerationNotifierProvider.select(selectGenerationPanelImages),
+    );
     final theme = Theme.of(context);
     final selection = ref.watch(generationImageCardSelectionProvider);
     final selectionNotifier = ref.read(
       generationImageCardSelectionProvider.notifier,
     );
-    final presented = state.displayImages
+    final presented = panelImages.displayImages
         .where((image) => image.canBulkSelect)
         .map((image) => image.id)
         .toList();
-    final selectedImages = state.selectableMergedImages
+    final selectedImages = panelImages.selectableMergedImages
         .where((image) => selection.isSelected(image.id))
         .toList();
 
@@ -175,6 +178,7 @@ class _ImagePreviewWidgetState extends ConsumerState<ImagePreviewWidget> {
         images: selectedImages,
         gallery: ref.read(localGalleryNotifierProvider.notifier),
         selection: selectionNotifier,
+        deletion: GenerationImageDeletion(context: context, ref: ref),
       ).build(),
       child: CardSelectionScope(
         selection: selection,
@@ -208,7 +212,14 @@ class _ImagePreviewWidgetState extends ConsumerState<ImagePreviewWidget> {
                             compact ? 4 : 16,
                           ),
                           child: Center(
-                            child: _buildContent(context, ref, state, theme),
+                            child: Consumer(
+                              builder: (context, ref, _) => _buildContent(
+                                context,
+                                ref,
+                                ref.watch(imageGenerationNotifierProvider),
+                                theme,
+                              ),
+                            ),
                           ),
                         );
                       },
@@ -912,15 +923,15 @@ class _ImagePreviewWidgetState extends ConsumerState<ImagePreviewWidget> {
     BuildContext context,
     GeneratedImage image,
   ) async {
+    // 保存期间预览可能被卸载，句柄在第一个 await 之前取好。
+    final gallery = ref.read(localGalleryNotifierProvider.notifier);
     try {
-      final filePath = await GenerationSaveService.ensureImageSaved(
-        context,
+      final linked = await GeneratedImageFileLink.ensureSaved(
         ref,
         image,
+        context.l10n,
       );
-      final isFavorite = await ref
-          .read(localGalleryNotifierProvider.notifier)
-          .toggleFavorite(filePath);
+      final isFavorite = await gallery.toggleFavorite(linked.path);
       if (!context.mounted) return;
       AppToast.success(
         context,
@@ -1035,32 +1046,14 @@ class _ImagePreviewWidgetState extends ConsumerState<ImagePreviewWidget> {
     GeneratedImage image,
   ) async {
     try {
-      final existingPath = image.filePath;
-      if (existingPath != null &&
-          existingPath.isNotEmpty &&
-          await File(existingPath).exists()) {
-        await FileExplorerUtils.revealFile(existingPath);
-        return;
-      }
-
-      final saveDirPath = await GalleryFolderRepository.instance.getRootPath();
-      if (saveDirPath == null) return;
-
-      // 原子保存：日期分类路径 + 独占防冲突 + 失败清理，全部在工具内完成
-      final filePath = await ImageSaveUtils.saveBytesToDatedPath(
-        rootPath: saveDirPath,
-        bytes: image.bytes,
-        seed: await ImageSaveUtils.resolveSeed(
-          metadata: image.metadata,
-          bytes: image.bytes,
-        ),
+      final linked = await GeneratedImageFileLink.ensureSaved(
+        ref,
+        image,
+        context.l10n,
       );
-
-      ref.read(localGalleryNotifierProvider.notifier).refresh();
-      await FileExplorerUtils.revealFile(filePath);
-
-      if (context.mounted) {
-        AppToast.success(context, context.l10n.image_imageSaved(saveDirPath));
+      await FileExplorerUtils.revealFile(linked.path);
+      if (linked.newlySavedRoot case final root? when context.mounted) {
+        AppToast.success(context, context.l10n.image_imageSaved(root));
       }
     } catch (e) {
       if (context.mounted) {
@@ -1277,25 +1270,12 @@ class _ImagePreviewWidgetState extends ConsumerState<ImagePreviewWidget> {
       final capturedFixedTags = image is GeneratedImageDetailData
           ? image.fixedTagUsageSnapshot
           : null;
+      final fixedTagsState = ref.read(fixedTagsNotifierProvider);
 
       // 构建最终字节：外部结果可要求保留原始字节；其他图像缺少 NAI
       // 元数据时仍按当前参数重建。
-      final Uint8List finalBytes;
-      if (image.preserveOriginalBytesOnSave) {
-        finalBytes = imageBytes;
-      } else if (ImageSaveUtils.hasEmbeddedNovelAiMetadata(imageBytes)) {
-        finalBytes = capturedFixedTags == null
-            ? imageBytes
-            : await ImageSaveUtils.mergeFixedTagUsageMetadata(
-                imageBytes: imageBytes,
-                snapshot: capturedFixedTags,
-              );
-      } else {
+      Future<Uint8List> rebuildBytes() async {
         final characterConfig = ref.read(characterPromptNotifierProvider);
-        final fixedTagsState = ref.read(fixedTagsNotifierProvider);
-        final fixedTagUsageSnapshot =
-            capturedFixedTags ??
-            FixedTagUsageSnapshot.capture(fixedTagsState.entries);
 
         // 解析别名
         final aliasResolver = ref.read(aliasResolverServiceProvider.notifier);
@@ -1359,39 +1339,10 @@ class _ImagePreviewWidgetState extends ConsumerState<ImagePreviewWidget> {
           width: encodedSize?.$1 ?? params.width,
           height: encodedSize?.$2 ?? params.height,
         );
-        finalBytes = await ImageSaveUtils.rebuildImageBytesWithMetadata(
+        return ImageSaveUtils.rebuildImageBytesWithMetadata(
           imageBytes: imageBytes,
           params: paramsForSave,
           actualSeed: actualSeed,
-          fixedPrefixTags: fixedTagUsageSnapshot
-              .entriesFor(
-                promptType: FixedTagPromptType.positive,
-                position: FixedTagPosition.prefix,
-              )
-              .map((entry) => entry.renderedContent)
-              .toList(),
-          fixedSuffixTags: fixedTagUsageSnapshot
-              .entriesFor(
-                promptType: FixedTagPromptType.positive,
-                position: FixedTagPosition.suffix,
-              )
-              .map((entry) => entry.renderedContent)
-              .toList(),
-          fixedNegativePrefixTags: fixedTagUsageSnapshot
-              .entriesFor(
-                promptType: FixedTagPromptType.negative,
-                position: FixedTagPosition.prefix,
-              )
-              .map((entry) => entry.renderedContent)
-              .toList(),
-          fixedNegativeSuffixTags: fixedTagUsageSnapshot
-              .entriesFor(
-                promptType: FixedTagPromptType.negative,
-                position: FixedTagPosition.suffix,
-              )
-              .map((entry) => entry.renderedContent)
-              .toList(),
-          fixedTagUsageSnapshot: fixedTagUsageSnapshot,
           charCaptions: charCaptions,
           charNegCaptions: charNegCaptions,
           useCoords: !characterConfig.globalAiChoice,
@@ -1399,11 +1350,19 @@ class _ImagePreviewWidgetState extends ConsumerState<ImagePreviewWidget> {
       }
 
       // 原子保存：日期分类路径 + 独占防冲突 + 失败清理，全部在工具内完成
-      final filePath = await ImageSaveUtils.saveBytesToDatedPath(
+      final saved = await ImageSaveUtils.saveResultImage(
         rootPath: saveDir.path,
-        bytes: finalBytes,
+        imageBytes: imageBytes,
+        preserveOriginalBytes: image.preserveOriginalBytesOnSave,
+        fixedTagUsageSnapshot: capturedFixedTags,
+        rebuiltFixedTagUsageSnapshot:
+            capturedFixedTags ??
+            FixedTagUsageSnapshot.capture(fixedTagsState.entries),
         seed: actualSeed,
+        rebuild: rebuildBytes,
       );
+      final finalBytes = saved.bytes;
+      final filePath = saved.path;
 
       Object? systemGalleryError;
       if (PlatformCapabilities.current.supportsSystemGalleryExport) {

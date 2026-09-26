@@ -116,6 +116,18 @@ class StorageKeys {
   // Panel Width Keys (面板宽度)
   static const String historyPanelWidth = 'history_panel_width';
   static const String rightPanelTab = 'right_panel_tab';
+
+  // Agent Chat Dock Keys (智能体聊天停靠与浮窗，本机布局)
+  static const String agentChatDockMode = 'agent_chat_dock_mode';
+  static const String agentChatDockFoldedPane = 'agent_chat_dock_folded_pane';
+  static const String agentChatDockStackedChatFraction =
+      'agent_chat_dock_stacked_chat_fraction';
+  static const String agentChatDockSideBySideChatWidth =
+      'agent_chat_dock_side_by_side_chat_width';
+  static const String agentChatFloatingEnabled = 'agent_chat_floating_enabled';
+  static const String agentChatFloatingVisible = 'agent_chat_floating_visible';
+  static const String agentChatFloatingRect = 'agent_chat_floating_rect';
+
   static const String agentChatActiveSession = 'agent_chat_active_session';
   static const String defaultModel = 'default_model';
   static const String defaultSampler = 'default_sampler';
@@ -246,6 +258,12 @@ class StorageKeys {
   static const String fixedTagsNegativePanelExpanded =
       'fixed_tags_negative_panel_expanded';
   static const String fixedTagCategoriesData = 'fixed_tag_categories_data';
+  static const String fixedTagUsageRecordsBox = 'fixed_tag_usage_records';
+  static const String fixedTagUsageSnapshotsBox = 'fixed_tag_usage_snapshots';
+
+  // Prompt Groups (提示词分区旁路记录)
+  static const String promptGroupRecordsBox = 'prompt_group_records';
+  static const String promptGroupSnapshotsBox = 'prompt_group_snapshots';
 
   // Tag Library (词库相关)
   static const String tagLibraryUserBox = 'tag_library_user';
@@ -372,6 +390,12 @@ class StorageKeys {
 
   // Krita Bridge 设置
   static const String kritaBridgeEnabled = 'krita_bridge_enabled';
+
+  // MCP 服务器设置。端口、令牌与权限模式都绑定本机，不进入云同步。
+  static const String mcpServerEnabled = 'mcp_server_enabled';
+  static const String mcpServerPort = 'mcp_server_port';
+  static const String mcpServerPermissionMode = 'mcp_server_permission_mode';
+  static const String mcpServerToken = 'mcp_server_token_v1';
 
   // 工作流设置
   /// 旧版连续幅度（0-1），只用于迁移到 [workflowEnhanceLevel]。

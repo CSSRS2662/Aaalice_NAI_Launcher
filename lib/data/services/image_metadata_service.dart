@@ -7,6 +7,8 @@ import 'package:hive/hive.dart';
 import '../../core/utils/app_logger.dart';
 import '../../core/utils/isolate_pool.dart';
 import '../models/gallery/nai_image_metadata.dart';
+import 'fixed_tag/fixed_tag_usage_record_store.dart';
+import 'prompt_group/prompt_group_record_store.dart';
 import 'metadata/cache_manager.dart';
 import 'metadata/hash_calculator.dart';
 import 'metadata/preloader.dart';
@@ -138,6 +140,8 @@ class ImageMetadataService {
   final _cacheManager = MetadataCacheManager();
   final _hashCalculator = FileHashCalculator();
   final _preloader = MetadataPreloader();
+  final _fixedTagUsageRecords = FixedTagUsageRecordStore();
+  final _promptGroupRecords = PromptGroupRecordStore();
 
   // 并发控制
   final _fileSemaphore = _Semaphore(3);
@@ -157,6 +161,18 @@ class ImageMetadataService {
   /// 初始化服务
   Future<void> initialize() async {
     await _cacheManager.initialize();
+    await _fixedTagUsageRecords.initialize();
+    try {
+      await _promptGroupRecords.initialize();
+    } catch (error, stack) {
+      // 分区记录只影响复用参数时的分区恢复，不能拖垮元数据解析。
+      AppLogger.e(
+        'Failed to open prompt group records',
+        error,
+        stack,
+        'ImageMetadataService',
+      );
+    }
   }
 
   /// 前台立即获取元数据（高优先级）
@@ -167,8 +183,6 @@ class ImageMetadataService {
     String path, {
     ParseCancelToken? cancelToken,
   }) async {
-    final stopwatch = Stopwatch()..start();
-
     // 检查取消
     if (cancelToken?.isCancelled ?? false) {
       _statistics.recordCancelled();
@@ -176,6 +190,22 @@ class ImageMetadataService {
     }
 
     final hash = await _hashCalculator.calculate(path);
+    return _withRecordedFixedTags(
+      hash,
+      await _resolveMetadataImmediate(
+        path,
+        hash: hash,
+        cancelToken: cancelToken,
+      ),
+    );
+  }
+
+  Future<NaiImageMetadata?> _resolveMetadataImmediate(
+    String path, {
+    required String hash,
+    ParseCancelToken? cancelToken,
+  }) async {
+    final stopwatch = Stopwatch()..start();
 
     // 检查 L1 内存缓存
     final memoryCached = _cacheManager.getFromMemory(hash);
@@ -266,8 +296,6 @@ class ImageMetadataService {
     ParseCancelToken? cancelToken,
     Duration? timeout,
   }) async {
-    final stopwatch = Stopwatch()..start();
-
     // 检查取消
     if (cancelToken?.isCancelled ?? false) {
       _statistics.recordCancelled();
@@ -275,6 +303,24 @@ class ImageMetadataService {
     }
 
     final hash = await _hashCalculator.calculate(path);
+    return _withRecordedFixedTags(
+      hash,
+      await _resolveMetadata(
+        path,
+        hash: hash,
+        cancelToken: cancelToken,
+        timeout: timeout,
+      ),
+    );
+  }
+
+  Future<NaiImageMetadata?> _resolveMetadata(
+    String path, {
+    required String hash,
+    ParseCancelToken? cancelToken,
+    Duration? timeout,
+  }) async {
+    final stopwatch = Stopwatch()..start();
 
     // 检查 L1 内存缓存
     final memoryCached = _cacheManager.getFromMemory(hash);
@@ -360,7 +406,16 @@ class ImageMetadataService {
   /// 从字节数组获取元数据
   Future<NaiImageMetadata?> getMetadataFromBytes(Uint8List bytes) async {
     final hash = _hashCalculator.calculateFromBytes(bytes);
+    return _withRecordedFixedTags(
+      hash,
+      await _resolveMetadataFromBytes(bytes, hash: hash),
+    );
+  }
 
+  Future<NaiImageMetadata?> _resolveMetadataFromBytes(
+    Uint8List bytes, {
+    required String hash,
+  }) async {
     // 检查 L1 内存缓存
     final memoryCached = _cacheManager.getFromMemory(hash);
     if (memoryCached != null) return memoryCached;
@@ -418,7 +473,7 @@ class ImageMetadataService {
         _cacheManager.getFromPersistent(hash);
     if (cached != null) {
       return MetadataParseResult.success(
-        cached,
+        _withRecordedFixedTags(hash, cached)!,
         'cache',
         cached.rawJson ?? '',
         const ['cache'],
@@ -452,7 +507,7 @@ class ImageMetadataService {
           stopwatch.elapsed,
         );
       }
-      return result;
+      return _withRecordedFixedTagsResult(hash, result);
     } catch (e, stack) {
       _statistics.recordFailure(
         'exception: ${e.runtimeType}',
@@ -466,13 +521,6 @@ class ImageMetadataService {
         bytesRead: bytes.length,
       );
     }
-  }
-
-  /// 手动缓存元数据
-  Future<void> cacheMetadata(String path, NaiImageMetadata metadata) async {
-    if (!metadata.hasData) return;
-    final hash = await _hashCalculator.calculate(path);
-    await _cacheManager.save(hash, metadata);
   }
 
   /// 将图像加入预加载队列
@@ -493,13 +541,13 @@ class ImageMetadataService {
     // 检查 L1 内存缓存
     final memoryCached = _cacheManager.getFromMemory(hash);
     if (memoryCached != null) {
-      return memoryCached;
+      return _withRecordedFixedTags(hash, memoryCached);
     }
 
     // 检查 L2 持久化缓存
     final persistentCached = _cacheManager.getFromPersistent(hash);
     if (persistentCached != null) {
-      return persistentCached;
+      return _withRecordedFixedTags(hash, persistentCached);
     }
     return null;
   }
@@ -585,6 +633,53 @@ class ImageMetadataService {
 
   // ==================== 私有方法 ====================
 
+  /// 挂载旁路记录库里的固定词快照；PNG 内已有结构化快照时以 PNG 为准。
+  ///
+  /// 结果不回写缓存：缓存语义是解析后的 PNG 快照，云同步拉回的记录必须立即生效。
+  NaiImageMetadata? _withRecordedFixedTags(
+    String hash,
+    NaiImageMetadata? metadata,
+  ) {
+    final withGroups = _withRecordedPromptGroups(hash, metadata);
+    if (withGroups == null || withGroups.fixedTagUsageData != null) {
+      return withGroups;
+    }
+    final snapshot = _fixedTagUsageRecords.lookup(hash);
+    if (snapshot == null) return withGroups;
+    return withGroups.withFixedTagUsageData(snapshot.toJson());
+  }
+
+  /// 挂载旁路记录库里的提示词分区；旧版已写进 PNG 的分区以 PNG 为准。
+  ///
+  /// 与固定词快照相同，挂载结果不回写元数据缓存。
+  NaiImageMetadata? _withRecordedPromptGroups(
+    String hash,
+    NaiImageMetadata? metadata,
+  ) {
+    if (metadata == null || metadata.promptGroupData != null) return metadata;
+    final snapshot = _promptGroupRecords.lookup(hash);
+    if (snapshot == null) return metadata;
+    return metadata.copyWith(promptGroupData: snapshot.toJson());
+  }
+
+  MetadataParseResult _withRecordedFixedTagsResult(
+    String hash,
+    MetadataParseResult result,
+  ) {
+    final metadata = result.metadata;
+    if (!result.success || metadata == null) return result;
+    final mounted = _withRecordedFixedTags(hash, metadata);
+    if (identical(mounted, metadata)) return result;
+    return MetadataParseResult.success(
+      mounted!,
+      result.sourceFormat ?? '',
+      result.rawData ?? '',
+      result.triedParsers,
+      parseTime: result.parseTime,
+      bytesRead: result.bytesRead,
+    );
+  }
+
   void _cleanupTask(String hash) {
     _pendingTasks.remove(hash);
     _activeTimeouts[hash]?.cancel();
@@ -648,7 +743,7 @@ class ImageMetadataService {
         } else {
           parseError = result.errorMessage;
         }
-      } catch (e, _) {
+      } catch (e) {
         parseStopwatch.stop();
         AppLogger.w('[MetadataFlow] Unified parse error: $e', 'ImageMetadataService');
         metadata = null;
@@ -709,12 +804,18 @@ class ImageMetadataService {
         await _cacheManager.save(hash, metadata);
         _statistics.recordSuccess(stopwatch.elapsed);
       } else {
-        _statistics.recordFailure(result.errorMessage ?? 'unknown', stopwatch.elapsed);
+        _statistics.recordFailure(
+          result.errorMessage ?? 'unknown',
+          stopwatch.elapsed,
+        );
       }
 
       return metadata;
     } catch (e, stack) {
-      _statistics.recordFailure('exception: ${e.runtimeType}', stopwatch.elapsed);
+      _statistics.recordFailure(
+        'exception: ${e.runtimeType}',
+        stopwatch.elapsed,
+      );
       AppLogger.e('Parse bytes failed', e, stack, 'ImageMetadataService');
       return null;
     }

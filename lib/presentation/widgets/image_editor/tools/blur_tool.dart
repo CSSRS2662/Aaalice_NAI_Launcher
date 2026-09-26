@@ -6,6 +6,7 @@ import '../../../../core/utils/localization_extension.dart';
 import '../core/editor_state.dart';
 import '../core/history_manager.dart';
 import 'tool_base.dart';
+import 'tool_setting_rows.dart';
 
 /// Blur 工具 - 真正的像素级高斯模糊
 ///
@@ -72,25 +73,19 @@ class BlurTool extends EditorTool {
     _isApplying = true;
 
     try {
-      final canvasSize = state.canvasSize;
-      final w = canvasSize.width.toInt();
-      final h = canvasSize.height.toInt();
+      final region = state.frame;
+      final w = region.width.toInt();
+      final h = region.height.toInt();
 
-      final original = await _renderLayerToImage(activeLayer, canvasSize, w, h);
+      final original = await activeLayer.renderToImage(region);
 
       final sigma = _size * _intensity * 0.5;
       final blurred = await _createBlurredImage(original, sigma, w, h);
 
-      final strokeMask = _buildStrokePath(points);
+      // 模糊在取景框局部坐标的图像上合成，笔画路径随之换算
+      final strokeMask = _buildStrokePath(points).shift(-region.topLeft);
 
-      final result = await _compositeBlur(
-        original,
-        blurred,
-        strokeMask,
-        w,
-        h,
-        canvasSize,
-      );
+      final result = await _compositeBlur(original, blurred, strokeMask, w, h);
       original.dispose();
       blurred.dispose();
 
@@ -105,6 +100,7 @@ class BlurTool extends EditorTool {
           layerId: activeLayer.id,
           newImageBytes: pngData.buffer.asUint8List(),
           newImage: result,
+          newImageOffset: region.topLeft,
           actionDescription: 'Blur',
         ),
         state,
@@ -112,21 +108,6 @@ class BlurTool extends EditorTool {
     } finally {
       _isApplying = false;
     }
-  }
-
-  Future<ui.Image> _renderLayerToImage(
-    dynamic layer,
-    Size canvasSize,
-    int w,
-    int h,
-  ) async {
-    final rec = ui.PictureRecorder();
-    final c = Canvas(rec);
-    (layer as dynamic).render(c, canvasSize);
-    final pic = rec.endRecording();
-    final img = await pic.toImage(w, h);
-    pic.dispose();
-    return img;
   }
 
   Future<ui.Image> _createBlurredImage(
@@ -184,7 +165,6 @@ class BlurTool extends EditorTool {
     Path mask,
     int w,
     int h,
-    Size canvasSize,
   ) async {
     final rec = ui.PictureRecorder();
     final c = Canvas(rec);
@@ -218,42 +198,26 @@ class BlurTool extends EditorTool {
                   fontWeight: FontWeight.bold,
                 ),
               ),
-              const SizedBox(height: 12),
-              Row(
-                children: [
-                  Text(
-                    context.l10n.editor_size,
-                    style: theme.textTheme.bodySmall,
-                  ),
-                  const Spacer(),
-                  Text('${_size.round()}', style: theme.textTheme.bodySmall),
-                ],
-              ),
-              Slider(
-                value: _size,
-                min: 1,
-                max: 200,
-                onChanged: (v) => setState(() => setSize(v)),
-              ),
               const SizedBox(height: 8),
-              Row(
-                children: [
-                  Text(
-                    context.l10n.editor_intensity,
-                    style: theme.textTheme.bodySmall,
+              ToolSettingRows(
+                rowPadding: const EdgeInsets.symmetric(vertical: 4),
+                rows: [
+                  ToolSettingRow.slider(
+                    label: context.l10n.editor_size,
+                    value: _size,
+                    min: 1,
+                    max: 200,
+                    onChanged: (v) => setState(() => setSize(v)),
                   ),
-                  const Spacer(),
-                  Text(
-                    '${(_intensity * 100).round()}%',
-                    style: theme.textTheme.bodySmall,
+                  ToolSettingRow.slider(
+                    label: context.l10n.editor_intensity,
+                    value: _intensity * 100,
+                    min: 0,
+                    max: 100,
+                    suffix: '%',
+                    onChanged: (v) => setState(() => setIntensity(v / 100)),
                   ),
                 ],
-              ),
-              Slider(
-                value: _intensity,
-                min: 0.0,
-                max: 1.0,
-                onChanged: (v) => setState(() => setIntensity(v)),
               ),
             ],
           ),

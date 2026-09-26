@@ -17,6 +17,12 @@ class PromptWeightValue {
 class PromptWeightEditing {
   static const double minimumWeight = -3;
   static const double maximumWeight = 3;
+  static final RegExp _naiWeightPattern = RegExp(
+    r'^(-?\d+\.?\d*)::(.+?)(?:::$|$)',
+    // Selections can span paragraphs; subsequent edits must replace this shell.
+    dotAll: true,
+  );
+  static final RegExp _bracketShell = RegExp(r'^[\{\[]+$');
 
   static bool protectNegativeBlockSyntax(TextEditingController controller) {
     final selection = controller.selection;
@@ -87,11 +93,7 @@ class PromptWeightEditing {
     final trimmed = text.trim();
 
     // NAI 数值权重语法: weight::text:: 或 weight::text
-    final naiWeightMatch = RegExp(
-      r'^(-?\d+\.?\d*)::(.+?)(?:::$|$)',
-      // Selections can span paragraphs; subsequent edits must replace this shell.
-      dotAll: true,
-    ).firstMatch(trimmed);
+    final naiWeightMatch = _naiWeightPattern.firstMatch(trimmed);
 
     if (naiWeightMatch != null) {
       final weightValue = double.tryParse(naiWeightMatch.group(1)!);
@@ -108,7 +110,7 @@ class PromptWeightEditing {
     if (spans.length == 1) {
       final span = spans.single;
       final prefix = span.prefix;
-      if (prefix.isNotEmpty && RegExp(r'^[\{\[]+$').hasMatch(prefix)) {
+      if (prefix.isNotEmpty && _bracketShell.hasMatch(prefix)) {
         final exponent = prefix
             .split('')
             .fold<int>(0, (value, char) => value + (char == '{' ? 1 : -1));

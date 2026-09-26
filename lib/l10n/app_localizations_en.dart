@@ -973,6 +973,18 @@ class AppLocalizationsEn extends AppLocalizations {
   String get agentChat_tab => 'Chat';
 
   @override
+  String get agentChat_popOutFloating => 'Pop out as floating window';
+
+  @override
+  String get agentChat_dockToSidePanel => 'Dock to side panel';
+
+  @override
+  String get agentChat_hideFloating => 'Hide floating window';
+
+  @override
+  String get agentChat_resizeDockSplit => 'Resize chat and history';
+
+  @override
   String get nav_agent => 'Agent';
 
   @override
@@ -1347,6 +1359,11 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String agentChat_approvalFileTarget(String path) {
+    return 'Will write file: $path';
+  }
+
+  @override
   String get agentChat_needSetup =>
       'No chat model configured. Add a provider with tool-calling support in Settings first.';
 
@@ -1470,6 +1487,19 @@ class AppLocalizationsEn extends AppLocalizations {
   String get agentChat_approvalDeny => 'Deny';
 
   @override
+  String mcpApproval_title(Object client) {
+    return 'External agent $client is requesting approval';
+  }
+
+  @override
+  String mcpApproval_expiresIn(Object seconds) {
+    return 'Auto-declines in ${seconds}s';
+  }
+
+  @override
+  String get mcpApproval_unknownClient => 'Unknown client';
+
+  @override
   String get generation_failedStreamSnapshot => 'Failed snapshot';
 
   @override
@@ -1485,6 +1515,37 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get generation_clearHistoryConfirm =>
       'Are you sure you want to clear all history records? This action cannot be undone.';
+
+  @override
+  String get generation_deleteImageConfirm =>
+      'Delete this image from history? This action cannot be undone.';
+
+  @override
+  String generation_deleteImageWithFileConfirm(Object fileName) {
+    return 'Delete this image from history and permanently delete the file \"$fileName\" from the local gallery? This action cannot be undone.';
+  }
+
+  @override
+  String generation_deleteImagesConfirm(Object count) {
+    return 'Delete the $count selected images from history? This action cannot be undone.';
+  }
+
+  @override
+  String generation_deleteImagesWithFilesConfirm(
+    Object count,
+    Object fileCount,
+  ) {
+    return 'Delete the $count selected images from history and permanently delete $fileCount of their files saved in the local gallery? This action cannot be undone.';
+  }
+
+  @override
+  String get generation_deleteConfirmSkipForSession =>
+      'Don\'t ask again until the app restarts';
+
+  @override
+  String generation_deleteImageFilesFailed(Object count, Object error) {
+    return 'Removed from history, but $count local files could not be deleted: $error';
+  }
 
   @override
   String get generation_model => 'Model';
@@ -2121,6 +2182,88 @@ class AppLocalizationsEn extends AppLocalizations {
   String get img2img_directorDeclutter => 'Declutter';
 
   @override
+  String get img2img_directorPixelSnap => 'Pixel Snap';
+
+  @override
+  String get img2img_directorPixelSnapHint =>
+      'Runs entirely on your computer. No Anlas, no network. Large images can take a few seconds.';
+
+  @override
+  String get img2img_directorPixelSnapPalette => 'Palettize';
+
+  @override
+  String get img2img_directorPixelSnapPaletteOff => 'Off';
+
+  @override
+  String get img2img_directorPixelSnapPaletteAuto => 'Auto';
+
+  @override
+  String get img2img_directorPixelSnapPaletteCustom => 'Custom';
+
+  @override
+  String get img2img_directorPixelSnapColors => 'Colors';
+
+  @override
+  String get img2img_directorPixelSnapAvoidOverRefining =>
+      'Avoid Over-Refining';
+
+  @override
+  String get img2img_directorPixelSnapAvoidOverRefiningOn =>
+      'The detected pixel size is always kept.';
+
+  @override
+  String get img2img_directorPixelSnapAvoidOverRefiningOff =>
+      'A finer pixel size may be used when it matches the image better.';
+
+  @override
+  String get img2img_directorPixelSnapUpscale => 'Upscale';
+
+  @override
+  String get img2img_directorPixelSnapUpscaleOn =>
+      'The result is scaled back up to roughly the input size.';
+
+  @override
+  String get img2img_directorPixelSnapUpscaleOff =>
+      'The result is kept at its snapped pixel size.';
+
+  @override
+  String img2img_directorPixelSnapSummary(int width, int height, int colors) {
+    return '$width×$height pixels · $colors colors';
+  }
+
+  @override
+  String img2img_directorPixelSnapSummaryNoPalette(int width, int height) {
+    return '$width×$height pixels';
+  }
+
+  @override
+  String get img2img_directorPixelSnapNoGrid =>
+      'No repeating pixel grid was found in this image.';
+
+  @override
+  String get img2img_directorPixelSnapBlank =>
+      'This image is fully transparent.';
+
+  @override
+  String get img2img_directorPixelSnapDownscaled =>
+      'The image was downscaled before analysis because it exceeds the size limit.';
+
+  @override
+  String get img2img_directorCancel => 'Cancel';
+
+  @override
+  String get img2img_directorStageAnalyzing => 'Analyzing image';
+
+  @override
+  String get img2img_directorStageSearchingPitch => 'Searching pixel size';
+
+  @override
+  String get img2img_directorStageRefiningGrid => 'Refining grid';
+
+  @override
+  String get img2img_directorStageFinishing => 'Building result';
+
+  @override
   String get img2img_enhance => 'Enhance';
 
   @override
@@ -2361,10 +2504,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get editor_magicWandMode => 'Selection method';
 
   @override
-  String get editor_magicWandSmartObject => 'Smart object (EfficientViT)';
+  String get editor_magicWandSmartObject => 'Smart object';
 
   @override
-  String get editor_magicWandColorArea => 'Color area (flood fill)';
+  String get editor_magicWandColorArea => 'Color area';
 
   @override
   String get editor_magicWandSmartHelp =>
@@ -5881,9 +6024,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get statistics_noData => 'No statistics available';
-
-  @override
-  String get statistics_noTagData => 'No tag data';
 
   @override
   String get statistics_generateFirst => 'Generate some images first';
@@ -9673,11 +9813,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get vibe_maxReached => 'Maximum 16 vibes reached';
 
   @override
-  String vibe_addedNamed(String name) {
-    return 'Added Vibe: $name';
-  }
-
-  @override
   String vibe_addedCount(int count) {
     return 'Added $count vibes';
   }
@@ -9881,6 +10016,175 @@ class AppLocalizationsEn extends AppLocalizations {
   String settings_kritaBridgeClient(Object client) {
     return 'Client: $client';
   }
+
+  @override
+  String get settings_mcpServerPermissionSection => 'Permissions';
+
+  @override
+  String get settings_mcpServerClientsSection => 'Clients';
+
+  @override
+  String get settings_mcpServerEnable => 'Enable MCP server';
+
+  @override
+  String get settings_mcpServerDisabledText =>
+      'Off by default; listens only on local 127.0.0.1 when enabled';
+
+  @override
+  String get settings_mcpServerStartingText =>
+      'Starting the local MCP server...';
+
+  @override
+  String get settings_mcpServerListeningText =>
+      'Waiting for MCP client connections';
+
+  @override
+  String get settings_mcpServerErrorText =>
+      'Startup failed, check the error message';
+
+  @override
+  String get settings_mcpServerDisabled => 'Disabled';
+
+  @override
+  String get settings_mcpServerStarting => 'Starting';
+
+  @override
+  String get settings_mcpServerListening => 'Listening';
+
+  @override
+  String get settings_mcpServerError => 'Error';
+
+  @override
+  String get settings_mcpServerEndpoint => 'Endpoint';
+
+  @override
+  String get settings_mcpServerCopyEndpoint => 'Copy endpoint';
+
+  @override
+  String get settings_mcpServerPort => 'Port';
+
+  @override
+  String get settings_mcpServerPortHelper =>
+      'Changing it disconnects connected clients';
+
+  @override
+  String settings_mcpServerPortInvalid(Object min, Object max) {
+    return 'Enter a port between $min and $max';
+  }
+
+  @override
+  String settings_mcpServerPortInUseHint(Object port) {
+    return 'Port $port is already in use, pick another port below';
+  }
+
+  @override
+  String get settings_mcpServerDiscoveryFile => 'Discovery file';
+
+  @override
+  String get settings_mcpServerToken => 'Access token';
+
+  @override
+  String get settings_mcpServerRevealToken => 'Show token';
+
+  @override
+  String get settings_mcpServerHideToken => 'Hide token';
+
+  @override
+  String get settings_mcpServerCopyToken => 'Copy token';
+
+  @override
+  String get settings_mcpServerRegenerateToken => 'Regenerate token';
+
+  @override
+  String get settings_mcpServerRegenerateTokenTitle =>
+      'Regenerate access token';
+
+  @override
+  String get settings_mcpServerRegenerateTokenMessage =>
+      'The current token stops working immediately and connected clients are disconnected. Update every client configuration with the new token.';
+
+  @override
+  String get settings_mcpServerAnlasNotice =>
+      'Anything that may spend Anlas is confirmed separately inside the launcher, regardless of the permission mode.';
+
+  @override
+  String settings_mcpServerPendingApproval(Object client, Object tool) {
+    return '$client is requesting $tool';
+  }
+
+  @override
+  String get settings_mcpServerPendingApprovalHint =>
+      'Respond in the approval banner at the top of the page';
+
+  @override
+  String get settings_mcpServerConnectedClients => 'Connected clients';
+
+  @override
+  String get settings_mcpServerSessionsEmpty => 'No clients connected yet';
+
+  @override
+  String settings_mcpServerSessionConnectedAt(Object time) {
+    return 'Connected at $time';
+  }
+
+  @override
+  String settings_mcpServerSessionLastActivity(Object time) {
+    return 'Last activity $time';
+  }
+
+  @override
+  String get settings_mcpServerClientConfigs => 'Client configuration';
+
+  @override
+  String get settings_mcpServerConfigUnavailable =>
+      'Client configuration appears once the server is running';
+
+  @override
+  String get settings_mcpServerCopyConfig => 'Copy configuration';
+
+  @override
+  String get settings_mcpServerTokenMaskNotice =>
+      'The token is masked in the preview; copying writes the real token.';
+
+  @override
+  String settings_mcpServerCliMissing(Object path) {
+    return 'Bundled CLI not found (expected at $path), which is normal in development runs';
+  }
+
+  @override
+  String get settings_mcpServerViewDocs => 'View documentation';
+
+  @override
+  String get settings_mcpServerAgentPromptTitle =>
+      'Recommended: let the agent configure itself';
+
+  @override
+  String get settings_mcpServerAgentPromptHint =>
+      'Send this prompt to the agent you want to connect; it reads the setup documentation and installs the configuration itself. The prompt carries no token — the bundled CLI reads it locally.';
+
+  @override
+  String get settings_mcpServerClaudeCodeHint =>
+      'Run this command in a terminal to register the server.';
+
+  @override
+  String get settings_mcpServerCodexHint =>
+      'Run the command to register the server, then set the token in the environment variable below.';
+
+  @override
+  String get settings_mcpServerCursorHint =>
+      'Merge this into the Cursor mcp.json configuration file.';
+
+  @override
+  String get settings_mcpServerCherryStudioHint =>
+      'Paste this into Cherry Studio\'s MCP server settings with “Import from JSON”; timeout is in seconds and already covers the in-app approval wait.';
+
+  @override
+  String get settings_mcpServerPiHint =>
+      'Pi has no built-in MCP: install the pi-mcp-adapter package first, then merge this into ~/.pi/agent/mcp.json.';
+
+  @override
+  String get settings_mcpServerClaudeDesktopHint =>
+      'Merge this into the Claude Desktop configuration; it connects over stdio through the bundled CLI.';
 
   @override
   String get settings_fontScale => 'Font Size';
@@ -10137,7 +10441,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get settings_stripMetadataSubtitle =>
-      'Create a sanitized copy, remove PNG text chunks, EXIF, and NAI steganographic watermark data, and avoid exposing the original path while dragging.';
+      'Remove PNG text chunks, EXIF, and NAI steganographic watermark data when copying, dragging, or returning MCP images. Local originals stay unchanged; MCP keeps the original resolution, and the gallery original it reports as saved_path is not sanitized.';
 
   @override
   String get settings_confirmDangerousActionsTitle =>
@@ -12710,6 +13014,80 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get editor_toolFrame => 'Frame';
+
+  @override
+  String get editor_frameToolHint =>
+      'Drag inside the frame to move it, or drag its edges to resize. Content outside the frame is kept and dimmed; only the area inside is sent for generation. A moved frame keeps at least 64 px of overlap with the image.';
+
+  @override
+  String editor_frameSizeReadout(int width, int height) {
+    return 'Size: $width x $height';
+  }
+
+  @override
+  String editor_frameOffsetReadout(int x, int y) {
+    return 'Offset from image: X $x, Y $y';
+  }
+
+  @override
+  String get editor_frameMoveLockedByView =>
+      'The frame can\'t be moved while the view is rotated or mirrored. Press R to reset the view, then try again.';
+
+  @override
+  String get editor_resetFrame => 'Reset Frame';
+
+  @override
+  String get editor_cropToFrame => 'Crop to Frame';
+
+  @override
+  String get editor_cropToFrameHint =>
+      'Discard the image and mask outside the frame. This can be undone.';
+
+  @override
+  String editor_cropToFrameFailed(Object error) {
+    return 'Crop to frame failed: $error';
+  }
+
+  @override
+  String get editor_changeFrameSize => 'Change Frame Size';
+
+  @override
+  String editor_frameResized(int width, int height) {
+    return 'Frame resized to $width x $height';
+  }
+
+  @override
+  String get editor_frameToolHintPasteBack =>
+      'Drag inside the frame to move it in 64 px steps, or drag its edges to resize. Only the area inside is sent for generation; when part of the image lies outside the frame, the result is pasted back into the full image through the mask and the outside stays unchanged. The frame keeps at least 64 px of overlap with the image.';
+
+  @override
+  String editor_frameRequestReadout(int width, int height) {
+    return 'Request: $width x $height';
+  }
+
+  @override
+  String get editor_frameRequestFree => 'Free';
+
+  @override
+  String editor_frameRequestCost(int cost) {
+    return '~$cost Anlas';
+  }
+
+  @override
+  String editor_frameResizeRejected(int overlap, int max) {
+    return 'Can\'t resize the frame: it must overlap the image by at least $overlap px, and the frame and image together can\'t exceed $max px per side.';
+  }
+
+  @override
+  String get editor_compressionFrameLimited =>
+      'Higher resolutions are unavailable because the frame would exceed the request area limit.';
+
+  @override
+  String get img2img_focusOutpaintHint =>
+      'Focus outpaint: only the frame is sent, and the result is pasted back into the full image through the mask. Adjust the frame with the Frame tool in the inpaint editor.';
+
+  @override
   String get savePreset_title => 'Save as Preset';
 
   @override
@@ -13454,6 +13832,13 @@ class AppLocalizationsEn extends AppLocalizations {
       'Stores album structure and image references, never original images';
 
   @override
+  String get cloudSync_fixedTagUsage => 'Fixed-tag usage records';
+
+  @override
+  String get cloudSync_fixedTagUsageDescription =>
+      'Stores a lightweight record of which fixed tags each image used, never the images';
+
+  @override
   String get cloudSync_optionalResources =>
       'Optional resources (off by default)';
 
@@ -13949,6 +14334,36 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get agentSettings_densityCompact => 'Compact';
+
+  @override
+  String get agentSettings_chatPlacement => 'Chat placement';
+
+  @override
+  String get agentSettings_chatPlacementDescription =>
+      'Applies to wide windows only; narrow screens keep the full-screen chat.';
+
+  @override
+  String get agentSettings_dockLayout => 'Right panel layout';
+
+  @override
+  String get agentSettings_dockLayoutDescription =>
+      'Switch shows either chat or history in the right panel; split layouts show both at once.';
+
+  @override
+  String get agentSettings_dockExclusive => 'Switch';
+
+  @override
+  String get agentSettings_dockStacked => 'Stacked';
+
+  @override
+  String get agentSettings_dockSideBySide => 'Side by side';
+
+  @override
+  String get agentSettings_floatingWindow => 'Show chat in a floating window';
+
+  @override
+  String get agentSettings_floatingWindowDescription =>
+      'The floating window stays on every page and can be moved and resized; the right panel then shows only history.';
 
   @override
   String get agentSettings_chatModel => 'Chat model';

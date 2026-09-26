@@ -4,15 +4,29 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../../data/services/token_refresh_service.dart';
 import '../../l10n/app_localizations.dart';
-import '../../presentation/providers/auth_provider.dart';
-import '../../presentation/providers/locale_provider.dart';
+import '../../data/services/auth_provider.dart';
+import '../services/auth_error_service.dart';
+import '../utils/locale_provider.dart';
 import '../constants/api_constants.dart';
 import '../storage/secure_storage_service.dart';
 import '../utils/app_logger.dart';
+import 'browser_identity/accept_language.dart';
+import 'browser_identity/browser_headers_interceptor.dart';
+import 'browser_identity/chrome_identity.dart';
 import 'dio_error_response_parser.dart';
+import 'js_compatible_json.dart';
 import 'network_client_provider.dart';
 
 part 'dio_client.g.dart';
+
+/// 让请求形态对齐 Chrome 上的官网前端。
+BrowserHeadersInterceptor _browserHeadersInterceptor(Ref ref) {
+  return BrowserHeadersInterceptor(
+    identity: ChromeIdentity.current(),
+    resolveAcceptLanguage: () =>
+        acceptLanguageForLocale(ref.read(localeNotifierProvider)),
+  );
+}
 
 /// Dio 客户端 Provider
 ///
@@ -29,8 +43,12 @@ Dio dioClient(Ref ref) {
         ),
       );
 
+  dio.transformer = JsCompatibleJsonTransformer();
+
   // 添加认证拦截器
   dio.interceptors.add(AuthInterceptor(ref));
+
+  dio.interceptors.add(_browserHeadersInterceptor(ref));
 
   // 添加错误处理拦截器
   dio.interceptors.add(ErrorInterceptor(ref));
@@ -61,7 +79,10 @@ Dio imageGenerationDioClient(Ref ref) {
         ),
       );
 
+  dio.transformer = JsCompatibleJsonTransformer();
+
   dio.interceptors.add(AuthInterceptor(ref));
+  dio.interceptors.add(_browserHeadersInterceptor(ref));
   dio.interceptors.add(ErrorInterceptor(ref));
 
   ref.onDispose(() => dio.close());
@@ -214,6 +235,7 @@ class AuthInterceptor extends Interceptor {
                 final retryDio = _ref
                     .read(networkClientFactoryProvider)
                     .createDio();
+                retryDio.transformer = JsCompatibleJsonTransformer();
                 late final Response<dynamic> response;
                 try {
                   response = await retryDio.fetch(err.requestOptions);
