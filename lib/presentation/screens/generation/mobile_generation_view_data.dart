@@ -4,7 +4,6 @@ class MobileGenerationViewData {
   const MobileGenerationViewData({
     required this.batchStatus,
     required this.cooldownRemainingSeconds,
-    required this.isPromptMaximized,
     required this.keyboardVisible,
     required this.isGenerating,
     required this.isLauncherGenerating,
@@ -12,16 +11,10 @@ class MobileGenerationViewData {
     required this.showRandomTools,
     required this.isUpscaleMode,
     required this.randomModeEnabled,
-    required this.promptSummary,
-    required this.enabledCharacterCount,
-    required this.qualityEnabled,
-    required this.negativePresetLabel,
-    required this.fixedTagCount,
   });
 
   final GenerationButtonViewData batchStatus;
   final int cooldownRemainingSeconds;
-  final bool isPromptMaximized;
   final bool keyboardVisible;
   final bool isGenerating;
   final bool isLauncherGenerating;
@@ -29,9 +22,4 @@ class MobileGenerationViewData {
   final bool showRandomTools;
   final bool isUpscaleMode;
   final bool randomModeEnabled;
-  final String promptSummary;
-  final int enabledCharacterCount;
-  final bool qualityEnabled;
-  final String? negativePresetLabel;
-  final int fixedTagCount;
 }

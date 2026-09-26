@@ -28,22 +28,22 @@ class MobileGenerationShell extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return PopScope<void>(
-      canPop: !data.isPromptMaximized && !controller.agentFullScreen,
+      canPop: !controller.agentFullScreen,
       onPopInvokedWithResult: (didPop, _) {
-        if (!didPop) controller.handleBack(data.isPromptMaximized);
+        if (!didPop) controller.handleBack();
       },
       child: MobileGenerationChrome(
         controller: controller,
         data: data,
-        historyViewport: historyViewport,
         body: Stack(
           key: const ValueKey('generation-mobile-primary-workspaces'),
           children: [
             MobileGenerationWorkspace(
               controller: controller,
-              data: data,
+              historyViewport: historyViewport,
               promptInputController: promptInputController,
               promptInputKey: promptInputKey,
+              keyboardVisible: data.keyboardVisible,
             ),
             Positioned.fill(
               child: MobileWorkspaceMotion(

@@ -343,14 +343,6 @@
   "settings_avatarRemoved": "Avatar removed",
   "settings_setAsDefaultSuccess": "Set as default account",
 
-  "generation_gestureEditPrompt": "Swipe down to edit prompt",
-  "generation_gestureOpenAgent": "Swipe up to open AI assistant",
-  "generation_promptOverviewCharacters": "{count} chars",
-  "@generation_promptOverviewCharacters": {
-    "placeholders": {
-      "count": {}
-    }
-  },
   "generation_generate": "Generate",
   "generation_cooldownRemaining": "Wait {seconds}s",
   "@generation_cooldownRemaining": {
@@ -367,14 +359,7 @@
   "generation_generationFailed": "Generation failed",
   "generation_streamingUnsupported": "This site does not support streaming generation",
   "generation_streamingUnsupportedHint": "Go to Settings > Generation > Image Output, turn off Streaming preview, and try again.",
-  "generation_progress": "Generating... {progress}%",
-  "@generation_progress": {
-    "placeholders": {
-      "progress": {}
-    }
-  },
   "generation_params": "Parameters",
-  "generation_paramsSettings": "Parameter Settings",
   "generation_history": "History",
   "generation_historyRecord": "History Records",
   "agentChat_tab": "Chat",
@@ -7118,6 +7103,26 @@
         "type": "DateTime",
         "format": "yMMMd"
       }
+    }
+  },
+  "mobileWorkbench_tabsLabel": "Generation workbench",
+  "mobileWorkbench_tabImage": "Image",
+  "mobileWorkbench_tabPrompt": "Prompt",
+  "mobileWorkbench_tabParams": "Params",
+  "mobileWorkbench_tabReferences": "Refs",
+  "mobileWorkbench_tabHistory": "History",
+  "mobileWorkbench_newResult": "New result",
+  "mobileWorkbench_selectModel": "Model {model}, open parameters",
+  "@mobileWorkbench_selectModel": {
+    "placeholders": {
+      "model": {}
+    }
+  },
+  "mobileWorkbench_queue": "Generation queue",
+  "mobileWorkbench_cancelProgress": "Cancel · {percent}%",
+  "@mobileWorkbench_cancelProgress": {
+    "placeholders": {
+      "percent": {}
     }
   },
   "stamina_title": "V5 stamina",

@@ -883,17 +883,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get settings_setAsDefaultSuccess => 'Set as default account';
 
   @override
-  String get generation_gestureEditPrompt => 'Swipe down to edit prompt';
-
-  @override
-  String get generation_gestureOpenAgent => 'Swipe up to open AI assistant';
-
-  @override
-  String generation_promptOverviewCharacters(Object count) {
-    return '$count chars';
-  }
-
-  @override
   String get generation_generate => 'Generate';
 
   @override
@@ -931,15 +920,7 @@ class AppLocalizationsEn extends AppLocalizations {
       'Go to Settings > Generation > Image Output, turn off Streaming preview, and try again.';
 
   @override
-  String generation_progress(Object progress) {
-    return 'Generating... $progress%';
-  }
-
-  @override
   String get generation_params => 'Parameters';
-
-  @override
-  String get generation_paramsSettings => 'Parameter Settings';
 
   @override
   String get generation_history => 'History';
@@ -15492,6 +15473,40 @@ class AppLocalizationsEn extends AppLocalizations {
     final String dateString = dateDateFormat.format(date);
 
     return 'Subscription expiry: $dateString';
+  }
+
+  @override
+  String get mobileWorkbench_tabsLabel => 'Generation workbench';
+
+  @override
+  String get mobileWorkbench_tabImage => 'Image';
+
+  @override
+  String get mobileWorkbench_tabPrompt => 'Prompt';
+
+  @override
+  String get mobileWorkbench_tabParams => 'Params';
+
+  @override
+  String get mobileWorkbench_tabReferences => 'Refs';
+
+  @override
+  String get mobileWorkbench_tabHistory => 'History';
+
+  @override
+  String get mobileWorkbench_newResult => 'New result';
+
+  @override
+  String mobileWorkbench_selectModel(Object model) {
+    return 'Model $model, open parameters';
+  }
+
+  @override
+  String get mobileWorkbench_queue => 'Generation queue';
+
+  @override
+  String mobileWorkbench_cancelProgress(Object percent) {
+    return 'Cancel · $percent%';
   }
 
   @override

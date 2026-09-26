@@ -1709,24 +1709,6 @@ abstract class AppLocalizations {
   /// **'Set as default account'**
   String get settings_setAsDefaultSuccess;
 
-  /// No description provided for @generation_gestureEditPrompt.
-  ///
-  /// In en, this message translates to:
-  /// **'Swipe down to edit prompt'**
-  String get generation_gestureEditPrompt;
-
-  /// No description provided for @generation_gestureOpenAgent.
-  ///
-  /// In en, this message translates to:
-  /// **'Swipe up to open AI assistant'**
-  String get generation_gestureOpenAgent;
-
-  /// No description provided for @generation_promptOverviewCharacters.
-  ///
-  /// In en, this message translates to:
-  /// **'{count} chars'**
-  String generation_promptOverviewCharacters(Object count);
-
   /// No description provided for @generation_generate.
   ///
   /// In en, this message translates to:
@@ -1793,23 +1775,11 @@ abstract class AppLocalizations {
   /// **'Go to Settings > Generation > Image Output, turn off Streaming preview, and try again.'**
   String get generation_streamingUnsupportedHint;
 
-  /// No description provided for @generation_progress.
-  ///
-  /// In en, this message translates to:
-  /// **'Generating... {progress}%'**
-  String generation_progress(Object progress);
-
   /// No description provided for @generation_params.
   ///
   /// In en, this message translates to:
   /// **'Parameters'**
   String get generation_params;
-
-  /// No description provided for @generation_paramsSettings.
-  ///
-  /// In en, this message translates to:
-  /// **'Parameter Settings'**
-  String get generation_paramsSettings;
 
   /// No description provided for @generation_history.
   ///
@@ -26931,6 +26901,66 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Subscription expiry: {date}'**
   String settings_subscriptionExpiresOn(DateTime date);
+
+  /// No description provided for @mobileWorkbench_tabsLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Generation workbench'**
+  String get mobileWorkbench_tabsLabel;
+
+  /// No description provided for @mobileWorkbench_tabImage.
+  ///
+  /// In en, this message translates to:
+  /// **'Image'**
+  String get mobileWorkbench_tabImage;
+
+  /// No description provided for @mobileWorkbench_tabPrompt.
+  ///
+  /// In en, this message translates to:
+  /// **'Prompt'**
+  String get mobileWorkbench_tabPrompt;
+
+  /// No description provided for @mobileWorkbench_tabParams.
+  ///
+  /// In en, this message translates to:
+  /// **'Params'**
+  String get mobileWorkbench_tabParams;
+
+  /// No description provided for @mobileWorkbench_tabReferences.
+  ///
+  /// In en, this message translates to:
+  /// **'Refs'**
+  String get mobileWorkbench_tabReferences;
+
+  /// No description provided for @mobileWorkbench_tabHistory.
+  ///
+  /// In en, this message translates to:
+  /// **'History'**
+  String get mobileWorkbench_tabHistory;
+
+  /// No description provided for @mobileWorkbench_newResult.
+  ///
+  /// In en, this message translates to:
+  /// **'New result'**
+  String get mobileWorkbench_newResult;
+
+  /// No description provided for @mobileWorkbench_selectModel.
+  ///
+  /// In en, this message translates to:
+  /// **'Model {model}, open parameters'**
+  String mobileWorkbench_selectModel(Object model);
+
+  /// No description provided for @mobileWorkbench_queue.
+  ///
+  /// In en, this message translates to:
+  /// **'Generation queue'**
+  String get mobileWorkbench_queue;
+
+  /// No description provided for @mobileWorkbench_cancelProgress.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel · {percent}%'**
+  String mobileWorkbench_cancelProgress(Object percent);
 
   /// No description provided for @stamina_title.
   ///

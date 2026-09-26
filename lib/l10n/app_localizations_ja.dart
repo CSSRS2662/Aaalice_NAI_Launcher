@@ -867,17 +867,6 @@ class AppLocalizationsJa extends AppLocalizations {
   String get settings_setAsDefaultSuccess => 'デフォルトのアカウントとして設定';
 
   @override
-  String get generation_gestureEditPrompt => '下にスワイプしてプロンプトを編集';
-
-  @override
-  String get generation_gestureOpenAgent => '上にスワイプして AI アシスタントを開く';
-
-  @override
-  String generation_promptOverviewCharacters(Object count) {
-    return '$count 文字';
-  }
-
-  @override
   String get generation_generate => '生成';
 
   @override
@@ -914,15 +903,7 @@ class AppLocalizationsJa extends AppLocalizations {
       '［設定］>［生成］>［画像出力］で［ストリーミングプレビュー］をオフにしてから、もう一度お試しください。';
 
   @override
-  String generation_progress(Object progress) {
-    return '生成中...$progress%';
-  }
-
-  @override
   String get generation_params => 'パラメータ';
-
-  @override
-  String get generation_paramsSettings => 'パラメータ設定';
 
   @override
   String get generation_history => '履歴';
@@ -15076,6 +15057,40 @@ class AppLocalizationsJa extends AppLocalizations {
     final String dateString = dateDateFormat.format(date);
 
     return 'メンバーシップ有効期限：$dateString';
+  }
+
+  @override
+  String get mobileWorkbench_tabsLabel => '生成ワークベンチ';
+
+  @override
+  String get mobileWorkbench_tabImage => '画像';
+
+  @override
+  String get mobileWorkbench_tabPrompt => 'プロンプト';
+
+  @override
+  String get mobileWorkbench_tabParams => 'パラメータ';
+
+  @override
+  String get mobileWorkbench_tabReferences => '参照';
+
+  @override
+  String get mobileWorkbench_tabHistory => '履歴';
+
+  @override
+  String get mobileWorkbench_newResult => '新しい結果';
+
+  @override
+  String mobileWorkbench_selectModel(Object model) {
+    return 'モデル $model、パラメータを開く';
+  }
+
+  @override
+  String get mobileWorkbench_queue => '生成キュー';
+
+  @override
+  String mobileWorkbench_cancelProgress(Object percent) {
+    return 'キャンセル · $percent%';
   }
 
   @override

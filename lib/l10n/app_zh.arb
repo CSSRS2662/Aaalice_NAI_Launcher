@@ -333,14 +333,6 @@
   "settings_avatarRemoved": "头像已移除",
   "settings_setAsDefaultSuccess": "已设为默认账号",
 
-  "generation_gestureEditPrompt": "下滑编辑提示词",
-  "generation_gestureOpenAgent": "上滑打开 AI 助手",
-  "generation_promptOverviewCharacters": "{count} 字",
-  "@generation_promptOverviewCharacters": {
-    "placeholders": {
-      "count": {}
-    }
-  },
   "generation_generate": "生成",
   "generation_cooldownRemaining": "等待 {seconds} 秒",
   "@generation_cooldownRemaining": {
@@ -357,9 +349,7 @@
   "generation_generationFailed": "生成失败",
   "generation_streamingUnsupported": "站点不支持流式生成",
   "generation_streamingUnsupportedHint": "请前往「设置 > 生成 > 图像输出」，关闭「流式预览」后重试。",
-  "generation_progress": "生成中... {progress}%",
   "generation_params": "参数",
-  "generation_paramsSettings": "生成参数",
   "generation_history": "历史",
   "generation_historyRecord": "历史记录",
   "agentChat_tab": "聊天",
@@ -5880,11 +5870,6 @@
       "scale": {}
     }
   },
-  "@generation_progress": {
-    "placeholders": {
-      "progress": {}
-    }
-  },
   "@generation_steps": {
     "placeholders": {
       "steps": {}
@@ -7187,6 +7172,26 @@
         "type": "DateTime",
         "format": "yMMMd"
       }
+    }
+  },
+  "mobileWorkbench_tabsLabel": "生成工作台",
+  "mobileWorkbench_tabImage": "图像",
+  "mobileWorkbench_tabPrompt": "提示词",
+  "mobileWorkbench_tabParams": "参数",
+  "mobileWorkbench_tabReferences": "参考",
+  "mobileWorkbench_tabHistory": "历史",
+  "mobileWorkbench_newResult": "有新结果",
+  "mobileWorkbench_selectModel": "模型 {model}，前往参数",
+  "@mobileWorkbench_selectModel": {
+    "placeholders": {
+      "model": {}
+    }
+  },
+  "mobileWorkbench_queue": "生成队列",
+  "mobileWorkbench_cancelProgress": "取消 · {percent}%",
+  "@mobileWorkbench_cancelProgress": {
+    "placeholders": {
+      "percent": {}
     }
   },
   "stamina_title": "V5 体力",

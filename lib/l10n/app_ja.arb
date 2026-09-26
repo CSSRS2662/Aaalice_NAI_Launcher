@@ -335,14 +335,6 @@
   "settings_avatarUpdated": "アバターが更新されました",
   "settings_avatarRemoved": "アバターが削除されました",
   "settings_setAsDefaultSuccess": "デフォルトのアカウントとして設定",
-  "generation_gestureEditPrompt": "下にスワイプしてプロンプトを編集",
-  "generation_gestureOpenAgent": "上にスワイプして AI アシスタントを開く",
-  "generation_promptOverviewCharacters": "{count} 文字",
-  "@generation_promptOverviewCharacters": {
-    "placeholders": {
-      "count": {}
-    }
-  },
   "generation_generate": "生成",
   "generation_cooldownRemaining": "あと{seconds}秒",
   "@generation_cooldownRemaining": {
@@ -359,14 +351,7 @@
   "generation_generationFailed": "生成に失敗しました",
   "generation_streamingUnsupported": "このサイトはストリーミング生成に対応していません",
   "generation_streamingUnsupportedHint": "［設定］>［生成］>［画像出力］で［ストリーミングプレビュー］をオフにしてから、もう一度お試しください。",
-  "generation_progress": "生成中...{progress}%",
-  "@generation_progress": {
-    "placeholders": {
-      "progress": {}
-    }
-  },
   "generation_params": "パラメータ",
-  "generation_paramsSettings": "パラメータ設定",
   "generation_history": "履歴",
   "generation_historyRecord": "履歴レコード",
   "agentChat_tab": "チャット",
@@ -7141,6 +7126,26 @@
         "type": "DateTime",
         "format": "yMMMd"
       }
+    }
+  },
+  "mobileWorkbench_tabsLabel": "生成ワークベンチ",
+  "mobileWorkbench_tabImage": "画像",
+  "mobileWorkbench_tabPrompt": "プロンプト",
+  "mobileWorkbench_tabParams": "パラメータ",
+  "mobileWorkbench_tabReferences": "参照",
+  "mobileWorkbench_tabHistory": "履歴",
+  "mobileWorkbench_newResult": "新しい結果",
+  "mobileWorkbench_selectModel": "モデル {model}、パラメータを開く",
+  "@mobileWorkbench_selectModel": {
+    "placeholders": {
+      "model": {}
+    }
+  },
+  "mobileWorkbench_queue": "生成キュー",
+  "mobileWorkbench_cancelProgress": "キャンセル · {percent}%",
+  "@mobileWorkbench_cancelProgress": {
+    "placeholders": {
+      "percent": {}
     }
   },
   "stamina_title": "V5 スタミナ",

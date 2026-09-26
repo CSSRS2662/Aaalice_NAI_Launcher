@@ -35,6 +35,7 @@ import 'package:nai_launcher/presentation/widgets/common/image_detail/image_deta
 import 'package:nai_launcher/presentation/widgets/gallery/draggable_image_card.dart';
 import 'package:nai_launcher/presentation/providers/mobile_shell_overlay_provider.dart';
 import 'package:nai_launcher/presentation/screens/generation/mobile_layout.dart';
+import 'package:nai_launcher/presentation/screens/generation/mobile_workbench/mobile_workbench_state.dart';
 
 void main() {
   late Directory hiveDir;
@@ -1223,19 +1224,19 @@ void main() {
       );
       await tester.pump();
 
-      final statusRow = find.byKey(
-        const ValueKey('generation-mobile-status-row'),
+      expect(
+        find.byKey(const ValueKey('generation-mobile-action-row')),
+        findsOneWidget,
       );
-      final bottomBar = find.byKey(
-        const ValueKey('generation-mobile-bottom-bar'),
-      );
-      expect(tester.getSize(statusRow).height, 44);
-      expect(tester.getRect(statusRow).top - tester.getRect(bottomBar).top, 3);
       expect(
         tester.getSize(
           find.byKey(const ValueKey('generation-add-current-to-queue')),
         ),
         const Size.square(44),
+      );
+      expect(
+        find.byKey(const ValueKey('mobile-workbench-tab-bar')),
+        findsOneWidget,
       );
 
       var hapticCount = 0;
@@ -1252,13 +1253,6 @@ void main() {
           null,
         ),
       );
-
-      expect(
-        find.byKey(const ValueKey('generation-gesture-hint')),
-        findsOneWidget,
-      );
-      expect(find.text('下滑编辑提示词'), findsWidgets);
-      expect(find.text('上滑打开 AI 助手'), findsWidgets);
 
       await tester.tap(
         find.byKey(const ValueKey('generation-agent-drawer-action')),
@@ -1280,6 +1274,10 @@ void main() {
       );
       expect(find.byIcon(Icons.arrow_back_rounded), findsOneWidget);
       expect(
+        find.byKey(const ValueKey('generation-mobile-bottom-bar')),
+        findsNothing,
+      );
+      expect(
         container.read(mobileShellOverlayNotifierProvider),
         contains(MobileShellOverlay.agentChat),
       );
@@ -1293,63 +1291,11 @@ void main() {
       );
       expect(container.read(mobileShellOverlayNotifierProvider), isEmpty);
 
-      final verticalShortcuts = find.byKey(
-        const ValueKey('generation-vertical-shortcuts'),
-      );
-      expect(verticalShortcuts, findsOneWidget);
-
-      await tester.timedDrag(
-        verticalShortcuts,
-        const Offset(140, 20),
-        const Duration(milliseconds: 300),
-      );
-      await tester.pump();
-      expect(
+      await tester.tap(
         find.byKey(const ValueKey('generation-agent-drawer-action')),
-        findsOneWidget,
-      );
-      expect(find.byKey(const ValueKey('maximized-prompt')), findsNothing);
-
-      await tester.timedDrag(
-        verticalShortcuts,
-        const Offset(0, -80),
-        const Duration(milliseconds: 500),
-      );
-      await tester.pump(const Duration(milliseconds: 220));
-      expect(
-        find.byKey(const ValueKey('generation-agent-drawer-action')),
-        findsOneWidget,
-      );
-      expect(hapticCount, 0);
-
-      final reverseDrag = await tester.startGesture(
-        tester.getCenter(verticalShortcuts),
-      );
-      await reverseDrag.moveBy(const Offset(0, -100));
-      await tester.pump();
-      await reverseDrag.moveBy(const Offset(0, 100));
-      await reverseDrag.up();
-      await tester.pump(const Duration(milliseconds: 220));
-      expect(
-        find.byKey(const ValueKey('generation-agent-drawer-action')),
-        findsOneWidget,
-      );
-      expect(hapticCount, 1);
-
-      await tester.timedDrag(
-        verticalShortcuts,
-        const Offset(0, -48),
-        const Duration(milliseconds: 40),
       );
       await tester.pump();
       expect(fullScreen, findsOneWidget);
-      expect(hapticCount, 2);
-      expect(
-        storage.getSetting<bool>(
-          StorageKeys.mobileGenerationGestureHintCompleted,
-        ),
-        isTrue,
-      );
       expect(
         container.read(mobileShellOverlayNotifierProvider),
         contains(MobileShellOverlay.agentChat),
@@ -1412,12 +1358,10 @@ void main() {
         find.byKey(const ValueKey('generation-agent-drawer-action')),
         findsOneWidget,
       );
-      expect(hapticCount, 3);
+      expect(hapticCount, 1);
 
-      await tester.timedDrag(
-        verticalShortcuts,
-        const Offset(0, -120),
-        const Duration(milliseconds: 500),
+      await tester.tap(
+        find.byKey(const ValueKey('generation-agent-drawer-action')),
       );
       await tester.pump(const Duration(milliseconds: 220));
       expect(fullScreen, findsOneWidget);
@@ -1471,55 +1415,27 @@ void main() {
         findsOneWidget,
       );
 
-      await tester.timedDrag(
-        verticalShortcuts,
-        const Offset(0, 120),
-        const Duration(milliseconds: 500),
-      );
+      // 顶部提问通知可能覆盖页签栏；点按页签由工作台页签栏测试覆盖。
+      container
+          .read(mobileWorkbenchNotifierProvider.notifier)
+          .select(MobileWorkbenchTab.prompt);
       await tester.pump(const Duration(milliseconds: 220));
-      final maximizedPrompt = find.byKey(const ValueKey('maximized-prompt'));
-      expect(maximizedPrompt, findsOneWidget);
       expect(
-        container.read(mobileShellOverlayNotifierProvider),
-        isNot(contains(MobileShellOverlay.agentChat)),
-      );
-      expect(
-        container.read(mobileShellOverlayNotifierProvider),
-        contains(MobileShellOverlay.promptEditor),
-      );
-
-      await tester.timedDrag(
         find.byKey(const ValueKey('generation_prompt_positive_input')),
-        const Offset(0, -120),
-        const Duration(milliseconds: 500),
+        findsOneWidget,
       );
-      await tester.pump();
-      expect(maximizedPrompt, findsOneWidget);
-
-      await tester.timedDrag(
-        find.byKey(const ValueKey('generation-prompt-editor-drag-handle')),
-        const Offset(0, -120),
-        const Duration(milliseconds: 500),
-      );
-      await tester.pump(const Duration(milliseconds: 220));
-      expect(maximizedPrompt, findsNothing);
       expect(container.read(mobileShellOverlayNotifierProvider), isEmpty);
-      expect(hapticCount, greaterThanOrEqualTo(4));
       expect(tester.takeException(), isNull);
     },
   );
 
   testWidgets(
-    'mobile shortcuts respect keyboard, reduce motion, landscape and text scale',
+    'mobile workbench respects keyboard, reduce motion, landscape and text scale',
     (tester) async {
       final tempDir = Directory.systemTemp.createTempSync(
-        'generation_gesture_accessibility_test_',
+        'generation_workbench_accessibility_test_',
       );
       final storage = _MemoryLocalStorage();
-      await storage.setSetting(
-        StorageKeys.mobileGenerationGestureHintCompleted,
-        true,
-      );
       final container = ProviderContainer(
         overrides: [
           localStorageServiceProvider.overrideWithValue(storage),
@@ -1571,27 +1487,27 @@ void main() {
       addTearDown(() => tester.view.resetViewInsets());
       await tester.pumpWidget(app(keyboardInset: 280));
       await tester.pump();
-      final hintOpacity = tester.widget<AnimatedOpacity>(
-        find.byKey(const ValueKey('generation-gesture-hint')),
-      );
-      expect(hintOpacity.opacity, 0);
-      final shortcuts = find.byKey(
-        const ValueKey('generation-vertical-shortcuts'),
-      );
-      await tester.timedDrag(
-        shortcuts,
-        const Offset(0, -140),
-        const Duration(milliseconds: 400),
-      );
-      await tester.pump();
+      // 软键盘弹出时收起生成底栏与页签栏，高度留给正在编辑的内容。
       expect(
-        find.byKey(const ValueKey('generation-agent-fullscreen')),
+        find.byKey(const ValueKey('generation-mobile-bottom-bar')),
+        findsNothing,
+      );
+      expect(
+        find.byKey(const ValueKey('mobile-workbench-tab-bar')),
         findsNothing,
       );
 
       tester.view.viewInsets = const FakeViewPadding();
       await tester.pumpWidget(app(keyboardInset: 0));
       await tester.pump();
+      expect(
+        find.byKey(const ValueKey('generation-mobile-bottom-bar')),
+        findsOneWidget,
+      );
+      expect(
+        find.byKey(const ValueKey('mobile-workbench-tab-bar')),
+        findsOneWidget,
+      );
       final motionWidgets = tester.widgetList<AnimatedSlide>(
         find.byType(AnimatedSlide),
       );
@@ -1601,10 +1517,8 @@ void main() {
         isTrue,
       );
 
-      await tester.timedDrag(
-        shortcuts,
-        const Offset(0, -120),
-        const Duration(milliseconds: 400),
+      await tester.tap(
+        find.byKey(const ValueKey('generation-agent-drawer-action')),
       );
       await tester.pump();
       expect(

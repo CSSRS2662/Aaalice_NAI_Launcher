@@ -848,17 +848,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get settings_setAsDefaultSuccess => '已设为默认账号';
 
   @override
-  String get generation_gestureEditPrompt => '下滑编辑提示词';
-
-  @override
-  String get generation_gestureOpenAgent => '上滑打开 AI 助手';
-
-  @override
-  String generation_promptOverviewCharacters(Object count) {
-    return '$count 字';
-  }
-
-  @override
   String get generation_generate => '生成';
 
   @override
@@ -895,15 +884,7 @@ class AppLocalizationsZh extends AppLocalizations {
       '请前往「设置 > 生成 > 图像输出」，关闭「流式预览」后重试。';
 
   @override
-  String generation_progress(Object progress) {
-    return '生成中... $progress%';
-  }
-
-  @override
   String get generation_params => '参数';
-
-  @override
-  String get generation_paramsSettings => '生成参数';
 
   @override
   String get generation_history => '历史';
@@ -14813,6 +14794,40 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
+  String get mobileWorkbench_tabsLabel => '生成工作台';
+
+  @override
+  String get mobileWorkbench_tabImage => '图像';
+
+  @override
+  String get mobileWorkbench_tabPrompt => '提示词';
+
+  @override
+  String get mobileWorkbench_tabParams => '参数';
+
+  @override
+  String get mobileWorkbench_tabReferences => '参考';
+
+  @override
+  String get mobileWorkbench_tabHistory => '历史';
+
+  @override
+  String get mobileWorkbench_newResult => '有新结果';
+
+  @override
+  String mobileWorkbench_selectModel(Object model) {
+    return '模型 $model，前往参数';
+  }
+
+  @override
+  String get mobileWorkbench_queue => '生成队列';
+
+  @override
+  String mobileWorkbench_cancelProgress(Object percent) {
+    return '取消 · $percent%';
+  }
+
+  @override
   String get stamina_title => 'V5 体力';
 
   @override
@@ -15760,17 +15775,6 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get settings_setAsDefaultSuccess => '已設為預設賬號';
 
   @override
-  String get generation_gestureEditPrompt => '下滑編輯提示詞';
-
-  @override
-  String get generation_gestureOpenAgent => '上滑開啟 AI 助手';
-
-  @override
-  String generation_promptOverviewCharacters(Object count) {
-    return '$count 字';
-  }
-
-  @override
   String get generation_generate => '生成';
 
   @override
@@ -15807,15 +15811,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
       '請前往「設定 > 生成 > 影象輸出」，關閉「串流預覽」後重試。';
 
   @override
-  String generation_progress(Object progress) {
-    return '生成中... $progress%';
-  }
-
-  @override
   String get generation_params => '引數';
-
-  @override
-  String get generation_paramsSettings => '生成引數';
 
   @override
   String get generation_history => '歷史';
@@ -29723,6 +29719,40 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
     final String dateString = dateDateFormat.format(date);
 
     return '會員到期日期：$dateString';
+  }
+
+  @override
+  String get mobileWorkbench_tabsLabel => '生成工作台';
+
+  @override
+  String get mobileWorkbench_tabImage => '圖像';
+
+  @override
+  String get mobileWorkbench_tabPrompt => '提示詞';
+
+  @override
+  String get mobileWorkbench_tabParams => '參數';
+
+  @override
+  String get mobileWorkbench_tabReferences => '參考';
+
+  @override
+  String get mobileWorkbench_tabHistory => '歷史';
+
+  @override
+  String get mobileWorkbench_newResult => '有新結果';
+
+  @override
+  String mobileWorkbench_selectModel(Object model) {
+    return '模型 $model，前往參數';
+  }
+
+  @override
+  String get mobileWorkbench_queue => '生成佇列';
+
+  @override
+  String mobileWorkbench_cancelProgress(Object percent) {
+    return '取消 · $percent%';
   }
 
   @override

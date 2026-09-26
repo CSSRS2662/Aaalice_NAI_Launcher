@@ -73,8 +73,14 @@ void main() {
         usesExpandedComposition ? findsNothing : findsOneWidget,
       );
       if (!usesExpandedComposition) {
-        expect(find.text('Canvas'), findsOneWidget);
-        expect(find.byIcon(Icons.brush_outlined), findsOneWidget);
+        expect(
+          find.byKey(const ValueKey('mobile-workbench-tab-bar')),
+          findsOneWidget,
+        );
+        expect(
+          find.byKey(const ValueKey('generation-mobile-model-action')),
+          findsOneWidget,
+        );
       }
       flutterErrors.expectNoErrors(reason: 'width=$width');
     }
@@ -215,21 +221,18 @@ void main() {
     );
     await tester.pump(const Duration(milliseconds: 100));
 
-    final positiveMode = find.byKey(
-      const ValueKey('generation_prompt_compact_positive_mode'),
+    // 839 宽的横向工作台把图像放在左侧，提示词页使用单按钮正负面切换。
+    final typeToggle = find.byKey(
+      const ValueKey('generation_prompt_type_switch'),
     );
-    final negativeMode = find.byKey(
-      const ValueKey('generation_prompt_compact_negative_mode'),
-    );
-    expect(positiveMode, findsOneWidget);
-    expect(negativeMode, findsOneWidget);
-    await tester.tap(negativeMode);
+    expect(typeToggle, findsOneWidget);
+    await tester.tap(typeToggle);
     await tester.pump();
     expect(
       find.byKey(const ValueKey('generation_prompt_negative_input')),
       findsOneWidget,
     );
-    await tester.tap(positiveMode);
+    await tester.tap(typeToggle);
     await tester.pump();
 
     final mobileEditor = find.descendant(
@@ -294,16 +297,17 @@ void main() {
         textScaler: const TextScaler.linear(3),
         padding: safePadding,
         viewPadding: safePadding,
-        viewInsets: const EdgeInsets.only(bottom: keyboardInset),
       );
       await tester.pump(const Duration(milliseconds: 100));
 
       expect(find.byType(MobileGenerationLayout), findsOneWidget);
-      final launcher = find.byKey(
-        const ValueKey('generation-collapsed-prompt-launcher'),
+      final promptTab = find.byKey(
+        const ValueKey('mobile-workbench-tab-prompt'),
       );
-      expect(launcher.hitTestable(), findsOneWidget);
-      await tester.tap(launcher);
+      await tester.ensureVisible(promptTab);
+      await tester.pump();
+      expect(promptTab.hitTestable(), findsOneWidget);
+      await tester.tap(promptTab);
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 200));
 
@@ -324,6 +328,34 @@ void main() {
         isTrue,
       );
 
+      // 软键盘弹出：真机上 View 的 inset 与 MediaQuery 同时变化。
+      tester.view.viewInsets = FakeViewPadding(
+        bottom: keyboardInset * tester.view.devicePixelRatio,
+      );
+      addTearDown(tester.view.resetViewInsets);
+      await _pumpGeneration(
+        tester,
+        container: container,
+        textScaler: const TextScaler.linear(3),
+        padding: safePadding,
+        viewPadding: safePadding,
+        viewInsets: const EdgeInsets.only(bottom: keyboardInset),
+      );
+      await tester.pump(const Duration(milliseconds: 200));
+      expect(
+        tester.widget<EditableText>(promptInput).focusNode.hasFocus,
+        isTrue,
+      );
+      // 编辑时收起页签栏与生成底栏，把高度留给提示词。
+      expect(
+        find.byKey(const ValueKey('mobile-workbench-tab-bar')),
+        findsNothing,
+      );
+      expect(
+        find.byKey(const ValueKey('generation-mobile-bottom-bar')),
+        findsNothing,
+      );
+
       final usableRect = Rect.fromLTRB(
         0,
         safePadding.top,
@@ -333,10 +365,12 @@ void main() {
       final promptSurface = find.byKey(
         const ValueKey('generation_prompt_compact_surface'),
       );
-      final closeAction = find.byKey(
-        const ValueKey('generation-prompt-editor-close'),
+      // 编辑区与顶栏操作都留在软键盘上方的可视区域内；AppBar 背景本身
+      // 会延伸到状态栏下方，所以检查其中的模型按钮。
+      final modelAction = find.byKey(
+        const ValueKey('generation-mobile-model-action'),
       );
-      for (final criticalControl in [promptSurface, closeAction]) {
+      for (final criticalControl in [promptSurface, modelAction]) {
         final controlRect = tester.getRect(criticalControl);
         expect(
           controlRect.left >= usableRect.left &&
@@ -347,13 +381,11 @@ void main() {
           reason: '$criticalControl should remain inside the usable viewport',
         );
       }
-      expect(closeAction.hitTestable(), findsOneWidget);
       flutterErrors.expectNoErrors(
         reason: '320 width with 3x text, SafeArea, and IME',
       );
 
-      await tester.tap(closeAction);
-      await tester.pump();
+      tester.widget<EditableText>(promptInput).focusNode.unfocus();
       await tester.pump(const Duration(milliseconds: 200));
       await tester.pumpWidget(const SizedBox.shrink());
       container.dispose();

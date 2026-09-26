@@ -1,23 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../core/constants/api_constants.dart';
 import '../../../core/platform/platform_capabilities.dart';
-import '../../../core/utils/localization_extension.dart';
 import '../../../data/services/auth_provider.dart';
-import '../../providers/character_prompt_provider.dart';
-import '../../providers/fixed_tags_provider.dart';
 import '../../providers/generation/image_generation_selectors.dart';
 import '../../providers/generation/image_workflow_controller.dart';
 import '../../providers/image_generation_provider.dart';
 import '../../providers/krita/krita_bridge_notifier.dart';
-import '../../providers/prompt_maximize_provider.dart';
-import '../../providers/quality_preset_provider.dart';
-import '../../providers/uc_preset_provider.dart';
 import '../../widgets/common/owned_scroll_controller.dart';
 import 'mobile_generation_controller.dart';
 import 'mobile_generation_shell.dart';
 import 'mobile_generation_view_data.dart';
+import 'mobile_workbench/mobile_workbench_state.dart';
 import 'widgets/prompt_input_controller.dart';
 
 /// Stable mobile generation entry point. Stateful interaction and rendering
@@ -74,6 +68,17 @@ class _MobileGenerationLayoutState
 
   @override
   Widget build(BuildContext context) {
+    // 一次生成结束时，若用户已离开图像页，给图像页签打上新结果标记。
+    ref.listen(
+      imageGenerationNotifierProvider.select((state) => state.isGenerating),
+      (previous, next) {
+        if (previous == true && !next) {
+          ref
+              .read(mobileWorkbenchNotifierProvider.notifier)
+              .markResultArrived();
+        }
+      },
+    );
     final batchStatus = ref.watch(
       imageGenerationNotifierProvider.select(selectGenerationButtonViewData),
     );
@@ -85,30 +90,11 @@ class _MobileGenerationLayoutState
     final isKritaGenerating = supportsKrita
         ? ref.watch(kritaBridgeNotifierProvider).isBridgeGenerating
         : false;
-    final isPromptMaximized = ref.watch(promptMaximizeNotifierProvider);
     final showRandomTools = ref.watch(randomPromptToolsVisibilityProvider);
     final isUpscaleMode = ref.watch(
       imageWorkflowControllerProvider.select((workflow) => workflow.isUpscale),
     );
     final randomModeEnabled = ref.watch(randomPromptModeProvider);
-    final promptSummary = ref.watch(
-      generationParamsNotifierProvider.select((params) => params.prompt.trim()),
-    );
-    final enabledCharacterCount = ref.watch(
-      characterPromptNotifierProvider.select(
-        (config) =>
-            config.characters.where((character) => character.enabled).length,
-      ),
-    );
-    final qualityEnabled = ref.watch(
-      qualityPresetNotifierProvider.select((state) => state.isEnabled),
-    );
-    final ucPresetState = ref.watch(ucPresetNotifierProvider);
-    final fixedTagCount = ref.watch(
-      fixedTagsNotifierProvider.select(
-        (state) => state.enabledCount + state.negativeEnabledCount,
-      ),
-    );
 
     return AnimatedBuilder(
       animation: _controller,
@@ -121,19 +107,9 @@ class _MobileGenerationLayoutState
         _controller.updateKeyboardVisibility(keyboardVisible);
         final isLauncherGenerating = batchStatus.isGenerating;
         final isGenerating = isLauncherGenerating || isKritaGenerating;
-        final negativePresetLabel = ucPresetState.isCustom
-            ? context.l10n.ucPreset_label
-            : switch (ucPresetState.presetType) {
-                UcPresetType.heavy => context.l10n.ucPreset_heavy,
-                UcPresetType.light => context.l10n.ucPreset_light,
-                UcPresetType.furryFocus => context.l10n.ucPreset_furryFocus,
-                UcPresetType.humanFocus => context.l10n.ucPreset_humanFocus,
-                UcPresetType.none => null,
-              };
         final data = MobileGenerationViewData(
           batchStatus: batchStatus,
           cooldownRemainingSeconds: cooldownState.remainingSeconds,
-          isPromptMaximized: isPromptMaximized,
           keyboardVisible: keyboardVisible,
           isGenerating: isGenerating,
           isLauncherGenerating: isLauncherGenerating,
@@ -141,11 +117,6 @@ class _MobileGenerationLayoutState
           showRandomTools: showRandomTools,
           isUpscaleMode: isUpscaleMode,
           randomModeEnabled: randomModeEnabled,
-          promptSummary: promptSummary,
-          enabledCharacterCount: enabledCharacterCount,
-          qualityEnabled: qualityEnabled,
-          negativePresetLabel: negativePresetLabel,
-          fixedTagCount: fixedTagCount,
         );
         return MobileGenerationShell(
           controller: _controller,
