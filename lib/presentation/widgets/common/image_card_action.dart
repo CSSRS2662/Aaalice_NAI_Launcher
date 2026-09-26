@@ -15,6 +15,7 @@ enum ImageCardActionId {
   copySeed,
   importMetadata,
   addToAgent,
+  share,
   shareDiscord,
   createWatermark,
   createMosaic,
@@ -34,6 +35,8 @@ enum ImageCardActionId {
   upscale,
   sendToKrita,
   sendToGeneration,
+  reuseParameters,
+  reuseSeed,
   addToQueue,
   favorite,
   export,
@@ -176,11 +179,39 @@ List<ImageCardAction> orderedImageCardActions(
     visible.map((a) => a.id).toSet().length == visible.length,
     'A card must define each action only once.',
   );
+  assert(
+    !visible.any((a) => a.id == ImageCardActionId.reuseParameters) ||
+        !visible.any((a) => a.id == ImageCardActionId.reuseSeed),
+    'An image menu must expose either reuse parameters or reuse seed, not both.',
+  );
+  const primaryMenuOrder = [
+    ImageCardActionId.save,
+    ImageCardActionId.reuseParameters,
+    ImageCardActionId.reuseSeed,
+    ImageCardActionId.favorite,
+  ];
+  final primary = [
+    for (final id in primaryMenuOrder)
+      ...visible.where((action) => action.id == id),
+  ];
+  final primaryIds = primary.map((action) => action.id).toSet();
+  final remaining = visible
+      .where((action) => !primaryIds.contains(action.id))
+      .toList();
   return [
+    ...primary,
     for (final group in ImageCardActionGroup.values)
-      ...visible.where((action) => action.group == group),
+      ...remaining.where((action) => action.group == group),
   ];
 }
+
+bool isPrimaryImageMenuAction(ImageCardActionId id) => switch (id) {
+  ImageCardActionId.save ||
+  ImageCardActionId.reuseParameters ||
+  ImageCardActionId.reuseSeed ||
+  ImageCardActionId.favorite => true,
+  _ => false,
+};
 
 class ImageCardBatchResult<T> {
   const ImageCardBatchResult({required this.succeeded, required this.failures});

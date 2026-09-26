@@ -1,4 +1,6 @@
+import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -12,7 +14,7 @@ import '../../../../data/models/gallery/nai_image_metadata.dart';
 import '../../../../data/models/fixed_tag/fixed_tag_usage_snapshot.dart';
 import '../../../../data/repositories/gallery_folder_repository.dart';
 import '../../../../data/services/image_metadata_service.dart';
-import '../../../providers/generation/generation_models.dart';
+import '../../../providers/image_generation_provider.dart';
 import '../../../providers/local_gallery_provider.dart';
 import '../../../utils/image_detail_opener.dart';
 import '../../../widgets/common/app_toast.dart';
@@ -26,6 +28,43 @@ import '../../../widgets/common/image_detail/image_detail_viewer.dart';
 /// 从 desktop_layout.dart 中提取，减少文件职责
 class GenerationSaveService {
   GenerationSaveService._();
+
+  /// Ensures a generated image has the persistent local-gallery record needed
+  /// by actions such as favorite. Existing files are reused without copying.
+  static Future<String> ensureImageSaved(
+    BuildContext context,
+    WidgetRef ref,
+    GeneratedImage image,
+  ) async {
+    final missingDirectoryMessage =
+        context.l10n.localGallery_saveDirectoryNotSet;
+    final existingPath = image.filePath;
+    if (existingPath != null &&
+        existingPath.isNotEmpty &&
+        await File(existingPath).exists()) {
+      return existingPath;
+    }
+
+    final saveDirPath = await GalleryFolderRepository.instance.getRootPath();
+    if (saveDirPath == null || saveDirPath.isEmpty) {
+      throw StateError(missingDirectoryMessage);
+    }
+    final filePath = await ImageSaveUtils.saveBytesToDatedPath(
+      rootPath: saveDirPath,
+      bytes: image.bytes,
+      seed: await ImageSaveUtils.resolveSeed(
+        metadata: image.metadata,
+        bytes: image.bytes,
+      ),
+    );
+    ref
+        .read(imageGenerationNotifierProvider.notifier)
+        .updateImageFilePath(image.id, filePath);
+    await ref.read(localGalleryNotifierProvider.notifier).addNewlySavedImages([
+      filePath,
+    ]);
+    return filePath;
+  }
 
   /// 显示全屏预览
   ///
@@ -69,6 +108,11 @@ class GenerationSaveService {
         fixedTagUsageSnapshot: img.fixedTagUsageSnapshot,
       );
     }).toList();
+    GeneratedImage? sourceForDetail(ImageDetailData detail) =>
+        images.cast<GeneratedImage?>().firstWhere(
+          (image) => image?.id == detail.identifier,
+          orElse: () => null,
+        );
 
     // 使用 ImageDetailOpener 打开详情页（带防重复点击）
     // 使用 'generation_desktop' key 避免与本地图库的 'default' key 冲突
@@ -80,11 +124,54 @@ class GenerationSaveService {
       showThumbnails: allImages.length > 1,
       callbacks: ImageDetailCallbacks(
         onSave: (image) async {
-          if (!image.showSaveButton) return;
           await saveImageFromDetail(context, ref, image);
+        },
+        onReuseSeed: (detail) async {
+          final image = sourceForDetail(detail);
+          final seed = image?.metadata?.seed;
+          if (seed == null) {
+            if (context.mounted) {
+              AppToast.warning(context, context.l10n.toast_imageHasNoMetadata);
+            }
+            return;
+          }
+          ref.read(generationParamsNotifierProvider.notifier).updateSeed(seed);
+        },
+        onFavoriteToggle: (detail) {
+          final image = sourceForDetail(detail);
+          if (image != null) {
+            unawaited(_toggleFavorite(context, ref, image));
+          }
         },
       ),
     );
+  }
+
+  static Future<void> _toggleFavorite(
+    BuildContext context,
+    WidgetRef ref,
+    GeneratedImage image,
+  ) async {
+    try {
+      final path = await ensureImageSaved(context, ref, image);
+      final favorite = await ref
+          .read(localGalleryNotifierProvider.notifier)
+          .toggleFavorite(path);
+      if (!context.mounted) return;
+      AppToast.success(
+        context,
+        favorite
+            ? context.l10n.toast_favorited
+            : context.l10n.toast_unfavorited,
+      );
+    } catch (error) {
+      if (context.mounted) {
+        AppToast.error(
+          context,
+          context.l10n.toast_favoriteUpdateFailed(error.toString()),
+        );
+      }
+    }
   }
 
   /// 从详情页保存图像

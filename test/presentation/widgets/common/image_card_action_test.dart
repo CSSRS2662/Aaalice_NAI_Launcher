@@ -5,6 +5,50 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:nai_launcher/presentation/widgets/common/image_card_action.dart';
 
 void main() {
+  test('image menu pins save, reuse, and favorite before other actions', () {
+    ImageCardAction action(ImageCardActionId id) => ImageCardAction(
+      id: id,
+      icon: Icons.circle,
+      label: id.name,
+      invoke: () {},
+    );
+
+    final ordered = orderedImageCardActions([
+      action(ImageCardActionId.viewDetail),
+      action(ImageCardActionId.favorite),
+      action(ImageCardActionId.copy),
+      action(ImageCardActionId.reuseParameters),
+      action(ImageCardActionId.save),
+    ]);
+
+    expect(ordered.map((item) => item.id).take(3), [
+      ImageCardActionId.save,
+      ImageCardActionId.reuseParameters,
+      ImageCardActionId.favorite,
+    ]);
+  });
+
+  test('current generation menu substitutes reuse seed in second place', () {
+    ImageCardAction action(ImageCardActionId id) => ImageCardAction(
+      id: id,
+      icon: Icons.circle,
+      label: id.name,
+      invoke: () {},
+    );
+
+    final ordered = orderedImageCardActions([
+      action(ImageCardActionId.favorite),
+      action(ImageCardActionId.reuseSeed),
+      action(ImageCardActionId.save),
+    ]);
+
+    expect(ordered.map((item) => item.id), [
+      ImageCardActionId.save,
+      ImageCardActionId.reuseSeed,
+      ImageCardActionId.favorite,
+    ]);
+  });
+
   test(
     'menu and button share busy state and prevent duplicate execution',
     () async {

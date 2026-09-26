@@ -33,6 +33,8 @@ class SelectableImageCard extends ConsumerStatefulWidget {
     this.onLongPress,
     this.onSelectionChanged,
     this.onFullscreen,
+    this.onReuseParameters,
+    this.onReuseSeed,
     this.isPreviewActive = false,
     this.imageIdentity,
     this.allowRepeatedModifierTaps = false,
@@ -61,8 +63,6 @@ class SelectableImageCard extends ConsumerStatefulWidget {
     this.onGenerateVariations,
     this.onDirectorTools,
     this.onEnhance,
-    this.onSendToKrita,
-    this.onShareToDiscord,
     this.onOpenInExplorer,
     this.sourceFilePath,
     this.onSaveToLibrary,
@@ -93,6 +93,8 @@ class SelectableImageCard extends ConsumerStatefulWidget {
   final VoidCallback? onLongPress;
   final ValueChanged<bool>? onSelectionChanged;
   final ImageCardCallback? onFullscreen;
+  final ImageCardCallback? onReuseParameters;
+  final ImageCardCallback? onReuseSeed;
   final bool isPreviewActive;
   final Object? imageIdentity;
   final bool allowRepeatedModifierTaps;
@@ -121,8 +123,6 @@ class SelectableImageCard extends ConsumerStatefulWidget {
   final ImageCardCallback? onGenerateVariations;
   final ImageCardCallback? onDirectorTools;
   final ImageCardCallback? onEnhance;
-  final ImageCardCallback? onSendToKrita;
-  final ImageCardCallback? onShareToDiscord;
   final ImageCardCallback? onOpenInExplorer;
   final String? sourceFilePath;
   final void Function(Uint8List imageBytes, String prompt)? onSaveToLibrary;
@@ -192,6 +192,8 @@ class _SelectableImageCardState extends ConsumerState<SelectableImageCard>
     onLongPress: widget.onLongPress,
     onSelectionChanged: widget.onSelectionChanged,
     onFullscreen: widget.onFullscreen,
+    onReuseParameters: widget.onReuseParameters,
+    onReuseSeed: widget.onReuseSeed,
     onUpscale: widget.onUpscale,
     onReversePrompt: widget.onReversePrompt,
     onImageToImage: widget.onImageToImage,
@@ -203,8 +205,6 @@ class _SelectableImageCardState extends ConsumerState<SelectableImageCard>
     onGenerateVariations: widget.onGenerateVariations,
     onDirectorTools: widget.onDirectorTools,
     onEnhance: widget.onEnhance,
-    onSendToKrita: widget.onSendToKrita,
-    onShareToDiscord: widget.onShareToDiscord,
     onOpenInExplorer: widget.onOpenInExplorer,
     onSaveToLibrary: widget.onSaveToLibrary,
     onFavoriteToggle: widget.onFavoriteToggle,

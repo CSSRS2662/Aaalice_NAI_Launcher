@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../common/image_card_action.dart';
+import '../common/image_card_context_menu.dart';
 import 'gallery_detail_models.dart';
 
 class GalleryDetailActionRail extends StatefulWidget {
@@ -30,7 +32,7 @@ class _GalleryDetailActionRailState extends State<GalleryDetailActionRail> {
         if (constraints.maxHeight < requiredHeight + 8) {
           return Align(
             alignment: Alignment.centerRight,
-            child: _OverflowActionButton(entries: entries),
+            child: _OverflowActionButton(entries: _overflowEntries(entries)),
           );
         }
         return Align(
@@ -85,6 +87,7 @@ class _GalleryDetailActionRailState extends State<GalleryDetailActionRail> {
     final entries = <_RailActionEntry>[
       _RailActionEntry(
         id: 'copy',
+        actionId: ImageCardActionId.copyPrompt,
         icon: Icons.copy_all_outlined,
         label: viewModel.labels.copyPrompt,
         onPressed:
@@ -94,6 +97,7 @@ class _GalleryDetailActionRailState extends State<GalleryDetailActionRail> {
       ),
       _RailActionEntry(
         id: 'download',
+        actionId: ImageCardActionId.save,
         icon: Icons.download_outlined,
         label: viewModel.labels.downloadOriginal,
         loading: viewModel.downloadActionPending,
@@ -104,6 +108,7 @@ class _GalleryDetailActionRailState extends State<GalleryDetailActionRail> {
       if (canWatermark)
         _RailActionEntry(
           id: 'watermark',
+          actionId: ImageCardActionId.createWatermark,
           icon: Icons.branding_watermark_outlined,
           label: viewModel.labels.downloadAndWatermark,
           loading: viewModel.downloadActionPending,
@@ -114,6 +119,7 @@ class _GalleryDetailActionRailState extends State<GalleryDetailActionRail> {
       if (canReverse)
         _RailActionEntry(
           id: 'reverse',
+          actionId: ImageCardActionId.reversePrompt,
           icon: Icons.manage_search,
           label: viewModel.labels.sendToReverse,
           loading: viewModel.reverseActionPending,
@@ -124,6 +130,7 @@ class _GalleryDetailActionRailState extends State<GalleryDetailActionRail> {
       if (actions.downloadAll != null && viewModel.media.length > 1)
         _RailActionEntry(
           id: 'download-all',
+          actionId: ImageCardActionId.export,
           icon: Icons.download_for_offline_outlined,
           label: viewModel.labels.downloadAll,
           loading: viewModel.downloadActionPending,
@@ -134,11 +141,51 @@ class _GalleryDetailActionRailState extends State<GalleryDetailActionRail> {
     ];
     return entries;
   }
+
+  List<_RailActionEntry> _overflowEntries(List<_RailActionEntry> railEntries) {
+    final download = railEntries.firstWhere((entry) => entry.id == 'download');
+    final viewModel = widget.viewModel;
+    final actions = widget.actions;
+    return [
+      _RailActionEntry(
+        id: download.id,
+        actionId: download.actionId,
+        icon: download.icon,
+        label: viewModel.labels.saveImage,
+        loading: download.loading,
+        onPressed: download.onPressed,
+      ),
+      _RailActionEntry(
+        id: 'reuse',
+        actionId: ImageCardActionId.reuseParameters,
+        icon: Icons.input_rounded,
+        label: viewModel.labels.reuseParameters,
+        onPressed: viewModel.canUseGenerationActions
+            ? () => actions.sendToGenerate(viewModel.currentMedia)
+            : null,
+      ),
+      _RailActionEntry(
+        id: 'favorite',
+        actionId: ImageCardActionId.favorite,
+        icon: viewModel.isFavorited ? Icons.favorite : Icons.favorite_border,
+        label: viewModel.isFavorited
+            ? viewModel.labels.removeFavorite
+            : viewModel.labels.addFavorite,
+        loading: viewModel.favoriteActionPending,
+        onPressed:
+            viewModel.canToggleFavorite && !viewModel.favoriteActionPending
+            ? actions.toggleFavorite
+            : null,
+      ),
+      ...railEntries.where((entry) => entry.id != 'download'),
+    ];
+  }
 }
 
 class _RailActionEntry {
   const _RailActionEntry({
     required this.id,
+    required this.actionId,
     required this.icon,
     required this.label,
     required this.onPressed,
@@ -146,6 +193,7 @@ class _RailActionEntry {
   });
 
   final String id;
+  final ImageCardActionId actionId;
   final IconData icon;
   final String label;
   final VoidCallback? onPressed;
@@ -280,48 +328,33 @@ class _OverflowActionButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Semantics(
-      button: true,
-      label: MaterialLocalizations.of(context).moreButtonTooltip,
-      child: PopupMenuButton<String>(
-        key: const ValueKey('gallery-detail-action-overflow'),
-        tooltip: MaterialLocalizations.of(context).moreButtonTooltip,
-        position: PopupMenuPosition.under,
-        onSelected: (id) {
-          for (final entry in entries) {
-            if (entry.id == id) {
-              entry.onPressed?.call();
-              return;
-            }
-          }
-        },
-        itemBuilder: (context) => [
-          for (final entry in entries)
-            PopupMenuItem<String>(
-              value: entry.id,
-              enabled: entry.onPressed != null,
-              child: Row(
-                children: [
-                  SizedBox.square(
-                    dimension: 22,
-                    child: entry.loading
-                        ? const CircularProgressIndicator(strokeWidth: 2)
-                        : Icon(entry.icon, size: 20),
+    return Builder(
+      builder: (buttonContext) => Material(
+        color: Theme.of(context).colorScheme.surfaceContainerHigh,
+        elevation: 3,
+        shape: const CircleBorder(),
+        child: IconButton(
+          key: const ValueKey('gallery-detail-action-overflow'),
+          tooltip: MaterialLocalizations.of(context).moreButtonTooltip,
+          icon: const Icon(Icons.more_vert),
+          onPressed: () async {
+            final anchor = buttonContext.findRenderObject()! as RenderBox;
+            await ImageCardContextMenu.show(
+              context: buttonContext,
+              position: anchor.localToGlobal(Offset(0, anchor.size.height)),
+              actions: [
+                for (final entry in entries)
+                  ImageCardAction(
+                    id: entry.actionId,
+                    icon: entry.icon,
+                    label: entry.label,
+                    isLoading: entry.loading,
+                    enabled: entry.onPressed != null,
+                    invoke: entry.onPressed ?? () {},
                   ),
-                  const SizedBox(width: 12),
-                  Expanded(child: Text(entry.label)),
-                ],
-              ),
-            ),
-        ],
-        child: Material(
-          color: Theme.of(context).colorScheme.surfaceContainerHigh,
-          elevation: 3,
-          shape: const CircleBorder(),
-          child: const SizedBox.square(
-            dimension: 48,
-            child: Icon(Icons.more_vert),
-          ),
+              ],
+            );
+          },
         ),
       ),
     );

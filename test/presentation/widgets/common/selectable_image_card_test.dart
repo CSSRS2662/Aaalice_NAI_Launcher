@@ -12,6 +12,7 @@ import 'package:nai_launcher/core/utils/image_share_sanitizer.dart';
 import 'package:nai_launcher/presentation/providers/copy_drag_watermark_provider.dart';
 import 'package:nai_launcher/core/platform/platform_capabilities.dart';
 import 'package:nai_launcher/data/models/image/image_stream_chunk.dart';
+import 'package:nai_launcher/data/models/gallery/nai_image_metadata.dart';
 import 'package:nai_launcher/data/models/watermark/watermark_settings.dart';
 import 'package:nai_launcher/l10n/app_localizations.dart';
 import 'package:nai_launcher/presentation/providers/image_generation_provider.dart';
@@ -360,14 +361,18 @@ void main() {
           .where((item) => !item.isDivider)
           .map((item) => item.id)
           .toList();
-      final addToAgentIndex = itemIds.indexOf(
-        ImageCardActionId.addToAgent.name,
-      );
-      final shareDiscordIndex = itemIds.indexOf(
-        ImageCardActionId.shareDiscord.name,
-      );
-      expect(addToAgentIndex, greaterThanOrEqualTo(0));
-      expect(shareDiscordIndex, addToAgentIndex + 1);
+      expect(itemIds.take(3), [
+        ImageCardActionId.save.name,
+        ImageCardActionId.reuseSeed.name,
+        ImageCardActionId.favorite.name,
+      ]);
+      expect(itemIds, contains(ImageCardActionId.addToAgent.name));
+      expect(itemIds, isNot(contains(ImageCardActionId.shareDiscord.name)));
+      expect(itemIds, isNot(contains(ImageCardActionId.sendToKrita.name)));
+
+      await tester.tap(find.text('复用种子'));
+      await tester.pumpAndSettle();
+      expect(container.read(generationParamsNotifierProvider).seed, 123456);
     },
   );
 
@@ -923,9 +928,18 @@ ProviderContainer _createContainerWithPreviewImage({
     img.encodePng(img.Image(width: 32, height: 32)),
   );
 
-  container.read(imageGenerationNotifierProvider.notifier).updateDisplayImages([
-    GeneratedImage(id: 'preview-image', bytes: bytes, width: 32, height: 32),
-  ]);
+  final image = GeneratedImage(
+    id: 'preview-image',
+    bytes: bytes,
+    width: 32,
+    height: 32,
+    metadata: const NaiImageMetadata(seed: 123456, width: 32, height: 32),
+  );
+  final notifier = container.read(imageGenerationNotifierProvider.notifier);
+  notifier.state = notifier.state.copyWith(
+    currentImages: [image],
+    displayImages: [image],
+  );
 
   return container;
 }

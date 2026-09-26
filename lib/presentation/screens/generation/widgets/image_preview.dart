@@ -3,6 +3,7 @@ import '../../../selection/card_selection_scope.dart';
 import '../../../widgets/common/image_card_batch_scope.dart';
 import '../../../widgets/bulk_action_bar.dart';
 import '../services/generation_image_batch_actions.dart';
+import '../services/generation_save_service.dart';
 import 'package:nai_launcher/data/models/image/image_postprocess_phase.dart';
 import 'dart:async';
 import 'dart:io';
@@ -28,7 +29,6 @@ import '../../../../core/utils/localization_extension.dart';
 import '../../../../core/utils/nai_resolution_adapter.dart';
 import '../../../../core/utils/prompt_preset_resolution.dart';
 import '../../../../core/utils/vibe_file_parser.dart';
-import '../../../../data/models/gallery/nai_image_metadata.dart';
 import '../../../../data/models/fixed_tag/fixed_tag_entry.dart';
 import '../../../../data/models/fixed_tag/fixed_tag_prompt_type.dart';
 import '../../../../data/models/fixed_tag/fixed_tag_usage_snapshot.dart';
@@ -55,6 +55,7 @@ import '../../../providers/tag_library_page_provider.dart';
 import '../../../providers/shortcuts_provider.dart';
 import '../../../providers/uc_preset_provider.dart';
 import '../../../services/image_workflow_launcher.dart';
+import '../../../services/image_metadata_import_workflow.dart';
 import '../../../widgets/character/character_position_canvas.dart';
 import '../../../widgets/common/app_toast.dart';
 import '../../../widgets/common/draggable_memory_image.dart';
@@ -63,11 +64,8 @@ import '../../../widgets/common/image_detail/image_detail_data.dart';
 import '../../../widgets/common/image_detail/image_detail_viewer.dart';
 import '../../../widgets/common/selectable_image_card.dart';
 import '../../../widgets/common/transparency_background.dart';
-import '../../../widgets/discord_share/discord_share_dialog.dart';
 import '../../../widgets/image_editor/image_editor_screen.dart';
-import '../../../utils/fixed_tag_metadata_matcher.dart';
 import '../../../utils/image_detail_opener.dart';
-import '../../../utils/krita_send_helper.dart';
 import '../../../utils/precise_ref_library_import_helper.dart';
 import '../../tag_library_page/widgets/entry_add_dialog.dart';
 import '../../../widgets/common/image_comparison_view.dart';
@@ -727,6 +725,16 @@ class _ImagePreviewWidgetState extends ConsumerState<ImagePreviewWidget> {
     final imageBytes = image.bytes;
     final canUseAsInput = image.canUseAsGenerationInput;
     final isFailedSnapshot = image.isFailedStreamSnapshot;
+    final isCurrentRound = ref
+        .watch(imageGenerationNotifierProvider)
+        .currentImages
+        .any((item) => item.id == image.id);
+    final localImages = ref.watch(localGalleryNotifierProvider).currentImages;
+    final isFavorite =
+        image.filePath != null &&
+        localImages.any(
+          (record) => record.path == image.filePath && record.isFavorite,
+        );
 
     final card = SelectableImageCard(
       imageBytes: imageBytes,
@@ -776,6 +784,16 @@ class _ImagePreviewWidgetState extends ConsumerState<ImagePreviewWidget> {
           : null,
       enableSaveAction: image.canSave,
       enableCopyAction: image.canSave,
+      isFavorite: isFavorite,
+      onReuseParameters: !isCurrentRound && canUseAsInput
+          ? () => _reuseImageParameters(context, image)
+          : null,
+      onReuseSeed: isCurrentRound && canUseAsInput
+          ? () => _reuseGeneratedSeed(context, image)
+          : null,
+      onFavoriteToggle: image.canFavorite
+          ? () => _toggleGeneratedImageFavorite(context, image)
+          : null,
       statusBadgeLabel: isFailedSnapshot
           ? context.l10n.generation_failedStreamSnapshot
           : image.postprocessError != null
@@ -835,17 +853,6 @@ class _ImagePreviewWidgetState extends ConsumerState<ImagePreviewWidget> {
       onUpscale: canUseAsInput
           ? () => ImageWorkflowLauncher.openUpscale(ref, imageBytes)
           : null,
-      onSendToKrita: canUseAsInput
-          ? () => KritaSendHelper.sendImageBytes(
-              context,
-              ref,
-              imageBytes,
-              name: _previewImageFileName(image),
-            )
-          : null,
-      onShareToDiscord: image.canSave
-          ? () => unawaited(_sharePreviewImageToDiscord(context, image))
-          : null,
       onOpenInExplorer:
           image.canSave && PlatformCapabilities.current.supportsOpenFolder
           ? () => _openImageInExplorer(context, image)
@@ -880,43 +887,55 @@ class _ImagePreviewWidgetState extends ConsumerState<ImagePreviewWidget> {
     return 'generation_${image.id}.png';
   }
 
-  Future<void> _sharePreviewImageToDiscord(
+  void _reuseGeneratedSeed(BuildContext context, GeneratedImage image) {
+    final seed = image.metadata?.seed;
+    if (seed == null) {
+      AppToast.warning(context, context.l10n.toast_imageHasNoMetadata);
+      return;
+    }
+    ref.read(generationParamsNotifierProvider.notifier).updateSeed(seed);
+  }
+
+  Future<void> _reuseImageParameters(
     BuildContext context,
     GeneratedImage image,
   ) async {
-    NaiImageMetadata? metadata = image.metadata;
+    await ImageMetadataImportWorkflow.shared.run(
+      context: context,
+      read: ref.read,
+      metadata: image.metadata,
+      bytes: image.metadata == null ? image.bytes : null,
+    );
+  }
+
+  Future<void> _toggleGeneratedImageFavorite(
+    BuildContext context,
+    GeneratedImage image,
+  ) async {
     try {
-      final metadataService = ImageMetadataService();
-      final filePath = image.filePath;
-      if (metadata == null &&
-          filePath != null &&
-          await File(filePath).exists()) {
-        metadata = await metadataService.getMetadataImmediate(filePath);
-      }
-      metadata ??= await metadataService.getMetadataFromBytes(image.bytes);
-      if (metadata != null) {
-        final fixedTags = ref.read(fixedTagsNotifierProvider);
-        metadata = matchMetadataFixedTags(
-          metadata: metadata,
-          positiveEntries: fixedTags.positiveEntries,
-          negativeEntries: fixedTags.negativeEntries,
+      final filePath = await GenerationSaveService.ensureImageSaved(
+        context,
+        ref,
+        image,
+      );
+      final isFavorite = await ref
+          .read(localGalleryNotifierProvider.notifier)
+          .toggleFavorite(filePath);
+      if (!context.mounted) return;
+      AppToast.success(
+        context,
+        isFavorite
+            ? context.l10n.toast_favorited
+            : context.l10n.toast_unfavorited,
+      );
+    } catch (error) {
+      if (context.mounted) {
+        AppToast.error(
+          context,
+          context.l10n.toast_favoriteUpdateFailed(error.toString()),
         );
       }
-    } catch (error) {
-      AppLogger.w(
-        'Could not read generation metadata for Discord sharing: $error',
-        'DiscordShare',
-      );
     }
-    if (!context.mounted) return;
-    await DiscordShareDialog.show(
-      context,
-      imageBytes: image.bytes,
-      fileName: _previewImageFileName(image),
-      metadata: metadata,
-      width: image.width,
-      height: image.height,
-    );
   }
 
   Future<void> _sendPreviewImageToReversePrompt(
@@ -1183,6 +1202,16 @@ class _ImagePreviewWidgetState extends ConsumerState<ImagePreviewWidget> {
         fixedTagUsageSnapshot: img.fixedTagUsageSnapshot,
       );
     }).toList();
+    final currentRoundIds = ref
+        .read(imageGenerationNotifierProvider)
+        .currentImages
+        .map((image) => image.id)
+        .toSet();
+    GeneratedImage? sourceForDetail(ImageDetailData detail) =>
+        sequence.cast<GeneratedImage?>().firstWhere(
+          (image) => image?.id == detail.identifier,
+          orElse: () => null,
+        );
 
     // 使用 ImageDetailOpener 打开详情页
     ImageDetailOpener.showMultipleImmediate(
@@ -1193,8 +1222,23 @@ class _ImagePreviewWidgetState extends ConsumerState<ImagePreviewWidget> {
       showThumbnails: allImages.length > 1,
       callbacks: ImageDetailCallbacks(
         onSave: (image) async {
-          if (!image.showSaveButton) return;
           await _saveImage(context, image);
+        },
+        onReuseSeed: (detail) async {
+          final image = sourceForDetail(detail);
+          if (image != null) _reuseGeneratedSeed(context, image);
+        },
+        reuseSeedAppliesTo: (detail) =>
+            currentRoundIds.contains(detail.identifier),
+        onReuseMetadata: (detail) async {
+          final image = sourceForDetail(detail);
+          if (image != null) await _reuseImageParameters(context, image);
+        },
+        onFavoriteToggle: (detail) {
+          final image = sourceForDetail(detail);
+          if (image != null) {
+            unawaited(_toggleGeneratedImageFavorite(context, image));
+          }
         },
       ),
     );

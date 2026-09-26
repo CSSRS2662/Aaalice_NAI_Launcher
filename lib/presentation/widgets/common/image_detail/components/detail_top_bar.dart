@@ -10,6 +10,9 @@ import '../../../../providers/local_gallery_provider.dart';
 import '../../../../providers/mosaic_settings_provider.dart';
 import '../../../../providers/watermark_settings_provider.dart';
 import '../../animated_favorite_button.dart';
+import '../../image_card_action.dart';
+import '../../image_card_context_menu.dart';
+import '../file_image_detail_data.dart';
 import '../image_detail_data.dart';
 
 /// 顶部控制栏
@@ -22,6 +25,7 @@ class DetailTopBar extends StatelessWidget {
   final VoidCallback onClose;
   final VoidCallback? onShowMetadata;
   final VoidCallback? onReuseMetadata;
+  final VoidCallback? onReuseSeed;
   final VoidCallback? onFavoriteToggle;
   final VoidCallback? onSave;
   final VoidCallback? onCopyImage;
@@ -39,6 +43,7 @@ class DetailTopBar extends StatelessWidget {
     required this.onClose,
     this.onShowMetadata,
     this.onReuseMetadata,
+    this.onReuseSeed,
     this.onFavoriteToggle,
     this.onSave,
     this.onCopyImage,
@@ -115,6 +120,7 @@ class DetailTopBar extends StatelessWidget {
                 hasMetadata: metadata != null,
                 onShowMetadata: onShowMetadata,
                 onReuseMetadata: onReuseMetadata,
+                onReuseSeed: onReuseSeed,
                 onFavoriteToggle: onFavoriteToggle,
                 onSave: onSave,
                 onCopyImage: onCopyImage,
@@ -132,24 +138,13 @@ class DetailTopBar extends StatelessWidget {
   }
 }
 
-enum _DetailOverflowAction {
-  save,
-  share,
-  favorite,
-  reuse,
-  imageToImage,
-  reversePrompt,
-  copy,
-  watermark,
-  mosaic,
-}
-
 class _DetailTopBarActions extends ConsumerWidget {
   const _DetailTopBarActions({
     required this.currentImage,
     required this.hasMetadata,
     this.onShowMetadata,
     this.onReuseMetadata,
+    this.onReuseSeed,
     this.onFavoriteToggle,
     this.onSave,
     this.onCopyImage,
@@ -164,6 +159,7 @@ class _DetailTopBarActions extends ConsumerWidget {
   final bool hasMetadata;
   final VoidCallback? onShowMetadata;
   final VoidCallback? onReuseMetadata;
+  final VoidCallback? onReuseSeed;
   final VoidCallback? onFavoriteToggle;
   final VoidCallback? onSave;
   final VoidCallback? onCopyImage;
@@ -221,92 +217,83 @@ class _DetailTopBarActions extends ConsumerWidget {
         : null;
 
     if (compact) {
-      final overflowActions = <PopupMenuEntry<_DetailOverflowAction>>[
-        if (veryCompact && currentImage.showSaveButton && onSave != null)
-          PopupMenuItem(
-            value: _DetailOverflowAction.save,
-            child: ListTile(
-              leading: const Icon(Icons.save_alt),
-              title: Text(l10n.common_save),
-            ),
-          ),
-        if (veryCompact && onShare != null)
-          PopupMenuItem(
-            value: _DetailOverflowAction.share,
-            child: ListTile(
-              leading: const Icon(Icons.share_rounded),
-              title: Text(l10n.common_share),
-            ),
-          ),
-        if (veryCompact && favorite != null)
-          PopupMenuItem(
-            value: _DetailOverflowAction.favorite,
-            child: ListTile(
-              leading: Icon(
-                currentImage.isFavorite
-                    ? Icons.favorite
-                    : Icons.favorite_border,
-              ),
-              title: Text(
-                currentImage.isFavorite
-                    ? l10n.common_unfavorite
-                    : l10n.common_favorite,
-              ),
-            ),
+      final isFavorite = _resolveFavorite(ref);
+      final overflowActions = <ImageCardAction>[
+        if (onSave != null)
+          ImageCardAction(
+            id: ImageCardActionId.save,
+            icon: Icons.save_alt,
+            label: l10n.shortcut_action_save_image,
+            invoke: onSave!,
           ),
         if (hasMetadata && onReuseMetadata != null)
-          PopupMenuItem(
-            value: _DetailOverflowAction.reuse,
-            child: ListTile(
-              leading: const Icon(Icons.input),
-              title: Text(l10n.shortcut_action_reuse_params),
-            ),
+          ImageCardAction(
+            id: ImageCardActionId.reuseParameters,
+            icon: Icons.input_rounded,
+            label: l10n.shortcut_action_reuse_params,
+            invoke: onReuseMetadata!,
+          ),
+        if (onReuseSeed != null)
+          ImageCardAction(
+            id: ImageCardActionId.reuseSeed,
+            icon: Icons.eco_outlined,
+            label: l10n.shortcut_action_reuse_seed,
+            invoke: onReuseSeed!,
+          ),
+        if (onFavoriteToggle != null)
+          ImageCardAction(
+            id: ImageCardActionId.favorite,
+            icon: isFavorite ? Icons.favorite : Icons.favorite_border,
+            label: isFavorite ? l10n.common_unfavorite : l10n.common_favorite,
+            invoke: onFavoriteToggle!,
+          ),
+        if (onShare != null)
+          ImageCardAction(
+            id: ImageCardActionId.share,
+            icon: Icons.share_rounded,
+            label: l10n.common_share,
+            invoke: onShare!,
           ),
         if (onSendToImg2Img != null)
-          PopupMenuItem(
-            value: _DetailOverflowAction.imageToImage,
-            child: ListTile(
-              leading: const Icon(Icons.image_search),
-              title: Text(l10n.detail_sendToImg2Img),
-            ),
+          ImageCardAction(
+            id: ImageCardActionId.imageToImage,
+            icon: Icons.image_search,
+            label: l10n.detail_sendToImg2Img,
+            invoke: onSendToImg2Img!,
           ),
         if (onSendToReversePrompt != null)
-          PopupMenuItem(
-            value: _DetailOverflowAction.reversePrompt,
-            child: ListTile(
-              leading: const Icon(Icons.auto_fix_high),
-              title: Text(l10n.detail_sendToReversePrompt),
-            ),
+          ImageCardAction(
+            id: ImageCardActionId.reversePrompt,
+            icon: Icons.auto_fix_high,
+            label: l10n.detail_sendToReversePrompt,
+            invoke: onSendToReversePrompt!,
           ),
         if (onCopyImage != null)
-          PopupMenuItem(
-            value: _DetailOverflowAction.copy,
-            child: ListTile(
-              leading: const Icon(Icons.copy),
-              title: Text(l10n.shortcut_action_copy_image),
-            ),
+          ImageCardAction(
+            id: ImageCardActionId.copy,
+            icon: Icons.copy,
+            label: l10n.shortcut_action_copy_image,
+            invoke: onCopyImage!,
           ),
         if (watermarkEnabled && onWatermark != null)
-          PopupMenuItem(
-            value: _DetailOverflowAction.watermark,
-            child: ListTile(
-              leading: const Icon(Icons.branding_watermark_outlined),
-              title: Text(watermarkLabel),
-            ),
+          ImageCardAction(
+            id: ImageCardActionId.createWatermark,
+            icon: Icons.branding_watermark_outlined,
+            label: watermarkLabel,
+            invoke: onWatermark!,
           ),
         if (mosaicEnabled && onMosaic != null)
-          PopupMenuItem(
-            value: _DetailOverflowAction.mosaic,
-            child: ListTile(
-              leading: const Icon(Icons.grid_on_rounded),
-              title: Text(mosaicLabel),
-            ),
+          ImageCardAction(
+            id: ImageCardActionId.createMosaic,
+            icon: Icons.grid_on_rounded,
+            label: mosaicLabel,
+            invoke: onMosaic!,
           ),
       ];
       return Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          if (!veryCompact && currentImage.showSaveButton && onSave != null)
+          if (!veryCompact && onSave != null)
             IconButton(
               icon: const Icon(Icons.save_alt, color: Colors.white),
               onPressed: onSave,
@@ -326,41 +313,22 @@ class _DetailTopBarActions extends ConsumerWidget {
               tooltip: l10n.detail_imageDetails,
             ),
           if (overflowActions.isNotEmpty)
-            PopupMenuButton<_DetailOverflowAction>(
-              icon: const Icon(Icons.more_vert, color: Colors.white),
-              tooltip: l10n.nav_more,
-              itemBuilder: (_) => overflowActions,
-              onSelected: (action) {
-                switch (action) {
-                  case _DetailOverflowAction.save:
-                    onSave?.call();
-                    break;
-                  case _DetailOverflowAction.share:
-                    onShare?.call();
-                    break;
-                  case _DetailOverflowAction.favorite:
-                    onFavoriteToggle?.call();
-                    break;
-                  case _DetailOverflowAction.reuse:
-                    onReuseMetadata?.call();
-                    break;
-                  case _DetailOverflowAction.imageToImage:
-                    onSendToImg2Img?.call();
-                    break;
-                  case _DetailOverflowAction.reversePrompt:
-                    onSendToReversePrompt?.call();
-                    break;
-                  case _DetailOverflowAction.copy:
-                    onCopyImage?.call();
-                    break;
-                  case _DetailOverflowAction.watermark:
-                    onWatermark?.call();
-                    break;
-                  case _DetailOverflowAction.mosaic:
-                    onMosaic?.call();
-                    break;
-                }
-              },
+            Builder(
+              builder: (buttonContext) => IconButton(
+                key: const ValueKey('image-detail-more-actions'),
+                icon: const Icon(Icons.more_vert, color: Colors.white),
+                tooltip: l10n.nav_more,
+                onPressed: () async {
+                  final anchor = buttonContext.findRenderObject()! as RenderBox;
+                  await ImageCardContextMenu.show(
+                    context: buttonContext,
+                    position: anchor.localToGlobal(
+                      Offset(0, anchor.size.height),
+                    ),
+                    actions: overflowActions,
+                  );
+                },
+              ),
             ),
         ],
       );
@@ -369,7 +337,7 @@ class _DetailTopBarActions extends ConsumerWidget {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        if (currentImage.showSaveButton && onSave != null)
+        if (onSave != null)
           IconButton(
             icon: const Icon(Icons.save_alt, color: Colors.white),
             onPressed: onSave,
@@ -426,18 +394,7 @@ class _DetailTopBarActions extends ConsumerWidget {
   }
 
   Widget _buildFavorite(WidgetRef ref) {
-    var isFavorite = currentImage.isFavorite;
-    if (currentImage.identifier.isNotEmpty &&
-        currentImage is LocalImageDetailData) {
-      final galleryState = ref.watch(localGalleryNotifierProvider);
-      final record = galleryState.currentImages
-          .cast<LocalImageRecord?>()
-          .firstWhere(
-            (image) => image?.path == currentImage.identifier,
-            orElse: () => null,
-          );
-      isFavorite = record?.isFavorite ?? isFavorite;
-    }
+    final isFavorite = _resolveFavorite(ref);
 
     return SizedBox.square(
       dimension: 48,
@@ -452,5 +409,26 @@ class _DetailTopBarActions extends ConsumerWidget {
         ),
       ),
     );
+  }
+
+  bool _resolveFavorite(WidgetRef ref) {
+    var isFavorite = currentImage.isFavorite;
+    final favoritePath = currentImage is LocalImageDetailData
+        ? (currentImage as LocalImageDetailData).record.path
+        : currentImage is FileImageDetailData
+        ? (currentImage as FileImageDetailData).filePath
+        : null;
+    if (favoritePath != null && favoritePath.isNotEmpty) {
+      final galleryState = ref.watch(localGalleryNotifierProvider);
+      final record = galleryState.currentImages
+          .cast<LocalImageRecord?>()
+          .firstWhere(
+            (image) => image?.path == favoritePath,
+            orElse: () => null,
+          );
+      isFavorite = record?.isFavorite ?? isFavorite;
+    }
+
+    return isFavorite;
   }
 }

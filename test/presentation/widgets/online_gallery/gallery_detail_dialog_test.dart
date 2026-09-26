@@ -459,6 +459,26 @@ void main() {
     );
     expect(tester.takeException(), isNull);
 
+    await tester.tap(actionOverflow);
+    await tester.pumpAndSettle();
+    final primaryMenuLabels = [
+      find.text('Save Image'),
+      find.text('Reuse Parameters'),
+      find.text('Add favorite'),
+    ];
+    for (final label in primaryMenuLabels) {
+      expect(label, findsOneWidget);
+    }
+    final primaryMenuPositions = primaryMenuLabels
+        .map((label) => tester.getTopLeft(label).dy)
+        .toList();
+    expect(
+      primaryMenuPositions,
+      orderedEquals(primaryMenuPositions.toList()..sort()),
+    );
+    await tester.tapAt(const Offset(2, 2));
+    await tester.pumpAndSettle();
+
     await tester.binding.setSurfaceSize(const Size(600, 180));
     await tester.pumpAndSettle();
     final shortDialogRect = tester.getRect(find.byType(Dialog));
@@ -1093,6 +1113,8 @@ GalleryDetailDialogLabels _labels({String sourceName = 'Codex'}) {
     sendToGenerate: 'Generate',
     addToQueue: 'Queue',
     downloadOriginal: 'Download original',
+    saveImage: 'Save Image',
+    reuseParameters: 'Reuse Parameters',
     downloadAndWatermark: 'Download and watermark',
     previousImage: 'Previous',
     nextImage: 'Next',

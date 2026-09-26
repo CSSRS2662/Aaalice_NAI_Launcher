@@ -77,6 +77,8 @@ class ImageCardCapabilities {
     required this.onLongPress,
     required this.onSelectionChanged,
     required this.onFullscreen,
+    required this.onReuseParameters,
+    required this.onReuseSeed,
     required this.onUpscale,
     required this.onReversePrompt,
     required this.onImageToImage,
@@ -88,8 +90,6 @@ class ImageCardCapabilities {
     required this.onGenerateVariations,
     required this.onDirectorTools,
     required this.onEnhance,
-    required this.onSendToKrita,
-    required this.onShareToDiscord,
     required this.onOpenInExplorer,
     required this.onSaveToLibrary,
     required this.onFavoriteToggle,
@@ -111,6 +111,8 @@ class ImageCardCapabilities {
   final VoidCallback? onLongPress;
   final ValueChanged<bool>? onSelectionChanged;
   final ImageCardCallback? onFullscreen;
+  final ImageCardCallback? onReuseParameters;
+  final ImageCardCallback? onReuseSeed;
   final ImageCardCallback? onUpscale;
   final ImageCardCallback? onReversePrompt;
   final ImageCardCallback? onImageToImage;
@@ -122,8 +124,6 @@ class ImageCardCapabilities {
   final ImageCardCallback? onGenerateVariations;
   final ImageCardCallback? onDirectorTools;
   final ImageCardCallback? onEnhance;
-  final ImageCardCallback? onSendToKrita;
-  final ImageCardCallback? onShareToDiscord;
   final ImageCardCallback? onOpenInExplorer;
   final void Function(Uint8List imageBytes, String prompt)? onSaveToLibrary;
   final ImageCardCallback? onFavoriteToggle;

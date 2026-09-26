@@ -23,9 +23,17 @@ class ImageCardContextMenu {
       if (title != null)
         ProMenuItem(id: '_scope', label: title, enabled: false),
     ];
-    ImageCardActionGroup? previousGroup;
+    ImageCardAction? previousAction;
     for (final action in orderedImageCardActions(actions)) {
-      if (previousGroup != null && previousGroup != action.group) {
+      final previous = previousAction;
+      final bothPrimary =
+          previous != null &&
+          isPrimaryImageMenuAction(previous.id) &&
+          isPrimaryImageMenuAction(action.id);
+      if (previous != null &&
+          !bothPrimary &&
+          (isPrimaryImageMenuAction(previous.id) ||
+              previous.group != action.group)) {
         items.add(const ProMenuItem.divider());
       }
       items.add(
@@ -41,7 +49,7 @@ class ImageCardContextMenu {
               : action.disabledReason,
         ),
       );
-      previousGroup = action.group;
+      previousAction = action;
     }
     return items;
   }

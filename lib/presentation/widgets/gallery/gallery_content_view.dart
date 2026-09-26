@@ -591,6 +591,12 @@ class LocalGalleryContentView extends ConsumerWidget {
         showMetadataPanel: true,
         showThumbnails: images.length > 1,
         callbacks: ImageDetailCallbacks(
+          onSave: onSendAction != null
+              ? (data) => onSendAction!.call(
+                  (data as LocalImageDetailData).record,
+                  LocalImageContextAction.saveToSystemGallery,
+                )
+              : null,
           onReuseMetadata: onReuseMetadata != null
               ? (data) async =>
                     onReuseMetadata?.call((data as LocalImageDetailData).record)

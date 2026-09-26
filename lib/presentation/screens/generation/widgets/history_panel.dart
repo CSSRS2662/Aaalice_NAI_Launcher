@@ -36,6 +36,7 @@ import '../../../providers/reverse_prompt_provider.dart';
 import '../../../providers/share_image_settings_provider.dart';
 import '../../../providers/copy_drag_watermark_provider.dart';
 import '../../../services/image_workflow_launcher.dart';
+import '../../../services/image_metadata_import_workflow.dart';
 import '../../../widgets/common/app_toast.dart';
 import '../../../widgets/common/image_detail/file_image_detail_data.dart';
 import '../../../widgets/common/image_detail/image_detail_data.dart';
@@ -45,7 +46,6 @@ import '../../../widgets/common/owned_scroll_controller.dart';
 import '../../../widgets/common/selectable_image_card.dart';
 import '../../../widgets/image_editor/image_editor_screen.dart';
 import '../../../utils/image_detail_opener.dart';
-import '../../../utils/krita_send_helper.dart';
 import '../../../utils/precise_ref_library_import_helper.dart';
 import '../../../widgets/common/themed_confirm_dialog.dart';
 import '../../../widgets/common/workspace_panel_header.dart';
@@ -816,6 +816,13 @@ class _HistoryPanelState extends ConsumerState<HistoryPanel> {
                                     historyImage,
                                   )
                                 : null,
+                            onReuseParameters:
+                                historyImage.canUseAsGenerationInput
+                                ? () => _reuseHistoryParameters(
+                                    context,
+                                    historyImage,
+                                  )
+                                : null,
                             onSelectionChanged: (selected) {
                               if (!historyImage.canBulkSelect) {
                                 return;
@@ -932,14 +939,6 @@ class _HistoryPanelState extends ConsumerState<HistoryPanel> {
                                 ? () => ImageWorkflowLauncher.openUpscale(
                                     ref,
                                     historyImage.bytes,
-                                  )
-                                : null,
-                            onSendToKrita: historyImage.canUseAsGenerationInput
-                                ? () => KritaSendHelper.sendImageBytes(
-                                    context,
-                                    ref,
-                                    historyImage.bytes,
-                                    name: 'history_${historyImage.id}.png',
                                   )
                                 : null,
                             onOpenInExplorer:
@@ -1062,6 +1061,9 @@ class _HistoryPanelState extends ConsumerState<HistoryPanel> {
           onFavoriteToggle: image.canFavorite
               ? () => _toggleHistoryFavorite(context, image)
               : null,
+          onReuseSeed: image.canUseAsGenerationInput
+              ? () => _reuseGeneratedSeed(context, image)
+              : null,
           onSelectionChanged: (selected) {
             if (!image.canBulkSelect) {
               return;
@@ -1136,14 +1138,6 @@ class _HistoryPanelState extends ConsumerState<HistoryPanel> {
               : null,
           onUpscale: image.canUseAsGenerationInput
               ? () => ImageWorkflowLauncher.openUpscale(ref, imageBytes)
-              : null,
-          onSendToKrita: image.canUseAsGenerationInput
-              ? () => KritaSendHelper.sendImageBytes(
-                  context,
-                  ref,
-                  image.bytes,
-                  name: 'history_${image.id}.png',
-                )
               : null,
           onOpenInExplorer:
               image.canSave && PlatformCapabilities.current.supportsOpenFolder
@@ -1273,6 +1267,27 @@ class _HistoryPanelState extends ConsumerState<HistoryPanel> {
     return _favoriteStates[image.id] ?? false;
   }
 
+  Future<void> _reuseHistoryParameters(
+    BuildContext context,
+    GeneratedImage image,
+  ) async {
+    await ImageMetadataImportWorkflow.shared.run(
+      context: context,
+      read: ref.read,
+      metadata: image.metadata,
+      bytes: image.metadata == null ? image.bytes : null,
+    );
+  }
+
+  void _reuseGeneratedSeed(BuildContext context, GeneratedImage image) {
+    final seed = image.metadata?.seed;
+    if (seed == null) {
+      AppToast.warning(context, context.l10n.toast_imageHasNoMetadata);
+      return;
+    }
+    ref.read(generationParamsNotifierProvider.notifier).updateSeed(seed);
+  }
+
   void _ensureFavoriteStateLoaded(GeneratedImage image) {
     final filePath = image.filePath;
     if (filePath == null || filePath.isEmpty) {
@@ -1327,7 +1342,11 @@ class _HistoryPanelState extends ConsumerState<HistoryPanel> {
     if (!_favoriteToggleLoadingIds.add(image.id)) return;
 
     try {
-      final filePath = await _ensureHistoryImageSaved(image);
+      final filePath = await GenerationSaveService.ensureImageSaved(
+        context,
+        ref,
+        image,
+      );
       final isFavorite = await ref
           .read(localGalleryNotifierProvider.notifier)
           .toggleFavorite(filePath);
@@ -1356,40 +1375,6 @@ class _HistoryPanelState extends ConsumerState<HistoryPanel> {
     } finally {
       _favoriteToggleLoadingIds.remove(image.id);
     }
-  }
-
-  Future<String> _ensureHistoryImageSaved(GeneratedImage image) async {
-    final l10n = context.l10n;
-    final existingPath = image.filePath;
-    if (existingPath != null &&
-        existingPath.isNotEmpty &&
-        await File(existingPath).exists()) {
-      return existingPath;
-    }
-
-    final saveDirPath = await GalleryFolderRepository.instance.getRootPath();
-    if (saveDirPath == null || saveDirPath.isEmpty) {
-      throw StateError(l10n.localGallery_saveDirectoryNotSet);
-    }
-
-    // 原子保存：日期分类路径 + 独占防冲突 + 失败清理，全部在工具内完成
-    final filePath = await ImageSaveUtils.saveBytesToDatedPath(
-      rootPath: saveDirPath,
-      bytes: image.bytes,
-      seed: await ImageSaveUtils.resolveSeed(
-        metadata: image.metadata,
-        bytes: image.bytes,
-      ),
-    );
-
-    ref
-        .read(imageGenerationNotifierProvider.notifier)
-        .updateImageFilePath(image.id, filePath);
-    await ref.read(localGalleryNotifierProvider.notifier).addNewlySavedImages([
-      filePath,
-    ]);
-
-    return filePath;
   }
 
   String _historyImageFileName(GeneratedImage image) {
@@ -1599,6 +1584,12 @@ class _HistoryPanelState extends ConsumerState<HistoryPanel> {
     final sequence = state.detailSequenceFor(image);
     final initialIndex = sequence.indexWhere((item) => item.id == image.id);
     final detailImages = sequence.map(_createDetailData).toList();
+    final currentRoundIds = state.currentImages.map((item) => item.id).toSet();
+    GeneratedImage? sourceForDetail(ImageDetailData detail) =>
+        sequence.cast<GeneratedImage?>().firstWhere(
+          (item) => item?.id == detail.identifier,
+          orElse: () => null,
+        );
     if (!context.mounted || detailImages.isEmpty) return;
 
     ImageDetailOpener.showMultipleImmediate(
@@ -1609,8 +1600,25 @@ class _HistoryPanelState extends ConsumerState<HistoryPanel> {
       showThumbnails: detailImages.length > 1,
       callbacks: ImageDetailCallbacks(
         onSave: (detail) async {
-          if (!detail.showSaveButton) return;
           await GenerationSaveService.saveImageFromDetail(context, ref, detail);
+        },
+        reuseSeedAppliesTo: (detail) =>
+            currentRoundIds.contains(detail.identifier),
+        onReuseMetadata: (detail) async {
+          final source = sourceForDetail(detail);
+          if (source != null) {
+            await _reuseHistoryParameters(context, source);
+          }
+        },
+        onReuseSeed: (detail) async {
+          final source = sourceForDetail(detail);
+          if (source != null) _reuseGeneratedSeed(context, source);
+        },
+        onFavoriteToggle: (detail) {
+          final source = sourceForDetail(detail);
+          if (source != null) {
+            unawaited(_toggleHistoryFavorite(context, source));
+          }
         },
       ),
     );

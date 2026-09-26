@@ -150,6 +150,8 @@ class OnlineGalleryDetailLauncher {
             downloadOriginal: item.sourceId == GallerySourceId.quickTagCloud
                 ? l10n.onlineGallery_codexDownloadOriginal
                 : l10n.common_download,
+            saveImage: l10n.shortcut_action_save_image,
+            reuseParameters: l10n.shortcut_action_reuse_params,
             downloadAndWatermark: l10n.watermark_actionDownloadCreate,
             previousImage: l10n.onlineGallery_previousPage,
             nextImage: l10n.onlineGallery_nextPage,

@@ -40,6 +40,8 @@ class GalleryDetailDialogLabels {
     required this.sendToGenerate,
     required this.addToQueue,
     required this.downloadOriginal,
+    required this.saveImage,
+    required this.reuseParameters,
     this.downloadAndWatermark = '',
     required this.previousImage,
     required this.nextImage,
@@ -88,6 +90,8 @@ class GalleryDetailDialogLabels {
   final String sendToGenerate;
   final String addToQueue;
   final String downloadOriginal;
+  final String saveImage;
+  final String reuseParameters;
   final String downloadAndWatermark;
   final String previousImage;
   final String nextImage;

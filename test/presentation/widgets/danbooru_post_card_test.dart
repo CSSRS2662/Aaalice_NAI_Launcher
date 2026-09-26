@@ -172,6 +172,7 @@ void main() {
                     isFavorited: false,
                     onTap: () {},
                     onTagTap: (_) {},
+                    onFavoriteToggle: () {},
                   ),
                 ),
               ),
@@ -194,6 +195,17 @@ void main() {
 
     await tester.tap(find.byIcon(Icons.more_vert_rounded));
     await tester.pumpAndSettle();
+    expect(find.text('Save Image'), findsOneWidget);
+    expect(find.text('Reuse Parameters'), findsOneWidget);
+    expect(find.text('Favorite'), findsOneWidget);
+    expect(find.text('Share to Discord'), findsNothing);
+    expect(find.text('Send to Krita'), findsNothing);
+    final primaryPositions = [
+      tester.getTopLeft(find.text('Save Image')).dy,
+      tester.getTopLeft(find.text('Reuse Parameters')).dy,
+      tester.getTopLeft(find.text('Favorite')).dy,
+    ];
+    expect(primaryPositions, orderedEquals(primaryPositions.toList()..sort()));
     await tester.tap(find.text('Send to Agent'));
     expect(addCount, 1);
   });

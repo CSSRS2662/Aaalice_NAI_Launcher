@@ -37,6 +37,12 @@ class ImageDetailCallbacks {
   /// 复用元数据回调
   final Future<void> Function(ImageDetailData image)? onReuseMetadata;
 
+  /// 当前轮生成图只复用种子，不覆盖其他生成参数。
+  final Future<void> Function(ImageDetailData image)? onReuseSeed;
+
+  /// 同一查看序列混合当前轮与历史图时，决定当前图使用哪种复用语义。
+  final bool Function(ImageDetailData image)? reuseSeedAppliesTo;
+
   /// 保存回调
   final Future<void> Function(ImageDetailData image)? onSave;
 
@@ -52,6 +58,8 @@ class ImageDetailCallbacks {
   const ImageDetailCallbacks({
     this.onFavoriteToggle,
     this.onReuseMetadata,
+    this.onReuseSeed,
+    this.reuseSeedAppliesTo,
     this.onSave,
     this.onCopyImage,
     this.onSendToImg2Img,
@@ -547,6 +555,11 @@ class _ImageDetailViewerState extends ConsumerState<ImageDetailViewer> {
 
   Widget _buildMainContent({required bool showMetadataAction}) {
     final showThumbnails = widget.showThumbnails && widget.images.length > 1;
+    final callbacks = widget.callbacks;
+    final useSeedAction =
+        callbacks?.onReuseSeed != null &&
+        (callbacks?.reuseSeedAppliesTo?.call(_currentImage) ??
+            callbacks?.onReuseMetadata == null);
 
     return Stack(
       children: [
@@ -587,8 +600,12 @@ class _ImageDetailViewerState extends ConsumerState<ImageDetailViewer> {
             currentImage: _currentImage,
             onClose: () => _requestClose('top-bar-close'),
             onShowMetadata: showMetadataAction ? _showMetadataPanel : null,
-            onReuseMetadata: widget.callbacks?.onReuseMetadata != null
+            onReuseMetadata:
+                !useSeedAction && callbacks?.onReuseMetadata != null
                 ? () => _handleReuseMetadata(context)
+                : null,
+            onReuseSeed: useSeedAction
+                ? () => callbacks!.onReuseSeed!(_currentImage)
                 : null,
             onFavoriteToggle: widget.callbacks?.onFavoriteToggle != null
                 ? () => widget.callbacks!.onFavoriteToggle!(_currentImage)

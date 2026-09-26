@@ -119,6 +119,20 @@ class ImageCardActionCatalog {
         menuLabel: l10n.shortcut_action_save_image,
       );
     }
+    add(
+      ImageCardActionId.reuseParameters,
+      Icons.input_rounded,
+      l10n.shortcut_action_reuse_params,
+      capabilities.onReuseParameters,
+      hover: false,
+    );
+    add(
+      ImageCardActionId.reuseSeed,
+      Icons.eco_outlined,
+      l10n.shortcut_action_reuse_seed,
+      capabilities.onReuseSeed,
+      hover: false,
+    );
     if (capabilities.enableCopyAction) {
       add(
         ImageCardActionId.copy,
@@ -133,13 +147,6 @@ class ImageCardActionCatalog {
       Icons.smart_toy_outlined,
       l10n.agentChat_addResource,
       onAddToAgent,
-    );
-    add(
-      ImageCardActionId.shareDiscord,
-      Icons.send_rounded,
-      l10n.discordShare_action,
-      capabilities.onShareToDiscord,
-      hover: false,
     );
     if (coordinator.watermarkEnabled &&
         (data.imageBytes != null ||
@@ -253,12 +260,6 @@ class ImageCardActionCatalog {
       Icons.zoom_out_map_rounded,
       l10n.image_upscale,
       capabilities.onUpscale,
-    );
-    add(
-      ImageCardActionId.sendToKrita,
-      Icons.brush_outlined,
-      l10n.gallery_sendToKritaAction,
-      capabilities.onSendToKrita,
     );
     add(
       ImageCardActionId.favorite,

@@ -36,7 +36,7 @@ class LocalImageContextMenu {
     LocalImageContextAction.addToAgent => ImageCardActionId.addToAgent,
     LocalImageContextAction.moveToCategory => ImageCardActionId.classify,
     LocalImageContextAction.sendToTextToImage =>
-      ImageCardActionId.sendToGeneration,
+      ImageCardActionId.reuseParameters,
     LocalImageContextAction.sendToImg2Img => ImageCardActionId.imageToImage,
     LocalImageContextAction.sendToReversePrompt =>
       ImageCardActionId.reversePrompt,
@@ -163,6 +163,7 @@ class LocalImageContextMenu {
           value: LocalImageContextAction.saveToSystemGallery,
           icon: Icons.save_alt_rounded,
           label: context.l10n.localGallery_saveToSystemGallery,
+          menuLabel: context.l10n.shortcut_action_save_image,
         ),
       if (PlatformCapabilities.current.supportsOpenFolder)
         action(
@@ -194,6 +195,7 @@ class LocalImageContextMenu {
         value: LocalImageContextAction.sendToTextToImage,
         icon: Icons.text_fields,
         label: context.l10n.onlineGallery_sendToTextToImage,
+        menuLabel: context.l10n.shortcut_action_reuse_params,
       ),
       action(
         value: LocalImageContextAction.sendToImg2Img,
@@ -221,12 +223,6 @@ class LocalImageContextMenu {
         label: context.l10n.localGallery_saveToPreciseRefLibrary,
       ),
       action(
-        value: LocalImageContextAction.sendToKrita,
-        icon: Icons.brush_outlined,
-        label: context.l10n.localGallery_sendToKrita,
-        enabled: isKritaConnected,
-      ),
-      action(
         value: LocalImageContextAction.upscale,
         icon: Icons.zoom_in,
         label: context.l10n.gallery_upscale,
@@ -237,11 +233,6 @@ class LocalImageContextMenu {
           icon: Icons.auto_awesome,
           label: context.l10n.dlss_menu,
         ),
-      action(
-        value: LocalImageContextAction.shareToDiscord,
-        icon: Icons.send_rounded,
-        label: context.l10n.discordShare_action,
-      ),
       if (watermarkEnabled)
         action(
           value: LocalImageContextAction.createWatermark,
@@ -265,6 +256,7 @@ class LocalImageContextMenu {
     required LocalImageContextAction value,
     required IconData icon,
     required String label,
+    String? menuLabel,
     bool enabled,
     bool isDanger,
   })
@@ -276,12 +268,14 @@ class LocalImageContextMenu {
         required value,
         required icon,
         required label,
+        menuLabel,
         enabled = true,
         isDanger = false,
       }) => ImageCardAction(
         id: idFor(value),
         icon: icon,
         label: label,
+        menuLabel: menuLabel,
         invoke: () => onAction(value),
         enabled: enabled,
         isDanger: isDanger,

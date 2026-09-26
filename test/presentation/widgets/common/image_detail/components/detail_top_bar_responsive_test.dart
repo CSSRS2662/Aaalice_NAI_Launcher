@@ -34,6 +34,8 @@ void main() {
                     totalImages: 1,
                     onClose: () {},
                     onSave: () {},
+                    onReuseSeed: () {},
+                    onFavoriteToggle: () {},
                     onShare: () {},
                     onShowMetadata: () {},
                   ),
@@ -47,16 +49,26 @@ void main() {
 
       expect(tester.takeException(), isNull);
 
-      if (panelWidth < 420) {
-        expect(find.byIcon(Icons.more_vert), findsOneWidget);
-        await tester.tap(find.byIcon(Icons.more_vert));
-        await tester.pumpAndSettle();
-        expect(find.text('Save'), findsOneWidget);
-        expect(find.text('Share'), findsOneWidget);
-      } else {
+      expect(find.byIcon(Icons.more_vert), findsOneWidget);
+      if (panelWidth >= 420) {
         expect(find.byIcon(Icons.save_alt), findsOneWidget);
         expect(find.byIcon(Icons.share_rounded), findsOneWidget);
       }
+      await tester.tap(find.byIcon(Icons.more_vert));
+      await tester.pumpAndSettle();
+      expect(find.text('Save Image'), findsOneWidget);
+      expect(find.text('Reuse Seed'), findsOneWidget);
+      expect(find.text('Favorite'), findsOneWidget);
+      expect(find.text('Share'), findsOneWidget);
+      final primaryPositions = [
+        tester.getTopLeft(find.text('Save Image')).dy,
+        tester.getTopLeft(find.text('Reuse Seed')).dy,
+        tester.getTopLeft(find.text('Favorite')).dy,
+      ];
+      expect(
+        primaryPositions,
+        orderedEquals(primaryPositions.toList()..sort()),
+      );
       expect(tester.takeException(), isNull);
     });
   }

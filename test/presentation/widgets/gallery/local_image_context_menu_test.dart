@@ -24,7 +24,7 @@ void main() {
   tearDown(() => PlatformCapabilities.debugOverride = null);
 
   testWidgets(
-    'single descriptor set retains every local action and disables disconnected Krita',
+    'single descriptor set retains local actions without Discord or Krita',
     (tester) async {
       LocalImageContextAction? selected;
       await tester.pumpWidget(
@@ -39,23 +39,14 @@ void main() {
               LocalImageContextAction.createWatermark,
               LocalImageContextAction.createMosaic,
               LocalImageContextAction.saveToSystemGallery,
+              LocalImageContextAction.sendToKrita,
+              LocalImageContextAction.shareToDiscord,
             }.contains(action),
           )
           .map(LocalImageContextMenu.idFor)
           .map((id) => id.name);
       expect(items.map((i) => i.id), unorderedEquals(expected));
       expect(items.last.id, ImageCardActionId.delete.name);
-      expect(
-        items
-            .singleWhere((i) => i.id == ImageCardActionId.sendToKrita.name)
-            .enabled,
-        isFalse,
-      );
-      await tester.ensureVisible(find.text('Send to Krita'));
-      await tester.tap(find.text('Send to Krita'));
-      await tester.pump();
-      expect(selected, isNull);
-      expect(find.byType(ProContextMenu), findsOneWidget);
       await tester.ensureVisible(find.text('Send to Vibe Transfer'));
       await tester.tap(find.text('Send to Vibe Transfer'));
       await tester.pumpAndSettle();
@@ -82,12 +73,8 @@ void main() {
             .enabled,
         isTrue,
       );
-      expect(
-        items
-            .singleWhere((i) => i.id == ImageCardActionId.sendToKrita.name)
-            .enabled,
-        isTrue,
-      );
+      expect(ids, isNot(contains(ImageCardActionId.sendToKrita.name)));
+      expect(ids, isNot(contains(ImageCardActionId.shareDiscord.name)));
     },
   );
 
@@ -103,20 +90,18 @@ void main() {
       expect(
         ids,
         containsAll([
-          ImageCardActionId.sendToGeneration.name,
+          ImageCardActionId.reuseParameters.name,
           ImageCardActionId.imageToImage.name,
           ImageCardActionId.reversePrompt.name,
           ImageCardActionId.vibeTransfer.name,
           ImageCardActionId.preciseReference.name,
           ImageCardActionId.saveToPreciseRefLibrary.name,
-          ImageCardActionId.sendToKrita.name,
           ImageCardActionId.upscale.name,
           ImageCardActionId.dlssEnhance.name,
-          ImageCardActionId.shareDiscord.name,
           ImageCardActionId.createWatermark.name,
         ]),
       );
-      expect(ids.length, 11);
+      expect(ids.length, 9);
     },
   );
 
@@ -130,7 +115,7 @@ void main() {
     await tester.tap(find.text('Open'));
     await tester.pumpAndSettle();
     await tester.scrollUntilVisible(
-      find.text('Save to photo gallery'),
+      find.text('Save Image'),
       250,
       scrollable: find.byType(Scrollable).last,
     );
@@ -138,7 +123,7 @@ void main() {
       tester
           .widget<ListTile>(
             find.ancestor(
-              of: find.text('Save to photo gallery'),
+              of: find.text('Save Image'),
               matching: find.byType(ListTile),
             ),
           )

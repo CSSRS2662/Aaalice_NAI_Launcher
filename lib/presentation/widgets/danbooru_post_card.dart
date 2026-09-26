@@ -400,9 +400,10 @@ class _DanbooruPostCardState extends ConsumerState<DanbooruPostCard> {
           showOnHover: false,
         ),
       ImageCardAction(
-        id: ImageCardActionId.sendToGeneration,
+        id: ImageCardActionId.reuseParameters,
         icon: Icons.send,
         label: context.l10n.onlineGallery_sendToTextToImage,
+        menuLabel: context.l10n.shortcut_action_reuse_params,
         invoke: () => _handleSendToGeneration(ref),
       ),
       if (widget.showFavoriteAction &&
@@ -431,9 +432,10 @@ class _DanbooruPostCardState extends ConsumerState<DanbooruPostCard> {
         ),
       if (widget.post.bestQualityUrl.isNotEmpty)
         ImageCardAction(
-          id: ImageCardActionId.export,
+          id: ImageCardActionId.save,
           icon: Icons.download,
           label: context.l10n.onlineGallery_downloadOriginal,
+          menuLabel: context.l10n.shortcut_action_save_image,
           invoke: _handleDownload,
         ),
       ImageCardAction(
