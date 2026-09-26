@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'fast_tag_service.dart';
+import 'e5_translation_resolver.dart';
 import 'tag_catalog_repository.dart';
 import 'zh_dictionary_service.dart';
 
@@ -39,5 +40,10 @@ final fastTagServiceProvider = Provider<FastTagService>((ref) {
   return FastTagService(
     catalog: ref.watch(tagCatalogRepositoryProvider),
     dictionary: ref.watch(zhDictionaryServiceProvider.notifier),
+    fallbackTranslations: ref.watch(e5TranslationResolverProvider),
   );
 });
+
+final e5TranslationResolverProvider = Provider<E5TranslationResolver>(
+  (ref) => E5TranslationResolver(),
+);

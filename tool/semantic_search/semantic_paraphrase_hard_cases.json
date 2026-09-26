@@ -1,0 +1,22 @@
+[
+  {"id":"hard-001","type":"negation","target":"untucked_shirt","conflict":"shirt_tucked_in","queries":["别把衣角收进裙头","上衣下缘垂在腰线外","不要把衬衣扎进裤头","衣角留在外面别收进去","不要整理成塞进腰里的样子"]},
+  {"id":"hard-002","type":"negation","target":"no_socks","conflict":"socks","queries":["脚上什么都别套","袜子拿掉","腿脚露出来别穿袜","不要给脚穿袜","光着脚踝和脚趾"]},
+  {"id":"hard-003","type":"state","target":"open_mouth","conflict":"closed_mouth","queries":["嘴巴张开","上下嘴唇拉开一点","露出嘴里面","不要紧抿嘴唇","让嘴留一道开口"]},
+  {"id":"hard-004","type":"quantity","target":"closed_eyes","conflict":"one_eye_closed","queries":["双眼一起合上","两边眼皮都落下来","两只眼都别睁着","像睡着一样闭住两眼","不要只闭一边"]},
+  {"id":"hard-005","type":"state","target":"opening_eyes","conflict":"closed_eyes","queries":["双眼睁开","眼睛全打开","把眼皮抬起来","不要闭着眼","两边眼珠都露出来"]},
+  {"id":"hard-006","type":"quantity","target":"one_eye_closed","conflict":"closed_eyes","queries":["只闭一边","一边睁着另一边合上","单眼眨着","让另一只保持打开","不要两只一起闭"]},
+  {"id":"hard-007","type":"state","target":"barefoot","conflict":"shoes","queries":["光脚踩地","脚上别有鞋","只露出脚趾","鞋子脱掉直接走","双脚直接碰到地面"]},
+  {"id":"hard-008","type":"negation","target":"no_shoes","conflict":"shoes","queries":["把鞋脱下来","脚边空着别放鞋","不要穿任何鞋","鞋子一双都没有","让双脚露在外面"]},
+  {"id":"hard-009","type":"direction","target":"short_hair","conflict":"long_hair","queries":["发梢到耳边就停","不要垂过肩膀","头发剪得很短","颈部附近就是发尾","发梢停在耳朵附近"]},
+  {"id":"hard-010","type":"direction","target":"long_hair","conflict":"short_hair","queries":["发丝垂到腰","头发留得很长","不要剪成短发","发丝一直垂到腰际","发尾超过肩膀很多"]},
+  {"id":"hard-011","type":"quantity","target":"solo","conflict":"2girls","queries":["画面只留一个人","不要安排第二个人","镜头中只安排一位角色","不需要两位女生同框","只有一名角色"]},
+  {"id":"hard-012","type":"quantity","target":"2girls","conflict":"solo","queries":["两个女生同框","画面里要有两位女孩","不要只放一个人","两名女生一起出现","一人不够，要两个人"]},
+  {"id":"hard-013","type":"quantity","target":"one_eye_visible","conflict":"eyes_visible_through_hair","queries":["只出现单眼","另一只眼不要入镜","画面只留一边眼睛","只能看到一只眼","不要把两只眼都画出来"]},
+  {"id":"hard-014","type":"quantity","target":"single_hand","conflict":"multiple_hands","queries":["只要一只手","另一只手不入镜","画面里只露出一边胳膊的手","双手不要同时出现","一只手就够了"]},
+  {"id":"hard-015","type":"quantity","target":"multiple_hands","conflict":"single_hand","queries":["两只手一起出现","两只手要同时出现在镜头里","要看到两只手","不要只画一只手","手的数量至少两个"]},
+  {"id":"hard-016","type":"direction","target":"facing_viewer","conflict":"from_behind","queries":["正面看镜头","胸口朝向画面","面对观众站着","不要背对镜头","从正面拍摄"]},
+  {"id":"hard-017","type":"direction","target":"from_behind","conflict":"facing_viewer","queries":["只看背影","镜头在人物身后","脸不要出现","人物背对相机","不要拍正面"]},
+  {"id":"hard-018","type":"direction","target":"looking_at_viewer","conflict":"looking_away","queries":["直视镜头","视线对着我","看向观看者","不要把目光移开","眼睛对着画面"]},
+  {"id":"hard-019","type":"direction","target":"looking_away","conflict":"looking_at_viewer","queries":["别看镜头","目光移到旁边","视线避开观众","不要和我对视","视线转向旁边的区域"]},
+  {"id":"hard-020","type":"state","target":"sleeveless","conflict":"long_sleeves","queries":["手臂完全露出","肩膀到腋下没有布","不要有袖子","两边胳膊裸着","上衣剪掉袖筒"]}
+]

@@ -8,6 +8,70 @@ import 'package:nai_launcher/core/autocomplete/completion_orchestrator.dart';
 import 'package:nai_launcher/core/autocomplete/danbooru_completion_source.dart';
 
 void main() {
+  testWidgets(
+    'semantic fallback arrives after lexical results and ignores stale queries',
+    (tester) async {
+      final semantic = _DeferredSemanticSource();
+      final orchestrator = CompletionOrchestrator(
+        localSources: [
+          _Source([_candidate('lexical', CompletionSourceKind.base)]),
+        ],
+        dictionaryTranslations: _Translations({'untucked_shirt': '衣摆未扎入'}),
+        llmTranslations: _Translations(const {}),
+        danbooru: _FakeDanbooru(),
+        semanticSource: semantic,
+      );
+      addTearDown(orchestrator.dispose);
+      const settings = AutocompleteSettings(danbooruEnabled: false);
+      final first = orchestrator.query(_query('不穿袜子'), settings);
+      await tester.pump();
+      await first;
+      expect(orchestrator.state.candidates.single.canonicalTag, 'lexical');
+      await tester.pump(const Duration(milliseconds: 251));
+      expect(semantic.requests, hasLength(1));
+
+      final next = orchestrator.query(_query('上衣别扎进去'), settings);
+      await tester.pump();
+      await next;
+      semantic.requests[0].complete([
+        _candidate(
+          'no_socks',
+          CompletionSourceKind.base,
+        ).copyWith(semanticScore: .9),
+      ]);
+      await tester.pump();
+      expect(
+        orchestrator.state.candidates.any(
+          (row) => row.canonicalTag == 'no_socks',
+        ),
+        isFalse,
+      );
+      await tester.pump(const Duration(milliseconds: 251));
+      semantic.requests[1].complete([
+        _candidate(
+          'untucked_shirt',
+          CompletionSourceKind.base,
+        ).copyWith(semanticScore: .9),
+      ]);
+      await tester.pump();
+      expect(
+        orchestrator.state.candidates.any(
+          (row) => row.canonicalTag == 'untucked_shirt',
+        ),
+        isTrue,
+      );
+      // Both lexical and semantic rows resolve labels through the same service.
+      expect(
+        orchestrator.state.candidates
+            .firstWhere((row) => row.canonicalTag == 'untucked_shirt')
+            .translation,
+        '衣摆未扎入',
+      );
+      orchestrator.cancel();
+      expect(orchestrator.state.candidates, isEmpty);
+    },
+  );
+
   test(
     'emits local results before delayed API results and merges sources',
     () async {
@@ -921,6 +985,17 @@ class _ScopedRecordingTranslations implements ScopedTranslationResolver {
     required String locale,
   }) {
     throw StateError('A scoped resolver must not be used directly.');
+  }
+}
+
+class _DeferredSemanticSource implements CompletionSource {
+  final requests = <Completer<List<CompletionCandidate>>>[];
+
+  @override
+  Future<List<CompletionCandidate>> search(CompletionQuery query) {
+    final request = Completer<List<CompletionCandidate>>();
+    requests.add(request);
+    return request.future;
   }
 }
 

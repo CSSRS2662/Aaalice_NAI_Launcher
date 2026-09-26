@@ -77,6 +77,45 @@ void main() {
     expect(await service.resolve(['extra'], locale: 'en-US'), isEmpty);
   });
 
+  test('语义数据包仅补齐缺失释义，不覆盖词典与人工修正', () async {
+    final resolver = FastTagService(
+      catalog: catalog,
+      dictionary: _FakeDictionary({'no_socks': '当前词典释义'}),
+      fallbackTranslations: _FakeDictionary({
+        'no_socks': '旧释义',
+        'no-show_socks': '船袜',
+        'extra': '旧修正',
+        'new_tag': '旧补充',
+      }),
+    );
+    expect(
+      await resolver.resolve([
+        'no socks',
+        'no-show_socks',
+        'extra',
+        'new_tag',
+        'unknown',
+      ], locale: 'zh-CN'),
+      {
+        'no_socks': '当前词典释义',
+        'no-show_socks': '船袜',
+        'extra': '额外',
+        'new_tag': '新标签',
+      },
+    );
+  });
+
+  test('语义释义资源损坏不影响已有词典', () async {
+    final resolver = FastTagService(
+      catalog: catalog,
+      dictionary: _FakeDictionary({'no_socks': '未穿袜'}),
+      fallbackTranslations: _ThrowingDictionary(),
+    );
+    expect(await resolver.resolve(['no_socks', 'unknown'], locale: 'zh-CN'), {
+      'no_socks': '未穿袜',
+    });
+  });
+
   test('可选 ffdkj 数据库异常时仍保留内置补全与翻译', () async {
     final fallbackService = FastTagService(
       catalog: catalog,

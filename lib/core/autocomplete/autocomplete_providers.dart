@@ -15,6 +15,7 @@ import 'completion_models.dart';
 import 'completion_orchestrator.dart';
 import 'danbooru_completion_source.dart';
 import 'fast_tag_service_provider.dart';
+import 'e5_completion_source.dart';
 import 'llm_translation_resolver.dart';
 import 'tag_library_completion_source.dart';
 
@@ -80,6 +81,7 @@ class AutocompleteServices {
     required this.danbooru,
     this.tagLookupSources = const [],
     this.libraryAliases,
+    this.semanticSource,
   });
 
   final List<CompletionSource> localSources;
@@ -88,6 +90,7 @@ class AutocompleteServices {
   final TranslationResolver llmTranslations;
   final DanbooruCompletionSource danbooru;
   final CompletionSource? libraryAliases;
+  final CompletionSource? semanticSource;
 
   CompletionOrchestrator createOrchestrator() => CompletionOrchestrator(
     localSources: localSources,
@@ -96,6 +99,7 @@ class AutocompleteServices {
     llmTranslations: llmTranslations,
     danbooru: danbooru,
     libraryAliases: libraryAliases,
+    semanticSource: semanticSource,
   );
 }
 
@@ -142,5 +146,12 @@ final autocompleteServicesProvider = Provider<AutocompleteServices>((ref) {
     llmTranslations: ref.watch(llmTranslationResolverProvider),
     danbooru: ref.watch(danbooruCompletionSourceProvider),
     libraryAliases: ref.watch(tagLibraryCompletionSourceProvider),
+    semanticSource: ref.watch(e5CompletionSourceProvider),
   );
+});
+
+final e5CompletionSourceProvider = Provider<E5CompletionSource>((ref) {
+  final source = E5CompletionSource();
+  ref.onDispose(source.dispose);
+  return source;
 });

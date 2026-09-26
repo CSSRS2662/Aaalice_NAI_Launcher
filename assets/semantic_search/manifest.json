@@ -1,0 +1,27 @@
+{
+  "model": "intfloat/multilingual-e5-small",
+  "revision": "614241f622f53c4eeff9890bdc4f31cfecc418b3",
+  "dimensions": 384,
+  "count": 54879,
+  "document": "canonical tag; existing zh_cn",
+  "catalog_sha256": "9b9693af5f6cfafda2ed8d85488b0a6c3741b0c589da935291b20dff439a2288",
+  "dictionary_sha256": "167b38430eaa230b8f19196471da11e87e1b4857947fb03e34256ba8feb83606",
+  "files": {
+    "model.onnx": {
+      "sha256": "dd476dd0c2514e9b9be83aeb3853fac0763e0bdf4a71645407587d77c48a2d88",
+      "bytes": 118346824
+    },
+    "tokenizer.json": {
+      "sha256": "0b44a9d7b51c3c62626640cda0e2c2f70fdacdc25bbbd68038369d14ebdf4c39",
+      "bytes": 17082730
+    },
+    "vectors.f32": {
+      "sha256": "e302090f7737b947fe777004bbc06e693a2a2276f3d64d949633a82e44ffe889",
+      "bytes": 84294144
+    },
+    "tags.json": {
+      "sha256": "58eaf557a130b6bf2be826c6910160a5afc95a89e82b3dd8428a19a833663295",
+      "bytes": 1834793
+    }
+  }
+}

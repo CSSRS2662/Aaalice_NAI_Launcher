@@ -12,11 +12,14 @@ class FastTagService implements CompletionSource, TranslationResolver {
   const FastTagService({
     required TagCatalogRepository catalog,
     required ZhDictionaryService dictionary,
+    TranslationResolver? fallbackTranslations,
   }) : _catalog = catalog,
-       _dictionary = dictionary;
+       _dictionary = dictionary,
+       _fallbackTranslations = fallbackTranslations;
 
   final TagCatalogRepository _catalog;
   final ZhDictionaryService _dictionary;
+  final TranslationResolver? _fallbackTranslations;
 
   @override
   Future<List<CompletionCandidate>> search(CompletionQuery query) async {
@@ -67,7 +70,25 @@ class FastTagService implements CompletionSource, TranslationResolver {
       missingTags,
       mode: BundledTranslationMode.missing,
     );
-    return {...overrides, ...dictionary, ...fallbacks};
+    final resolved = {...overrides, ...dictionary, ...fallbacks};
+    final remaining = normalized
+        .where((tag) => !resolved.containsKey(tag))
+        .toList(growable: false);
+    if (remaining.isNotEmpty && _fallbackTranslations != null) {
+      try {
+        final labels = await _fallbackTranslations.resolve(
+          remaining,
+          locale: locale,
+        );
+        for (final tag in remaining) {
+          final label = labels[tag]?.trim();
+          if (label != null && label.isNotEmpty) resolved[tag] = label;
+        }
+      } catch (_) {
+        // Optional corpus labels must not break installed dictionary results.
+      }
+    }
+    return resolved;
   }
 
   Future<Map<String, String>> resolveFuzzy(List<String> canonicalTags) async {

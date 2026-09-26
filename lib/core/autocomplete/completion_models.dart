@@ -157,6 +157,7 @@ class CompletionCandidate {
     this.relatedScore,
     this.cooccurrenceCount,
     this.score = 0,
+    this.semanticScore,
   });
 
   final String canonicalTag;
@@ -177,6 +178,9 @@ class CompletionCandidate {
   final int? cooccurrenceCount;
   final double score;
 
+  /// Cosine similarity from the optional local E5 source, preserved on merge.
+  final double? semanticScore;
+
   String get stableId => canonicalTag.toLowerCase();
 
   CompletionCandidate copyWith({
@@ -193,6 +197,7 @@ class CompletionCandidate {
     double? relatedScore,
     int? cooccurrenceCount,
     double? score,
+    double? semanticScore,
   }) {
     return CompletionCandidate(
       canonicalTag: canonicalTag,
@@ -208,6 +213,7 @@ class CompletionCandidate {
       relatedScore: relatedScore ?? this.relatedScore,
       cooccurrenceCount: cooccurrenceCount ?? this.cooccurrenceCount,
       score: score ?? this.score,
+      semanticScore: semanticScore ?? this.semanticScore,
     );
   }
 }

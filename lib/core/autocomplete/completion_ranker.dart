@@ -59,6 +59,10 @@ class CompletionRanker {
           existing.cooccurrenceCount,
           incoming.cooccurrenceCount,
         ),
+        semanticScore: _greaterNullable(
+          existing.semanticScore,
+          incoming.semanticScore,
+        ),
       );
       merged[key] = _score(mergedCandidate, query);
     }
@@ -90,6 +94,14 @@ class CompletionRanker {
     CompletionQuery query,
   ) {
     final priority = _matchPriority(candidate.matchKind);
+    // Preserve exact/prefix/contains lexical matches. For fuzzy fallback rows,
+    // cosine order must not be overwritten by tag popularity or source boosts.
+    if (candidate.matchKind == CompletionMatchKind.fullText &&
+        candidate.semanticScore != null) {
+      return candidate.copyWith(
+        score: 210000 + candidate.semanticScore!.clamp(-1, 1) * 80000,
+      );
+    }
     final sourceBoost = candidate.sources.contains(CompletionSourceKind.base)
         ? 2000.0
         : candidate.sources.contains(CompletionSourceKind.zhDictionary)

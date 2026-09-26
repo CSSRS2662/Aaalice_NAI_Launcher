@@ -16,6 +16,7 @@ class CompletionOrchestrator extends ChangeNotifier {
     required DanbooruCompletionSource danbooru,
     List<CompletionSource> tagLookupSources = const [],
     CompletionSource? libraryAliases,
+    CompletionSource? semanticSource,
     Duration llmDebounceDuration = const Duration(milliseconds: 400),
   }) : _localSources = localSources,
        _tagLookupSources = tagLookupSources,
@@ -25,6 +26,7 @@ class CompletionOrchestrator extends ChangeNotifier {
            : llmTranslations,
        _danbooru = danbooru,
        _libraryAliases = libraryAliases,
+       _semanticSource = semanticSource,
        _llmDebounceDuration = llmDebounceDuration;
 
   final List<CompletionSource> _localSources;
@@ -33,6 +35,8 @@ class CompletionOrchestrator extends ChangeNotifier {
   final TranslationResolver _llmTranslations;
   final DanbooruCompletionSource _danbooru;
   final CompletionSource? _libraryAliases;
+  final CompletionSource? _semanticSource;
+  Timer? _semanticDebounce;
   final Duration _llmDebounceDuration;
 
   CompletionState _state = const CompletionState();
@@ -52,6 +56,7 @@ class CompletionOrchestrator extends ChangeNotifier {
   /// change. Invalidating the sequence prevents a delayed local or remote result
   /// from reopening a popup that the user already dismissed.
   void cancel() {
+    _semanticDebounce?.cancel();
     _sequence++;
     _cancelPendingLlmTranslation();
     _remoteDebounce?.cancel();
@@ -65,6 +70,7 @@ class CompletionOrchestrator extends ChangeNotifier {
     CompletionQuery? relatedFallbackQuery,
   }) async {
     final sequence = ++_sequence;
+    _semanticDebounce?.cancel();
     _cancelPendingLlmTranslation();
     _remoteDebounce?.cancel();
     _danbooru.cancelPending();
@@ -168,16 +174,29 @@ class CompletionOrchestrator extends ChangeNotifier {
       settings,
     );
     if (!_isCurrent(sequence)) return;
+    final canLoadSemantic =
+        !isLibraryAlias &&
+        !isRelatedQuery &&
+        effectiveQuery.isChinese &&
+        effectiveQuery.token.trim().runes.length >= 2 &&
+        (effectiveQuery.categoryFilter == null ||
+            effectiveQuery.categoryFilter == TagCategory.general) &&
+        _semanticSource != null;
     _emit(
       _state.copyWith(
         candidates: candidates,
-        isLocalLoading: expandsRelatedResults,
+        isLocalLoading: expandsRelatedResults || canLoadSemantic,
         localError: localErrors.isEmpty ? null : localErrors.join('\n'),
         clearLocalError: localErrors.isEmpty,
         isRemoteLoading: canLoadRemote,
       ),
     );
     _scheduleLlmTranslations(initialQuery, sequence, settings);
+    if (canLoadSemantic) {
+      _semanticDebounce = Timer(const Duration(milliseconds: 250), () {
+        unawaited(_loadSemantic(effectiveQuery, sequence, settings));
+      });
+    }
     if (expandsRelatedResults) {
       unawaited(_expandRelatedLocalResults(effectiveQuery, settings, sequence));
     }
@@ -189,6 +208,49 @@ class CompletionOrchestrator extends ChangeNotifier {
     _remoteDebounce = Timer(const Duration(milliseconds: 250), () {
       unawaited(_loadRemote(effectiveQuery, sequence, settings));
     });
+  }
+
+  Future<void> _loadSemantic(
+    CompletionQuery query,
+    int sequence,
+    AutocompleteSettings settings,
+  ) async {
+    try {
+      var rows = await _semanticSource!.search(query);
+      if (!_isCurrent(sequence)) return;
+      // Use the same current dictionary/locale policy as lexical completion.
+      // The frozen index labels describe its corpus, not user translation state.
+      rows = rows.map((row) => row.copyWith(clearTranslation: true)).toList();
+      rows = await _applyDictionaryTranslations(
+        rows,
+        query,
+        sequence,
+        settings,
+      );
+      if (!_isCurrent(sequence)) return;
+      _emit(
+        _state.copyWith(
+          isLocalLoading: false,
+          candidates: CompletionRanker.mergeAndSort([
+            ..._state.candidates,
+            ...rows,
+          ], query: query),
+        ),
+      );
+    } catch (error) {
+      if (_isCurrent(sequence)) {
+        final existing = _state.localError;
+        _emit(
+          _state.copyWith(
+            isLocalLoading: false,
+            localError: [
+              if (existing != null) existing,
+              'E5: $error',
+            ].join('\n'),
+          ),
+        );
+      }
+    }
   }
 
   Future<_RelatedTagResolution?> _resolveRelatedTag(
@@ -414,6 +476,15 @@ class CompletionOrchestrator extends ChangeNotifier {
     );
     if (!_isCurrent(sequence)) return;
     merged = _preserveCurrentTranslationState(merged);
+    final semantic = _state.candidates.where(
+      (row) => row.semanticScore != null,
+    );
+    if (semantic.isNotEmpty) {
+      merged = CompletionRanker.mergeAndSort([
+        ...merged,
+        ...semantic,
+      ], query: query);
+    }
     final remoteError = _danbooru.lastError;
     _emit(
       _state.copyWith(
@@ -673,6 +744,7 @@ class CompletionOrchestrator extends ChangeNotifier {
 
   @override
   void dispose() {
+    _semanticDebounce?.cancel();
     _disposed = true;
     _sequence++;
     _cancelPendingLlmTranslation();

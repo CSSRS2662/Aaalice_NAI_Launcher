@@ -1,0 +1,22 @@
+[
+  {"query":"衬衫下摆不塞在裙子里","target":"untucked_shirt","opposite":"shirt_tucked_in"},
+  {"query":"衬衫不塞进裙子","target":"untucked_shirt","opposite":"shirt_tucked_in"},
+  {"query":"衬衫不扎进去","target":"untucked_shirt","opposite":"shirt_tucked_in"},
+  {"query":"衣摆放在外面","target":"untucked_shirt","opposite":"shirt_tucked_in"},
+  {"query":"高中制服，衬衫下摆不要塞进裙子里","target":"untucked_shirt","opposite":"shirt_tucked_in"},
+  {"query":"shirt not tucked in","target":"untucked_shirt","opposite":"shirt_tucked_in"},
+  {"query":"シャツの裾を出す","target":"untucked_shirt","opposite":"shirt_tucked_in"},
+  {"query":"把衬衫塞进裙子里","target":"shirt_tucked_in","opposite":"untucked_shirt"},
+  {"query":"shirt tucked into skirt","target":"shirt_tucked_in","opposite":"untucked_shirt"},
+  {"query":"衬衫只塞进去一半","target":"shirt_partially_tucked_in","opposite":"untucked_shirt"},
+  {"query":"不穿袜子","target":"no_socks","opposite":"socks"},
+  {"query":"没穿袜子","target":"no_socks","opposite":"socks"},
+  {"query":"wearing no socks","target":"no_socks","opposite":"socks"},
+  {"query":"穿着袜子","target":"socks","opposite":"no_socks"},
+  {"query":"嘴巴闭着","target":"closed_mouth","opposite":"open_mouth"},
+  {"query":"嘴巴张开","target":"open_mouth","opposite":"closed_mouth"},
+  {"query":"两只眼睛都闭上","target":"closed_eyes","alternatives":["eyes_closed"],"opposite":"one_eye_closed"},
+  {"query":"只闭上一只眼睛","target":"one_eye_closed","opposite":"closed_eyes"},
+  {"query":"头发很短","target":"short_hair","opposite":"long_hair"},
+  {"query":"头发很长","target":"long_hair","opposite":"short_hair"}
+]

@@ -178,6 +178,11 @@ coverage/
 logs/
 logs/security/
 tool/.tmp/
+# Reproducible E5 deployment pack; prepare_e5_pack.py creates these locally.
+assets/semantic_search/model.onnx
+assets/semantic_search/tokenizer.json
+assets/semantic_search/vectors.f32
+assets/semantic_search/tags.json
 tool/tag_catalog/.cache/
 tool/tag_catalog/.tmp/
 

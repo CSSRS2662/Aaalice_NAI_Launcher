@@ -73,6 +73,12 @@ class AndroidAssetCopyChannel(
     private companion object {
         const val CHANNEL = "com.aaalice.nai_launcher/asset_copy"
         const val COPY_BUFFER_SIZE = 64 * 1024
-        val ALLOWED_ASSETS = setOf("assets/databases/tag_catalog.db")
+        val ALLOWED_ASSETS = setOf(
+            "assets/databases/tag_catalog.db",
+            "assets/semantic_search/model.onnx",
+            "assets/semantic_search/tokenizer.json",
+            "assets/semantic_search/vectors.f32",
+            "assets/semantic_search/tags.json",
+        )
     }
 }

@@ -1,0 +1,22 @@
+[
+  {
+    "id": "intfloat/multilingual-e5-small",
+    "revision": "614241f622f53c4eeff9890bdc4f31cfecc418b3",
+    "license": "MIT",
+    "dimensions": 384,
+    "model_file": "onnx/model_qint8_avx512_vnni.onnx",
+    "model_sha256": "dd476dd0c2514e9b9be83aeb3853fac0763e0bdf4a71645407587d77c48a2d88",
+    "tokenizer_file": "tokenizer.json",
+    "tokenizer_sha256": "0b44a9d7b51c3c62626640cda0e2c2f70fdacdc25bbbd68038369d14ebdf4c39"
+  },
+  {
+    "id": "intfloat/multilingual-e5-base",
+    "revision": "d128750597153bb5987e10b1c3493a34e5a4502a",
+    "license": "MIT",
+    "dimensions": 768,
+    "model_file": "onnx/model_qint8_avx512_vnni.onnx",
+    "model_sha256": "2523551878658b305550d8759443822dbfda9ed9c8012ef2c354ba2c5b9de503",
+    "tokenizer_file": "tokenizer.json",
+    "tokenizer_sha256": "62c24cdc13d4c9952d63718d6c9fa4c287974249e16b7ade6d5a85e7bbb75626"
+  }
+]
