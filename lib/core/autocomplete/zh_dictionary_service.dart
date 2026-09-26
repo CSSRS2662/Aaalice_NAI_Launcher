@@ -10,6 +10,7 @@ import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
 import '../utils/app_logger.dart';
 import 'completion_models.dart';
+import 'chinese_query_variants.dart';
 import 'traditional_chinese_converter.dart';
 import 'zh_dictionary_download.dart';
 import 'zh_dictionary_models.dart';
@@ -324,6 +325,14 @@ class ZhDictionaryService extends ChangeNotifier
       query.token.trim(),
     );
     final escaped = _escapeLike(token);
+    final variants = chineseQueryVariants(token);
+    final keywords = chineseQueryKeywords(token);
+    final keywordClause = keywords.isEmpty
+        ? ''
+        : "OR (${keywords.map((_) => "cn_name LIKE ? ESCAPE '\\'").join(' AND ')})";
+    final expandedClause = variants
+        .map((_) => "OR cn_name LIKE ? ESCAPE '\\'")
+        .join(' ');
     final requestedLimit =
         token.runes.length == 1 && CompletionResultLimits.isAll(query.limit)
         ? CompletionResultLimits.oneCharacter
@@ -337,12 +346,13 @@ class ZhDictionaryService extends ChangeNotifier
         CASE
           WHEN cn_name = ? THEN 0
           WHEN cn_name LIKE ? ESCAPE '\\' THEN 1
-          ELSE 2
+          WHEN cn_name LIKE ? ESCAPE '\\' THEN 2
+          ELSE 3
         END AS match_rank
       FROM tags
       WHERE (cn_name = ?
          OR cn_name LIKE ? ESCAPE '\\'
-         OR cn_name LIKE ? ESCAPE '\\')
+         OR cn_name LIKE ? ESCAPE '\\' $expandedClause $keywordClause)
       $categoryClause
       ORDER BY match_rank, post_count DESC, name ASC
       LIMIT ?
@@ -350,9 +360,12 @@ class ZhDictionaryService extends ChangeNotifier
       [
         token,
         '$escaped%',
+        '%$escaped%',
         token,
         '$escaped%',
         '%$escaped%',
+        ...variants.map((value) => '%${_escapeLike(value)}%'),
+        ...keywords.map((value) => '%${_escapeLike(value)}%'),
         if (query.categoryFilter != null) query.categoryFilter!.value,
         requestedLimit,
       ],
@@ -374,7 +387,9 @@ class ZhDictionaryService extends ChangeNotifier
                 ? CompletionMatchKind.chineseExact
                 : rank == 1
                 ? CompletionMatchKind.chinesePrefix
-                : CompletionMatchKind.chineseContains,
+                : rank == 2
+                ? CompletionMatchKind.chineseContains
+                : CompletionMatchKind.fullText,
             sources: const {CompletionSourceKind.zhDictionary},
           );
         })

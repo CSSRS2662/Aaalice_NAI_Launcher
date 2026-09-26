@@ -7,6 +7,7 @@ import 'package:crypto/crypto.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:nai_launcher/core/autocomplete/completion_models.dart';
+import 'package:nai_launcher/core/autocomplete/prompt_token_parser.dart';
 import 'package:nai_launcher/core/autocomplete/traditional_chinese_converter.dart';
 import 'package:nai_launcher/core/autocomplete/zh_dictionary_download.dart';
 import 'package:nai_launcher/core/autocomplete/zh_dictionary_models.dart';
@@ -121,6 +122,74 @@ void main() {
     expect(results.first.canonicalTag, 'tag_0');
     expect(results.first.translation, '标签0');
   });
+
+  test(
+    'garment query variants preserve negation and original ranking',
+    () async {
+      final directory = Directory(p.join(temp.path, 'autocomplete', 'ffdkj'));
+      await directory.create(recursive: true);
+      _createDictionary(
+        p.join(directory.path, 'tag.sqlite'),
+        rows: 1000,
+        extraRows: {'no_socks': '未穿袜', 'socks': '袜子', 'exact': '不穿袜子'},
+      );
+      for (final token in ['不穿袜子', '没穿袜子', '沒有穿襪子']) {
+        final results = await service.search(
+          CompletionQuery(
+            fullText: token,
+            cursorPosition: token.length,
+            token: token,
+            replacementRange: TextReplacementRange(start: 0, end: token.length),
+            existingTags: {},
+            limit: 20,
+            locale: 'zh_CN',
+          ),
+        );
+        expect(results.map((r) => r.canonicalTag), contains('no_socks'));
+        expect(results.map((r) => r.canonicalTag), isNot(contains('socks')));
+        expect(
+          results.firstWhere((r) => r.canonicalTag == 'no_socks').translation,
+          '未穿袜',
+        );
+        if (token == '不穿袜子') {
+          expect(results.first.canonicalTag, 'exact');
+          expect(results.first.matchKind, CompletionMatchKind.chineseExact);
+        }
+      }
+    },
+  );
+
+  test(
+    'parsed Chinese keywords match together and preserve insertion range',
+    () async {
+      final directory = Directory(p.join(temp.path, 'autocomplete', 'ffdkj'));
+      await directory.create(recursive: true);
+      _createDictionary(
+        p.join(directory.path, 'tag.sqlite'),
+        rows: 1000,
+        extraRows: {'blue_eyes': '蓝色的眼睛', 'blue_hair': '蓝色长发'},
+      );
+      for (final words in ['蓝色 眼睛', '眼睛 蓝色', '藍色 眼睛']) {
+        final text = '1girl, {$words}, solo';
+        final query = PromptTokenParser.parse(
+          text: text,
+          cursorPosition: text.indexOf('}'),
+          limit: 20,
+          locale: 'zh_CN',
+        );
+        final results = await service.search(query);
+        expect(results.single.canonicalTag, 'blue_eyes');
+        expect(
+          text.replaceRange(
+            query.replacementRange.start,
+            query.replacementRange.end,
+            results.single.canonicalTag,
+          ),
+          '1girl, {blue_eyes}, solo',
+        );
+      }
+    },
+  );
 
   test('fuzzy translation only restores one missing character', () async {
     final dictionaryDirectory = Directory(

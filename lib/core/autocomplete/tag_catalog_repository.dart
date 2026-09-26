@@ -2,6 +2,7 @@ import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
 import '../database/asset_database_manager.dart';
 import 'completion_models.dart';
+import 'chinese_query_variants.dart';
 
 enum BundledTranslationMode {
   missing(0),
@@ -280,22 +281,47 @@ class TagCatalogRepository implements CompletionSource {
         : query.limit;
     final escaped = _escapeLike(token);
     final field = query.isChinese ? 'zh_cn' : 'tag';
+    final keywords = query.isChinese
+        ? chineseQueryKeywords(token)
+        : const <String>[];
+    final keywordClause = keywords.isEmpty
+        ? ''
+        : "OR (${keywords.map((_) => "$field LIKE ? ESCAPE '\\'").join(' AND ')})";
+    final variants = query.isChinese
+        ? chineseQueryVariants(token)
+        : const <String>[];
+    final expandedClause = variants
+        .map((_) => "OR $field LIKE ? ESCAPE '\\'")
+        .join(' ');
     final rows = await _database!.rawQuery(
       '''
       SELECT tag, zh_cn,
         CASE
           WHEN $field = ? THEN 0
           WHEN $field LIKE ? ESCAPE '\\' THEN 1
-          ELSE 2
+          WHEN $field LIKE ? ESCAPE '\\' THEN 2
+          ELSE 3
         END AS match_rank
       FROM zh_translations
       WHERE $field = ?
          OR $field LIKE ? ESCAPE '\\'
          OR $field LIKE ? ESCAPE '\\'
+         $expandedClause
+         $keywordClause
       ORDER BY match_rank, tag ASC
       LIMIT ?
       ''',
-      [token, '$escaped%', token, '$escaped%', '%$escaped%', requestedLimit],
+      [
+        token,
+        '$escaped%',
+        '%$escaped%',
+        token,
+        '$escaped%',
+        '%$escaped%',
+        ...variants.map((value) => '%${_escapeLike(value)}%'),
+        ...keywords.map((value) => '%${_escapeLike(value)}%'),
+        requestedLimit,
+      ],
     );
     if (rows.isEmpty) return const [];
 
@@ -322,7 +348,9 @@ class TagCatalogRepository implements CompletionSource {
                     ? CompletionMatchKind.chineseExact
                     : rank == 1
                     ? CompletionMatchKind.chinesePrefix
-                    : CompletionMatchKind.chineseContains
+                    : rank == 2
+                    ? CompletionMatchKind.chineseContains
+                    : CompletionMatchKind.fullText
               : rank == 0
               ? CompletionMatchKind.englishExact
               : rank == 1

@@ -45,6 +45,10 @@ void main() {
       INSERT INTO tag_search VALUES ('painter_blue', 'painter blue', 8, 0);
       INSERT INTO zh_translations VALUES ('extra', '额外', 1);
       INSERT INTO zh_translations VALUES ('worst_quality', '最差质量', 0);
+      INSERT INTO zh_translations VALUES ('no_socks', '未穿袜', 0);
+      INSERT INTO zh_translations VALUES ('socks', '袜子', 0);
+      INSERT INTO zh_translations VALUES ('blue_eyes', '蓝色的眼睛', 0);
+      INSERT INTO zh_translations VALUES ('blue_hair', '蓝色长发', 0);
       WITH RECURSIVE seq(i) AS (
         SELECT 1 UNION ALL SELECT i + 1 FROM seq WHERE i < 450
       )
@@ -80,6 +84,30 @@ void main() {
       expect(alias.single.aliases, ['aqua_eyes']);
     },
   );
+
+  test(
+    'bundled Chinese search expands garment negation without translating',
+    () async {
+      for (final token in ['不穿袜子', '没穿袜子']) {
+        final results = await repository.searchTranslations(_query(token));
+        expect(results.single.canonicalTag, 'no_socks');
+        expect(results.single.translation, '未穿袜');
+        expect(results.single.matchKind, CompletionMatchKind.fullText);
+      }
+      final literal = await repository.searchTranslations(_query('未穿袜'));
+      expect(literal.single.matchKind, CompletionMatchKind.chineseExact);
+    },
+  );
+
+  test('bundled keywords require all conditions regardless of order', () async {
+    for (final token in ['蓝色 眼睛', '眼睛_蓝色']) {
+      final results = await repository.searchTranslations(_query(token));
+      expect(results.single.canonicalTag, 'blue_eyes');
+      expect(results.single.translation, '蓝色的眼睛');
+      expect(results.single.matchKind, CompletionMatchKind.fullText);
+    }
+    expect(await repository.searchTranslations(_query('蓝色 袜子')), isEmpty);
+  });
 
   test('resolves canonical and alias metadata in one bounded query', () async {
     final records = await repository.resolveExactTags([
