@@ -105,12 +105,14 @@ class LocalGalleryServiceImpl implements LocalGalleryService {
     required int page,
     int pageSize = 50,
     String searchQuery = '',
+    bool favoritesOnly = false,
   }) {
     _ensureInitialized();
     return _query.queryPage(
       page: page,
       pageSize: pageSize,
       searchQuery: searchQuery,
+      favoritesOnly: favoritesOnly,
     );
   }
 

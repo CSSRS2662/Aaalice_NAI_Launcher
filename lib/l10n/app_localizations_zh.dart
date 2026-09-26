@@ -7398,13 +7398,22 @@ class AppLocalizationsZh extends AppLocalizations {
   String get tagLibrary_selectNewImage => '选择新图片';
 
   @override
-  String get tagLibrary_adjustDisplayRange => '调整显示范围';
+  String get tagLibrary_selectFromDevice => '从系统相册选择';
 
   @override
-  String get tagLibrary_adjustThumbnailTitle => '调整预览图显示范围';
+  String get tagLibrary_selectFromAppGallery => '从应用内图库选择';
 
   @override
-  String get tagLibrary_dragToMove => '拖拽移动，滚轮或双指缩放';
+  String get tagLibrary_appGallerySourceHint => '浏览历史记录和收藏';
+
+  @override
+  String get tagLibrary_adjustDisplayRange => '调整正方形取景';
+
+  @override
+  String get tagLibrary_adjustThumbnailTitle => '调整预览图正方形取景';
+
+  @override
+  String get tagLibrary_dragToMove => '拖动图片，双指捏合或滚轮缩放；圆框保持固定，框内即为头像';
 
   @override
   String get queue_management => '队列管理';
@@ -8000,6 +8009,9 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get shortcut_action_reuse_params => '复用参数';
+
+  @override
+  String get shortcut_action_reuse_seed => '复用种子';
 
   @override
   String get shortcut_action_previous_image => '上一张';
@@ -22002,13 +22014,22 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get tagLibrary_selectNewImage => '選擇新圖片';
 
   @override
-  String get tagLibrary_adjustDisplayRange => '調整顯示範圍';
+  String get tagLibrary_selectFromDevice => '從系統相簿選擇';
 
   @override
-  String get tagLibrary_adjustThumbnailTitle => '調整預覽圖顯示範圍';
+  String get tagLibrary_selectFromAppGallery => '從應用程式圖庫選擇';
 
   @override
-  String get tagLibrary_dragToMove => '拖拽移動，滾輪或雙指縮放';
+  String get tagLibrary_appGallerySourceHint => '瀏覽歷史記錄和收藏';
+
+  @override
+  String get tagLibrary_adjustDisplayRange => '調整正方形取景';
+
+  @override
+  String get tagLibrary_adjustThumbnailTitle => '調整預覽圖正方形取景';
+
+  @override
+  String get tagLibrary_dragToMove => '拖動圖片，雙指捏合或滾輪縮放；圓框保持固定，框內即為頭像';
 
   @override
   String get queue_management => '佇列管理';
@@ -22604,6 +22625,9 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get shortcut_action_reuse_params => '複用引數';
+
+  @override
+  String get shortcut_action_reuse_seed => '複用種子';
 
   @override
   String get shortcut_action_previous_image => '上一張';

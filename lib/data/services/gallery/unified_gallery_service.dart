@@ -111,6 +111,7 @@ class ErrorGalleryService implements LocalGalleryService {
     required int page,
     int pageSize = 50,
     String searchQuery = '',
+    bool favoritesOnly = false,
   }) => _throwError();
   @override
   Future<int?> getImageIdByPath(String filePath) => _throwError();
@@ -174,6 +175,7 @@ class _PlaceholderGalleryService implements LocalGalleryService {
     required int page,
     int pageSize = 50,
     String searchQuery = '',
+    bool favoritesOnly = false,
   }) => _throwNotInitialized();
   @override
   Future<int?> getImageIdByPath(String filePath) => _throwNotInitialized();

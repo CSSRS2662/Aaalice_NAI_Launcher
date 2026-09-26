@@ -7519,13 +7519,23 @@ class AppLocalizationsJa extends AppLocalizations {
   String get tagLibrary_selectNewImage => '新しい画像を選択してください';
 
   @override
-  String get tagLibrary_adjustDisplayRange => '表示範囲の調整';
+  String get tagLibrary_selectFromDevice => '端末の写真から選択';
 
   @override
-  String get tagLibrary_adjustThumbnailTitle => 'サムネイル表示範囲の調整';
+  String get tagLibrary_selectFromAppGallery => 'アプリ内ギャラリーから選択';
 
   @override
-  String get tagLibrary_dragToMove => 'ドラッグして移動、スクロールまたはピンチしてズームします';
+  String get tagLibrary_appGallerySourceHint => '履歴とお気に入りを参照';
+
+  @override
+  String get tagLibrary_adjustDisplayRange => '正方形のフォーカスを調整';
+
+  @override
+  String get tagLibrary_adjustThumbnailTitle => 'サムネイルの正方形フォーカスを調整';
+
+  @override
+  String get tagLibrary_dragToMove =>
+      '画像をドラッグし、ピンチまたはスクロールで拡大縮小します。固定された円内がアバターになります。';
 
   @override
   String get queue_management => 'キュー管理';
@@ -8124,6 +8134,9 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get shortcut_action_reuse_params => 'パラメータの再利用';
+
+  @override
+  String get shortcut_action_reuse_seed => 'シードを再利用';
 
   @override
   String get shortcut_action_previous_image => '前の画像';

@@ -29,7 +29,10 @@ import '../../../widgets/prompt/nai_syntax_controller.dart';
 import '../../../widgets/prompt/prompt_formatter_wrapper.dart';
 import '../../../widgets/prompt/tag_mode_prompt_field.dart';
 import 'thumbnail_crop_dialog.dart';
+import 'thumbnail_gallery_picker_dialog.dart';
 import 'thumbnail_selection_preview.dart';
+
+enum _ThumbnailSource { device, appGallery }
 
 /// 添加/编辑词库条目对话框
 class EntryAddDialog extends ConsumerStatefulWidget {
@@ -205,7 +208,7 @@ class _EntryAddDialogState extends ConsumerState<EntryAddDialog> {
   }
 
   /// 统一转换为 PNG，避免 TIFF、TGA 等格式无法由 Flutter 直接预览。
-  Future<void> _saveImageBytesToTemp(Uint8List bytes) async {
+  Future<bool> _saveImageBytesToTemp(Uint8List bytes) async {
     final importRevision = ++_thumbnailImportRevision;
     final normalizedBytes = await compute(normalizeThumbnailImageToPng, bytes);
     final tempDir = await getTemporaryDirectory();
@@ -215,18 +218,22 @@ class _EntryAddDialogState extends ConsumerState<EntryAddDialog> {
 
     if (!mounted || importRevision != _thumbnailImportRevision) {
       await _deleteTemporaryThumbnail(file.path);
-      return;
+      return false;
     }
 
     final previousPath = _thumbnailPath;
     _temporaryThumbnailPaths.add(file.path);
     setState(() {
       _thumbnailPath = file.path;
+      _thumbnailOffsetX = 0;
+      _thumbnailOffsetY = 0;
+      _thumbnailScale = 1;
     });
 
     if (previousPath != null && _temporaryThumbnailPaths.remove(previousPath)) {
       unawaited(_deleteTemporaryThumbnail(previousPath));
     }
+    return true;
   }
 
   void _clearThumbnail() {
@@ -693,6 +700,41 @@ class _EntryAddDialogState extends ConsumerState<EntryAddDialog> {
   }
 
   Future<void> _selectThumbnail() async {
+    final source = await showModalBottomSheet<_ThumbnailSource>(
+      context: context,
+      builder: (sheetContext) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(Icons.photo_library_outlined),
+              title: Text(sheetContext.l10n.tagLibrary_selectFromDevice),
+              onTap: () => Navigator.pop(sheetContext, _ThumbnailSource.device),
+            ),
+            ListTile(
+              leading: const Icon(Icons.collections_outlined),
+              title: Text(sheetContext.l10n.tagLibrary_selectFromAppGallery),
+              subtitle: Text(sheetContext.l10n.tagLibrary_appGallerySourceHint),
+              onTap: () =>
+                  Navigator.pop(sheetContext, _ThumbnailSource.appGallery),
+            ),
+          ],
+        ),
+      ),
+    );
+    if (!mounted || source == null) return;
+
+    switch (source) {
+      case _ThumbnailSource.device:
+        await _selectThumbnailFromDevice();
+        break;
+      case _ThumbnailSource.appGallery:
+        await _selectThumbnailFromAppGallery();
+        break;
+    }
+  }
+
+  Future<void> _selectThumbnailFromDevice() async {
     try {
       final result = await FilePicker.platform.pickFiles(
         type: FileType.custom,
@@ -711,7 +753,7 @@ class _EntryAddDialogState extends ConsumerState<EntryAddDialog> {
         throw const FileSystemException('无法读取所选图像');
       }
 
-      await _saveImageBytesToTemp(bytes);
+      await _importThumbnailAndOpenCrop(bytes);
     } catch (e) {
       if (mounted) {
         AppToast.error(
@@ -720,6 +762,31 @@ class _EntryAddDialogState extends ConsumerState<EntryAddDialog> {
         );
       }
     }
+  }
+
+  Future<void> _selectThumbnailFromAppGallery() async {
+    final selectedPath = await ThumbnailGalleryPickerDialog.show(context);
+    if (!mounted || selectedPath == null) return;
+    try {
+      final file = File(selectedPath);
+      if (!await file.exists()) {
+        throw const FileSystemException('所选图库图片不存在');
+      }
+      await _importThumbnailAndOpenCrop(await file.readAsBytes());
+    } catch (e) {
+      if (mounted) {
+        AppToast.error(
+          context,
+          context.l10n.imagePicker_fileSelectionFailed(e.toString()),
+        );
+      }
+    }
+  }
+
+  Future<void> _importThumbnailAndOpenCrop(Uint8List bytes) async {
+    final imported = await _saveImageBytesToTemp(bytes);
+    if (!mounted || !imported || _thumbnailPath == null) return;
+    await _openCropDialog();
   }
 
   bool _canSave() {

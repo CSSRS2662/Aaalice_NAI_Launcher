@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'dart:math';
 
+import '../../../core/database/datasources/gallery_records.dart';
 import '../../../core/exceptions/gallery_exceptions.dart';
 import '../../models/gallery/local_image_record.dart';
 import 'gallery_filter_service.dart';
@@ -153,6 +154,7 @@ class LocalGalleryQuery {
     required int page,
     required int pageSize,
     String searchQuery = '',
+    bool favoritesOnly = false,
   }) async {
     if (page < 0) throw RangeError.range(page, 0, null, 'page');
     if (pageSize <= 0) throw RangeError.range(pageSize, 1, null, 'pageSize');
@@ -163,19 +165,42 @@ class LocalGalleryQuery {
     final snapshotGeneration = _fileListGeneration;
     final normalizedQuery = searchQuery.trim();
     var matchingFiles = filesSnapshot;
+    if (favoritesOnly && matchingFiles.isNotEmpty) {
+      final favoriteCount = await _repository.getFavoriteCount();
+      final favorites = favoriteCount == 0
+          ? const <GalleryImageRecord>[]
+          : await _repository.queryFavoriteImages(limit: favoriteCount);
+      final favoritePaths = {
+        for (final record in favorites) galleryFilePathKey(record.filePath),
+      };
+      matchingFiles = matchingFiles
+          .where(
+            (file) => favoritePaths.contains(galleryFilePathKey(file.path)),
+          )
+          .toList(growable: false);
+    }
     if (normalizedQuery.isNotEmpty) {
       final queryGeneration = ++_independentQueryGeneration;
+      final queryInputFiles = matchingFiles;
+      final queryFileGeneration = favoritesOnly
+          ? Object.hash(
+              snapshotGeneration,
+              Object.hashAll(
+                queryInputFiles.map((file) => galleryFilePathKey(file.path)),
+              ),
+            )
+          : snapshotGeneration;
       final result = await _filterService.applyFilters(
-        filesSnapshot,
+        queryInputFiles,
         FilterCriteria(searchQuery: normalizedQuery),
         operationId: 'local_gallery_query_$queryGeneration',
-        fileListGeneration: snapshotGeneration,
+        fileListGeneration: queryFileGeneration,
       );
       final databaseMatches = {
         for (final file in result.files) galleryFilePathKey(file.path),
       };
       final normalizedText = normalizedQuery.toLowerCase();
-      matchingFiles = filesSnapshot
+      matchingFiles = queryInputFiles
           .where(
             (file) =>
                 databaseMatches.contains(galleryFilePathKey(file.path)) ||

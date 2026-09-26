@@ -7,7 +7,7 @@ import '../../../../data/models/tag_library/tag_library_entry.dart';
 import '../../../adaptive/interaction_policy.dart';
 import '../../../widgets/common/app_toast.dart';
 import '../../../widgets/common/library_card_badges.dart';
-import '../../../widgets/common/thumbnail_display.dart';
+import 'entry_avatar.dart';
 import '../../../widgets/common/translated_tag_text.dart';
 
 enum _EntryListAction { select, edit, favorite, classify, copy, delete }
@@ -173,38 +173,8 @@ class _EntryListItemState extends State<EntryListItem> {
     return itemContent;
   }
 
-  Widget _buildThumbnail(ThemeData theme, TagLibraryEntry entry) {
-    if (entry.hasThumbnail && entry.thumbnail != null) {
-      return ThumbnailDisplay(
-        imagePath: entry.thumbnail!,
-        offsetX: entry.thumbnailOffsetX,
-        offsetY: entry.thumbnailOffsetY,
-        scale: entry.thumbnailScale,
-        width: 64,
-        height: 64,
-        borderRadius: BorderRadius.circular(8),
-      );
-    }
-    return _buildPlaceholder(theme);
-  }
-
-  Widget _buildPlaceholder(ThemeData theme) {
-    return Container(
-      width: 64,
-      height: 64,
-      decoration: BoxDecoration(
-        color: theme.colorScheme.surfaceContainerHighest,
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Center(
-        child: Icon(
-          Icons.image_outlined,
-          size: 24,
-          color: theme.colorScheme.outline.withValues(alpha: 0.5),
-        ),
-      ),
-    );
-  }
+  Widget _buildThumbnail(ThemeData theme, TagLibraryEntry entry) =>
+      EntryAvatar(entry: entry, size: 48);
 
   Widget _buildInfo(ThemeData theme, TagLibraryEntry entry) {
     return Column(

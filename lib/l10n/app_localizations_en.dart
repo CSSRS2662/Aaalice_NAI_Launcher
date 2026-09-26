@@ -7706,14 +7706,23 @@ class AppLocalizationsEn extends AppLocalizations {
   String get tagLibrary_selectNewImage => 'Select New Image';
 
   @override
-  String get tagLibrary_adjustDisplayRange => 'Adjust Display Range';
+  String get tagLibrary_selectFromDevice => 'Choose from Device Photos';
 
   @override
-  String get tagLibrary_adjustThumbnailTitle =>
-      'Adjust Thumbnail Display Range';
+  String get tagLibrary_selectFromAppGallery => 'Choose from App Gallery';
 
   @override
-  String get tagLibrary_dragToMove => 'Drag to move, scroll or pinch to zoom';
+  String get tagLibrary_appGallerySourceHint => 'Browse history and favorites';
+
+  @override
+  String get tagLibrary_adjustDisplayRange => 'Adjust Square Focus';
+
+  @override
+  String get tagLibrary_adjustThumbnailTitle => 'Adjust Thumbnail Square Focus';
+
+  @override
+  String get tagLibrary_dragToMove =>
+      'Drag the image and pinch or scroll to zoom. The fixed circle shows your avatar.';
 
   @override
   String get queue_management => 'Queue Management';
@@ -8327,6 +8336,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get shortcut_action_reuse_params => 'Reuse Parameters';
+
+  @override
+  String get shortcut_action_reuse_seed => 'Reuse Seed';
 
   @override
   String get shortcut_action_previous_image => 'Previous Image';

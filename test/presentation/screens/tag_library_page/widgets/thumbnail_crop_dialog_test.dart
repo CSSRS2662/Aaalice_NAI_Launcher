@@ -34,6 +34,9 @@ void main() {
     final image = tester.getRect(
       find.byKey(const ValueKey('thumbnail-crop-image')),
     );
+    final selection = tester.getRect(
+      find.byKey(const ValueKey('thumbnail-crop-selection')),
+    );
     expect(preview.left, greaterThanOrEqualTo(12));
     expect(preview.right, lessThanOrEqualTo(348));
     expect(preview.width, greaterThan(300));
@@ -42,6 +45,11 @@ void main() {
     expect(image.top, greaterThanOrEqualTo(preview.top));
     expect(image.bottom, lessThanOrEqualTo(preview.bottom));
     expect(image.width, greaterThan(150));
+    expect(selection.width / selection.height, closeTo(1, 0.01));
+    expect(selection.left, greaterThanOrEqualTo(image.left - 0.01));
+    expect(selection.top, greaterThanOrEqualTo(image.top - 0.01));
+    expect(selection.right, lessThanOrEqualTo(image.right + 0.01));
+    expect(selection.bottom, lessThanOrEqualTo(image.bottom + 0.01));
 
     for (final label in ['重置', '取消', '确定']) {
       final rect = tester.getRect(find.text(label));
@@ -63,6 +71,25 @@ void main() {
     await tester.pump();
     await first.up();
     await second.up();
+    await tester.pump();
+    expect(
+      tester.getRect(find.byKey(const ValueKey('thumbnail-crop-selection'))),
+      selection,
+    );
+    final zoomedImage = tester.getRect(
+      find.byKey(const ValueKey('thumbnail-crop-image')),
+    );
+    expect(zoomedImage.width, greaterThan(image.width));
+    await tester.dragFrom(center, const Offset(20, 0));
+    await tester.pump();
+    expect(
+      tester.getRect(find.byKey(const ValueKey('thumbnail-crop-selection'))),
+      selection,
+    );
+    expect(
+      tester.getRect(find.byKey(const ValueKey('thumbnail-crop-image'))).left,
+      greaterThan(zoomedImage.left),
+    );
 
     await tester.tap(find.text('确定'));
     await tester.pumpAndSettle();

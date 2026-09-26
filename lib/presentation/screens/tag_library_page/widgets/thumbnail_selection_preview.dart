@@ -1,10 +1,9 @@
 import 'dart:io';
+import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 
 import '../../../widgets/common/image_viewport_surface.dart';
-
-const double tagLibraryCardAspectRatio = 2.5;
 
 Size displayedThumbnailImageSize(Size imageSize, Size displaySize) {
   final imageAspectRatio = imageSize.width / imageSize.height;
@@ -20,18 +19,10 @@ Size displayedThumbnailImageSize(Size imageSize, Size displaySize) {
 }
 
 Size thumbnailCropBoxSize(Size displayedSize, double scale) {
-  final double baseWidth;
-  final double baseHeight;
-  if (displayedSize.width / displayedSize.height > tagLibraryCardAspectRatio) {
-    baseHeight = displayedSize.height;
-    baseWidth = baseHeight * tagLibraryCardAspectRatio;
-  } else {
-    baseWidth = displayedSize.width;
-    baseHeight = baseWidth / tagLibraryCardAspectRatio;
-  }
-
+  final baseSide = math.min(displayedSize.width, displayedSize.height);
   final scaleFactor = 1 / scale.clamp(1.0, 3.0);
-  return Size(baseWidth * scaleFactor, baseHeight * scaleFactor);
+  final side = baseSide * scaleFactor;
+  return Size.square(side);
 }
 
 Rect thumbnailCropRect({
@@ -53,7 +44,7 @@ Rect thumbnailCropRect({
   );
 }
 
-/// 在完整图像上标出词库卡片实际使用的长方形范围。
+/// 在完整图像上标出所有词库预览共同使用的正方形焦点区域。
 class ThumbnailSelectionPreview extends StatefulWidget {
   const ThumbnailSelectionPreview({
     super.key,
@@ -241,9 +232,9 @@ class _ThumbnailSelectionPainter extends CustomPainter {
     final outsideCrop = Path()
       ..fillType = PathFillType.evenOdd
       ..addRect(imageRect)
-      ..addRect(cropRect);
+      ..addOval(cropRect);
     canvas.drawPath(outsideCrop, Paint()..color = scrimColor);
-    canvas.drawRect(
+    canvas.drawOval(
       cropRect.deflate(1),
       Paint()
         ..color = borderColor

@@ -29,7 +29,9 @@ void main() {
     expect(resized.height, 120);
   });
 
-  testWidgets('adds decode size hints for cropped thumbnails', (tester) async {
+  testWidgets('fits the complete square focus into a wide thumbnail', (
+    tester,
+  ) async {
     final directory = Directory.systemTemp.createTempSync(
       'thumbnail_display_test_',
     );
@@ -58,13 +60,16 @@ void main() {
       ),
     );
 
-    final resized = await _pumpUntilResizeWidth(tester, 400);
+    final resized = await _pumpUntilResizeWidth(tester, 160);
+    final image = tester.widget<Image>(find.byType(Image));
 
-    expect(resized.width, 400);
-    expect(resized.height, 400);
+    expect(resized.width, 160);
+    expect(resized.height, 160);
+    expect(image.width, 80);
+    expect(image.height, 80);
   });
 
-  testWidgets('uses the actual viewport ratio when covering the thumbnail', (
+  testWidgets('preserves source ratio while fitting the square focus', (
     tester,
   ) async {
     final directory = Directory.systemTemp.createTempSync(
@@ -102,6 +107,80 @@ void main() {
     expect(image.width, 128);
     expect(image.height, 64);
   });
+
+  testWidgets(
+    'keeps an offset square focus complete and centered at any ratio',
+    (tester) async {
+      final directory = Directory.systemTemp.createTempSync(
+        'thumbnail_display_focus_test_',
+      );
+      addTearDown(() {
+        if (directory.existsSync()) {
+          directory.deleteSync(recursive: true);
+        }
+      });
+
+      final imageFile = File('${directory.path}/landscape.png');
+      const sourceSize = Size(300, 200);
+      const offsetX = 0.6;
+      const offsetY = -0.5;
+      const scale = 2.0;
+      imageFile.writeAsBytesSync(
+        img.encodePng(
+          img.Image(
+            width: sourceSize.width.toInt(),
+            height: sourceSize.height.toInt(),
+          ),
+        ),
+      );
+
+      for (final viewportSize in const [Size(200, 80), Size(80, 200)]) {
+        await tester.pumpWidget(
+          MaterialApp(
+            home: Center(
+              child: ThumbnailDisplay(
+                imagePath: imageFile.path,
+                width: viewportSize.width,
+                height: viewportSize.height,
+                offsetX: offsetX,
+                offsetY: offsetY,
+                scale: scale,
+              ),
+            ),
+          ),
+        );
+        await _pumpUntilResizeWidth(tester, 240);
+
+        final viewport = tester.getRect(find.byType(ThumbnailDisplay));
+        final renderedImage = tester.getRect(find.byType(Image));
+        final cropSide = sourceSize.shortestSide / scale;
+        final cropCenter = Offset(
+          sourceSize.width / 2 + offsetX * (sourceSize.width - cropSide) / 2,
+          sourceSize.height / 2 + offsetY * (sourceSize.height - cropSide) / 2,
+        );
+        final sourceToDisplay = renderedImage.width / sourceSize.width;
+        final displayedFocus = Rect.fromCenter(
+          center: Offset(
+            renderedImage.left + cropCenter.dx * sourceToDisplay,
+            renderedImage.top + cropCenter.dy * sourceToDisplay,
+          ),
+          width: cropSide * sourceToDisplay,
+          height: cropSide * sourceToDisplay,
+        );
+
+        expect(displayedFocus.center.dx, closeTo(viewport.center.dx, 0.01));
+        expect(displayedFocus.center.dy, closeTo(viewport.center.dy, 0.01));
+        expect(displayedFocus.size, Size.square(viewport.size.shortestSide));
+        expect(displayedFocus.left, greaterThanOrEqualTo(viewport.left - 0.01));
+        expect(displayedFocus.top, greaterThanOrEqualTo(viewport.top - 0.01));
+        expect(displayedFocus.right, lessThanOrEqualTo(viewport.right + 0.01));
+        expect(
+          displayedFocus.bottom,
+          lessThanOrEqualTo(viewport.bottom + 0.01),
+        );
+      }
+    },
+  );
 }
 
 Future<ResizeImage> _pumpUntilResizeWidth(

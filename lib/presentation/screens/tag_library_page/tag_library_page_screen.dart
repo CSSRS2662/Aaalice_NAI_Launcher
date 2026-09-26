@@ -1199,8 +1199,10 @@ TagLibraryGridLayout computeTagLibraryGridLayout(
   final compact = availableWidth < 600;
   final effectiveScale = textScale.clamp(1.0, 3.0);
   return TagLibraryGridLayout(
-    maxCrossAxisExtent: compact ? 280 : 240,
-    mainAxisExtent: 80 + (effectiveScale - 1) * 12,
+    maxCrossAxisExtent: availableWidth < 380 || effectiveScale > 1.3
+        ? availableWidth
+        : 240,
+    mainAxisExtent: 68 + (effectiveScale - 1) * 40,
     padding: compact ? 12 : 16,
   );
 }

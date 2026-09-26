@@ -400,6 +400,7 @@ class _FakeLocalGalleryService implements LocalGalleryService {
     required int page,
     int pageSize = 50,
     String searchQuery = '',
+    bool favoritesOnly = false,
   }) async {
     requests.add(_QueryRequest(page: page, searchQuery: searchQuery));
     if (delayQueries) return _delayedQuery.future;

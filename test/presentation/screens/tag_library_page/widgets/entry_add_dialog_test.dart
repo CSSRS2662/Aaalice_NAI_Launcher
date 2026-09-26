@@ -108,6 +108,22 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
+  testWidgets('预览图入口同时提供系统相册与应用内图库', (tester) async {
+    await _pumpLauncher(tester, size: const Size(400, 800));
+
+    await tester.tap(find.text('打开'));
+    await tester.pumpAndSettle();
+    await tester.tap(
+      find.byKey(const ValueKey('entry-thumbnail-square-preview')),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('从系统相册选择'), findsOneWidget);
+    expect(find.text('从应用内图库选择'), findsOneWidget);
+    expect(find.text('浏览历史记录和收藏'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets('Medium 在 IME 导致短高度时保留居中表单且避开键盘', (tester) async {
     await _pumpLauncher(
       tester,
@@ -245,7 +261,7 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('已有预览图时在方形区域标出卡片显示范围', (tester) async {
+  testWidgets('已有预览图时在方形区域标出统一正方形焦点', (tester) async {
     final testImage = File('assets/icons/android/playstore-icon.png').absolute;
     await _cacheFileImage(tester, testImage);
     final entry = TagLibraryEntry(
@@ -271,7 +287,7 @@ void main() {
       find.byKey(const ValueKey('entry-thumbnail-card-frame')),
     );
     expect(preview.size, const Size.square(220));
-    expect(frame.width / frame.height, closeTo(2.5, 0.01));
+    expect(frame.width / frame.height, closeTo(1, 0.01));
     expect(preview.contains(frame.topLeft), isTrue);
     expect(preview.contains(frame.bottomRight), isTrue);
     expect(frame.center.dx, greaterThan(preview.center.dx));

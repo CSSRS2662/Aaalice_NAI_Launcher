@@ -13660,22 +13660,40 @@ abstract class AppLocalizations {
   /// **'Select New Image'**
   String get tagLibrary_selectNewImage;
 
+  /// No description provided for @tagLibrary_selectFromDevice.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose from Device Photos'**
+  String get tagLibrary_selectFromDevice;
+
+  /// No description provided for @tagLibrary_selectFromAppGallery.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose from App Gallery'**
+  String get tagLibrary_selectFromAppGallery;
+
+  /// No description provided for @tagLibrary_appGallerySourceHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Browse history and favorites'**
+  String get tagLibrary_appGallerySourceHint;
+
   /// No description provided for @tagLibrary_adjustDisplayRange.
   ///
   /// In en, this message translates to:
-  /// **'Adjust Display Range'**
+  /// **'Adjust Square Focus'**
   String get tagLibrary_adjustDisplayRange;
 
   /// No description provided for @tagLibrary_adjustThumbnailTitle.
   ///
   /// In en, this message translates to:
-  /// **'Adjust Thumbnail Display Range'**
+  /// **'Adjust Thumbnail Square Focus'**
   String get tagLibrary_adjustThumbnailTitle;
 
   /// No description provided for @tagLibrary_dragToMove.
   ///
   /// In en, this message translates to:
-  /// **'Drag to move, scroll or pinch to zoom'**
+  /// **'Drag the image and pinch or scroll to zoom. The fixed circle shows your avatar.'**
   String get tagLibrary_dragToMove;
 
   /// No description provided for @queue_management.
@@ -14744,6 +14762,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Reuse Parameters'**
   String get shortcut_action_reuse_params;
+
+  /// No description provided for @shortcut_action_reuse_seed.
+  ///
+  /// In en, this message translates to:
+  /// **'Reuse Seed'**
+  String get shortcut_action_reuse_seed;
 
   /// No description provided for @shortcut_action_previous_image.
   ///

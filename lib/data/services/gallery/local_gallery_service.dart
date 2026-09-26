@@ -31,6 +31,7 @@ abstract class LocalGalleryService {
     required int page,
     int pageSize = 50,
     String searchQuery = '',
+    bool favoritesOnly = false,
   });
 
   Future<int?> getImageIdByPath(String filePath);

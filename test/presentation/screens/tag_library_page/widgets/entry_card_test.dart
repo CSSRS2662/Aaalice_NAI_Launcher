@@ -6,11 +6,11 @@ import 'package:nai_launcher/data/models/tag_library/tag_library_entry.dart';
 import 'package:nai_launcher/l10n/app_localizations.dart';
 import 'package:nai_launcher/presentation/screens/tag_library_page/widgets/entry_card.dart';
 import 'package:nai_launcher/presentation/adaptive/interaction_policy.dart';
-import 'package:nai_launcher/presentation/widgets/common/library_card_badges.dart';
+import 'package:nai_launcher/presentation/screens/tag_library_page/widgets/entry_avatar.dart';
 import 'package:nai_launcher/presentation/widgets/common/thumbnail_display.dart';
 
 void main() {
-  testWidgets('已收藏词库卡片在左上角显示居中的常驻徽章', (tester) async {
+  testWidgets('收藏状态显示在头像上且保留更多菜单', (tester) async {
     final entry = TagLibraryEntry(
       id: 'favorite-entry',
       name: '收藏词条',
@@ -39,11 +39,10 @@ void main() {
       ),
     );
 
-    final cardRect = tester.getRect(find.byType(EntryCard));
-    final badge = find.byType(LibraryCardFavoriteBadge);
-    final badgeRect = tester.getRect(badge);
-    expect(badge, findsOneWidget);
-    expect(badgeRect.topLeft, cardRect.topLeft + const Offset(8, 8));
+    final avatarRect = tester.getRect(find.byType(EntryAvatar));
+    final badgeRect = tester.getRect(find.byIcon(Icons.favorite_rounded));
+    expect(avatarRect.contains(badgeRect.center), isTrue);
+    expect(find.byIcon(Icons.more_vert_rounded), findsOneWidget);
     expect(find.byIcon(Icons.favorite_rounded), findsOneWidget);
   });
 
@@ -127,8 +126,8 @@ void main() {
     final thumbnailState = tester.state(thumbnailFinder);
     final thumbnail = tester.widget<ThumbnailDisplay>(thumbnailFinder);
 
-    expect(thumbnail.width, 240);
-    expect(thumbnail.height, 80);
+    expect(thumbnail.width, 44);
+    expect(thumbnail.height, 44);
 
     await pumpCard(isSelectionMode: true);
 

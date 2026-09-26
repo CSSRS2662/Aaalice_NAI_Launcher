@@ -245,10 +245,28 @@ void main() {
         }
 
         await service.initialize();
+        expect(await service.toggleFavorite(middle.path), isTrue);
         await service.setSearchQuery('newest');
         final activePageBefore = await service.getPage(0);
 
         final historicalPage = await service.queryPage(page: 2, pageSize: 1);
+        final favoritePage = await service.queryPage(
+          page: 0,
+          pageSize: 10,
+          favoritesOnly: true,
+        );
+        final favoriteSearchPage = await service.queryPage(
+          page: 0,
+          pageSize: 10,
+          searchQuery: 'middle',
+          favoritesOnly: true,
+        );
+        final nonFavoriteSearchPage = await service.queryPage(
+          page: 0,
+          pageSize: 10,
+          searchQuery: 'newest',
+          favoritesOnly: true,
+        );
         final searchPage = await service.queryPage(
           page: 0,
           pageSize: 10,
@@ -260,6 +278,14 @@ void main() {
         ]);
         expect(historicalPage.totalCount, 3);
         expect(historicalPage.hasMore, isFalse);
+        expect(favoritePage.records.map((record) => record.path), [
+          middle.path,
+        ]);
+        expect(favoritePage.totalCount, 1);
+        expect(favoriteSearchPage.records.map((record) => record.path), [
+          middle.path,
+        ]);
+        expect(nonFavoriteSearchPage.records, isEmpty);
         expect(searchPage.records.map((record) => record.path), [
           archived.path,
         ]);

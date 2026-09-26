@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 
@@ -8,9 +9,9 @@ import 'image_viewport_surface.dart';
 
 /// 缩略图显示组件
 ///
-/// 使用与裁剪对话框完全相同的坐标系统和计算逻辑。
-/// - offsetX/Y: -1.0 到 1.0，表示选中区域在图像中的位置
-/// - scale: 1.0 到 3.0，表示放大倍数
+/// 使用与裁剪对话框相同的正方形焦点区域。无论最终容器是横向、
+/// 方形还是纵向，该区域都会完整显示在容器中心；区域外的原图内容
+/// 只用于填充当前容器剩余空间。
 class ThumbnailDisplay extends StatefulWidget {
   final String imagePath;
   final double offsetX;
@@ -89,7 +90,7 @@ class _ThumbnailDisplayState extends State<ThumbnailDisplay> {
 
   @override
   Widget build(BuildContext context) {
-    // 在图像尺寸加载前，使用简单的 BoxFit.cover 显示
+    // 尺寸加载完成前先完整显示图像，避免短暂裁掉用户选中的焦点。
     if (_imageSize == null) {
       return _buildSimpleImage();
     }
@@ -97,66 +98,54 @@ class _ThumbnailDisplayState extends State<ThumbnailDisplay> {
     final ox = widget.offsetX.clamp(-1.0, 1.0);
     final oy = widget.offsetY.clamp(-1.0, 1.0);
     final s = widget.scale.clamp(1.0, 3.0);
-
-    // 容器尺寸
     final containerWidth = widget.width;
     final containerHeight = widget.height;
-    final containerAspectRatio = containerWidth / containerHeight;
+    final imageWidth = _imageSize!.width;
+    final imageHeight = _imageSize!.height;
 
-    // 按当前显示区域的实际比例铺满，避免组件用于非 200x80
-    // 区域时出现未被图像覆盖的边带。
-    final imageAspectRatio = _imageSize!.width / _imageSize!.height;
+    // scale 表示正方形焦点框相对“图像可容纳的最大正方形”的缩放。
+    final cropSide = math.min(imageWidth, imageHeight) / s;
+    final maxCenterOffsetX = (imageWidth - cropSide) / 2;
+    final maxCenterOffsetY = (imageHeight - cropSide) / 2;
+    final cropCenter = Offset(
+      imageWidth / 2 + ox * maxCenterOffsetX,
+      imageHeight / 2 + oy * maxCenterOffsetY,
+    );
 
-    // 使用与裁剪对话框相同的逻辑计算"虚拟图像"尺寸
-    // 虚拟图像 = 在容器比例下显示的图像尺寸
-    double virtualWidth, virtualHeight;
-
-    if (imageAspectRatio > containerAspectRatio) {
-      // 图像更宽，高度填满，宽度超出
-      virtualHeight = containerHeight * s;
-      virtualWidth = virtualHeight * imageAspectRatio;
-    } else {
-      // 图像更高，宽度填满，高度超出
-      virtualWidth = containerWidth * s;
-      virtualHeight = virtualWidth / imageAspectRatio;
-    }
-
-    // 计算裁剪区域尺寸（与裁剪对话框中的裁剪框对应）
-    // 裁剪区域 = 容器尺寸（在虚拟图像上）
-    final cropWidth = containerWidth;
-    final cropHeight = containerHeight;
-
-    // 计算可移动范围
-    final maxOffsetX = (virtualWidth - cropWidth) / 2;
-    final maxOffsetY = (virtualHeight - cropHeight) / 2;
-
-    // 计算平移量
-    final shiftX = ox * maxOffsetX;
-    final shiftY = oy * maxOffsetY;
+    // 让焦点正方形完整适配容器的短边，然后把它的中心固定到容器中心。
+    final viewportScale = math.min(containerWidth, containerHeight) / cropSide;
+    final renderedWidth = imageWidth * viewportScale;
+    final renderedHeight = imageHeight * viewportScale;
+    final renderedLeft = containerWidth / 2 - cropCenter.dx * viewportScale;
+    final renderedTop = containerHeight / 2 - cropCenter.dy * viewportScale;
     final devicePixelRatio = MediaQuery.devicePixelRatioOf(context);
 
     Widget image = ClipRect(
       child: SizedBox(
         width: containerWidth,
         height: containerHeight,
-        child: OverflowBox(
-          alignment: Alignment.center,
-          minWidth: virtualWidth,
-          maxWidth: virtualWidth,
-          minHeight: virtualHeight,
-          maxHeight: virtualHeight,
-          child: Transform.translate(
-            offset: Offset(-shiftX, -shiftY),
-            child: Image.file(
-              File(widget.imagePath),
-              width: virtualWidth,
-              height: virtualHeight,
-              cacheWidth: _decodeCacheExtent(virtualWidth, devicePixelRatio),
-              cacheHeight: _decodeCacheExtent(virtualHeight, devicePixelRatio),
-              fit: BoxFit.cover,
-              errorBuilder: (_, __, ___) => _buildError(),
+        child: Stack(
+          clipBehavior: Clip.hardEdge,
+          children: [
+            Positioned(
+              left: renderedLeft,
+              top: renderedTop,
+              width: renderedWidth,
+              height: renderedHeight,
+              child: Image.file(
+                File(widget.imagePath),
+                width: renderedWidth,
+                height: renderedHeight,
+                cacheWidth: _decodeCacheExtent(renderedWidth, devicePixelRatio),
+                cacheHeight: _decodeCacheExtent(
+                  renderedHeight,
+                  devicePixelRatio,
+                ),
+                fit: BoxFit.fill,
+                errorBuilder: (_, __, ___) => _buildError(),
+              ),
             ),
-          ),
+          ],
         ),
       ),
     );
@@ -179,8 +168,7 @@ class _ThumbnailDisplayState extends State<ThumbnailDisplay> {
         child: Image.file(
           File(widget.imagePath),
           cacheWidth: _decodeCacheExtent(widget.width, devicePixelRatio),
-          cacheHeight: _decodeCacheExtent(widget.height, devicePixelRatio),
-          fit: BoxFit.cover,
+          fit: BoxFit.contain,
           errorBuilder: (_, __, ___) => _buildError(),
         ),
       ),

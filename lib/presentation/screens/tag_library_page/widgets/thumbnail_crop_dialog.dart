@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 
@@ -8,7 +9,6 @@ import '../../../widgets/common/image_viewport_surface.dart';
 import '../../../../core/utils/localization_extension.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../adaptive/adaptive_presenter.dart';
-import 'thumbnail_selection_preview.dart';
 
 /// 缩略图裁剪调整结果
 class ThumbnailCropResult {
@@ -29,8 +29,7 @@ class ThumbnailCropResult {
 
 /// 缩略图裁剪调整对话框
 ///
-/// 显示完整图像，用户通过拖拽矩形框选择显示区域。
-/// 矩形框的比例与 EntryCard 一致。
+/// 显示完整图像，固定圆形取景框，用户拖动、捏合图像选择头像区域。
 class ThumbnailCropDialog extends StatefulWidget {
   final String imagePath;
   final double initialOffsetX;
@@ -92,15 +91,14 @@ class _ThumbnailCropDialogState extends State<ThumbnailCropDialog> {
         );
   }
 
-  /// 计算图像在当前预览区域中的尺寸（保持比例）
-  Size _displayedImageSize(Size displaySize) {
-    if (_imageSize == null) return displaySize;
-    return displayedThumbnailImageSize(_imageSize!, displaySize);
-  }
+  double _diameter(Size viewport) =>
+      math.min(viewport.width, viewport.height) * 0.8;
 
-  /// 计算裁剪框尺寸
-  Size _cropBoxSize(Size displayedSize) {
-    return thumbnailCropBoxSize(displayedSize, _cropScale);
+  Size _displayedImageSize(Size viewport) {
+    final size = _imageSize!;
+    final factor =
+        _diameter(viewport) * _cropScale / math.min(size.width, size.height);
+    return Size(size.width * factor, size.height * factor);
   }
 
   void _onScaleStart(ScaleStartDetails details) {
@@ -129,15 +127,15 @@ class _ThumbnailCropDialogState extends State<ThumbnailCropDialog> {
 
   void _moveCropBy(Offset delta, Size displaySize) {
     final displayedSize = _displayedImageSize(displaySize);
-    final cropSize = _cropBoxSize(displayedSize);
+    final cropSize = Size.square(_diameter(displaySize));
     final maxOffsetX = (displayedSize.width - cropSize.width) / 2;
     final maxOffsetY = (displayedSize.height - cropSize.height) / 2;
 
     if (maxOffsetX > 0) {
-      _cropX = (_cropX + delta.dx / maxOffsetX).clamp(-1.0, 1.0);
+      _cropX = (_cropX - delta.dx / maxOffsetX).clamp(-1.0, 1.0);
     }
     if (maxOffsetY > 0) {
-      _cropY = (_cropY + delta.dy / maxOffsetY).clamp(-1.0, 1.0);
+      _cropY = (_cropY - delta.dy / maxOffsetY).clamp(-1.0, 1.0);
     }
   }
 
@@ -268,14 +266,17 @@ class _ThumbnailCropDialogState extends State<ThumbnailCropDialog> {
     }
 
     final displayedSize = _displayedImageSize(displaySize);
-    final cropSize = _cropBoxSize(displayedSize);
-    final imageOffsetX = (displaySize.width - displayedSize.width) / 2;
-    final imageOffsetY = (displaySize.height - displayedSize.height) / 2;
-    final cropRect = thumbnailCropRect(
-      displayedSize: displayedSize,
-      cropBoxSize: cropSize,
-      offsetX: _cropX,
-      offsetY: _cropY,
+    final cropSize = Size.square(_diameter(displaySize));
+    final imageOffsetX =
+        (displaySize.width - displayedSize.width) / 2 -
+        _cropX * (displayedSize.width - cropSize.width) / 2;
+    final imageOffsetY =
+        (displaySize.height - displayedSize.height) / 2 -
+        _cropY * (displayedSize.height - cropSize.height) / 2;
+    final cropRect = Rect.fromCenter(
+      center: displaySize.center(Offset.zero),
+      width: cropSize.width,
+      height: cropSize.height,
     );
 
     return Listener(
@@ -325,22 +326,23 @@ class _ThumbnailCropDialogState extends State<ThumbnailCropDialog> {
                   ),
                 ),
                 Positioned(
-                  left: imageOffsetX,
-                  top: imageOffsetY,
+                  left: 0,
+                  top: 0,
                   child: CustomPaint(
-                    size: displayedSize,
+                    size: displaySize,
                     painter: _CropOverlayPainter(cropRect: cropRect),
                   ),
                 ),
                 Positioned(
-                  left: imageOffsetX + cropRect.left,
-                  top: imageOffsetY + cropRect.top,
+                  left: cropRect.left,
+                  top: cropRect.top,
                   child: IgnorePointer(
                     child: Container(
                       key: const ValueKey('thumbnail-crop-selection'),
                       width: cropSize.width,
                       height: cropSize.height,
                       decoration: BoxDecoration(
+                        shape: BoxShape.circle,
                         border: Border.all(color: Colors.white, width: 2),
                         boxShadow: [
                           BoxShadow(
@@ -348,13 +350,6 @@ class _ThumbnailCropDialogState extends State<ThumbnailCropDialog> {
                             blurRadius: 4,
                           ),
                         ],
-                      ),
-                      child: const Center(
-                        child: Icon(
-                          Icons.open_with,
-                          color: Colors.white,
-                          size: 24,
-                        ),
                       ),
                     ),
                   ),
@@ -450,7 +445,7 @@ class _CropOverlayPainter extends CustomPainter {
     // 使用混合模式清除中间区域
     final clearPaint = Paint()..blendMode = BlendMode.clear;
 
-    canvas.drawRect(cropRect, clearPaint);
+    canvas.drawOval(cropRect, clearPaint);
 
     canvas.restore();
   }

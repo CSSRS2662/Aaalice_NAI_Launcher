@@ -11,3 +11,4 @@ export 'send_to_home_dialog.dart';
 export 'tag_library_drop_menu.dart';
 export 'tag_library_toolbar.dart';
 export 'thumbnail_crop_dialog.dart';
+export 'thumbnail_gallery_picker_dialog.dart';

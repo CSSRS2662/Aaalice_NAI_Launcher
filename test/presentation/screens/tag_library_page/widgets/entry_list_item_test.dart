@@ -5,6 +5,7 @@ import 'package:nai_launcher/data/models/tag_library/tag_library_entry.dart';
 import 'package:nai_launcher/l10n/app_localizations.dart';
 import 'package:nai_launcher/presentation/screens/tag_library_page/widgets/entry_list_item.dart';
 import 'package:nai_launcher/presentation/widgets/common/library_card_badges.dart';
+import 'package:nai_launcher/presentation/screens/tag_library_page/widgets/entry_avatar.dart';
 
 void main() {
   testWidgets('列表模式按可用宽度展示完整提示词摘要', (tester) async {
@@ -85,11 +86,7 @@ void main() {
     final restingItemRect = tester.getRect(item);
     final restingPromptSize = tester.getSize(prompt);
     final theme = Theme.of(tester.element(item));
-    final placeholder = find.byIcon(Icons.image_outlined);
-    final thumbnail = find
-        .ancestor(of: placeholder, matching: find.byType(Container))
-        .first;
-    expect(tester.getSize(thumbnail), const Size(64, 64));
+    expect(tester.getSize(find.byType(EntryAvatar)), const Size(48, 48));
     final favoriteBadge = find.byType(LibraryCardFavoriteBadge);
     final favoriteIcon = find.descendant(
       of: favoriteBadge,

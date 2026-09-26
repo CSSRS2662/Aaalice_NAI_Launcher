@@ -52,9 +52,17 @@ class GroupedEntriesView extends ConsumerWidget {
           SliverPadding(
             padding: const EdgeInsets.all(16),
             sliver: SliverGrid(
-              gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
-                maxCrossAxisExtent: 240,
-                mainAxisExtent: 80,
+              gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
+                maxCrossAxisExtent:
+                    MediaQuery.sizeOf(context).width < 380 ||
+                        MediaQuery.textScalerOf(context).scale(1) > 1.3
+                    ? MediaQuery.sizeOf(context).width
+                    : 240,
+                mainAxisExtent:
+                    68 +
+                    (MediaQuery.textScalerOf(context).scale(1).clamp(1.0, 3.0) -
+                            1) *
+                        40,
                 mainAxisSpacing: 12,
                 crossAxisSpacing: 12,
               ),
