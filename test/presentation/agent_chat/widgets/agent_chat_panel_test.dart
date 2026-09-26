@@ -585,18 +585,19 @@ void main() {
       await tester.tap(image, buttons: kSecondaryMouseButton);
       await tester.pump();
       for (final label in [
-        'Send to Text to Image',
+        'Reuse Parameters',
         'Send to Image2Image',
         'Send to Reverse Prompt',
         'Send to Vibe Transfer',
         'Send to Precise Reference',
         'Save to Precise Ref Library',
-        'Send to Krita',
         'Upscale',
-        'Share to Discord',
       ]) {
         expect(find.text(label), findsOneWidget, reason: label);
       }
+      // Aaalice Pocket 的图片菜单不提供 Krita 与 Discord 入口。
+      expect(find.text('Send to Krita'), findsNothing);
+      expect(find.text('Share to Discord'), findsNothing);
       await tester.tapAt(Offset.zero);
       await tester.pump();
 

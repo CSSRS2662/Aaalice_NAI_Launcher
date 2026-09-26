@@ -223,7 +223,7 @@ void main() {
       expect(projectIcon.image, isA<AssetImage>());
       expect(
         (projectIcon.image as AssetImage).assetName,
-        'assets/icons/Icon.png',
+        'android/app/src/main/res/mipmap-xxxhdpi/ic_launcher.png',
       );
       expect(
         tester.getSize(
@@ -268,7 +268,7 @@ void main() {
         '关闭窗口',
       );
 
-      final title = tester.getSemantics(find.text('NAI Launcher'));
+      final title = tester.getSemantics(find.text('Aaalice Pocket'));
       expect(title.flagsCollection.isHeader, isTrue);
       expect(title.headingLevel, 1);
     },
