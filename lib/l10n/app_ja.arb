@@ -7142,5 +7142,71 @@
         "format": "yMMMd"
       }
     }
+  },
+  "stamina_title": "V5 スタミナ",
+  "stamina_subtitle": "時間とともに回復する Opus の利用上限",
+  "stamina_barSemantics": "V5 スタミナ {percent}、タップで詳細",
+  "@stamina_barSemantics": {
+    "placeholders": {
+      "percent": {}
+    }
+  },
+  "stamina_stateAvailable": "利用可能",
+  "stamina_stateLow": "残りわずか",
+  "stamina_stateExhausted": "使い切りました",
+  "stamina_stateBonus": "ボーナス込み",
+  "stamina_estimateImages": "現在の設定で生成可能",
+  "stamina_imagesValue": "約 {count} 枚",
+  "@stamina_imagesValue": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "stamina_notConsumed": "スタミナを消費しません",
+  "stamina_nextPercent": "次の +1%",
+  "stamina_timeToFull": "全回復まで（目安）",
+  "stamina_full": "満タン",
+  "stamina_overCap": "上限超過のため回復停止中",
+  "stamina_hoursMinutes": "{hours}時間{minutes}分",
+  "@stamina_hoursMinutes": {
+    "placeholders": {
+      "hours": {},
+      "minutes": {}
+    }
+  },
+  "stamina_aboutDaysHours": "約{days}日{hours}時間",
+  "@stamina_aboutDaysHours": {
+    "placeholders": {
+      "days": {},
+      "hours": {}
+    }
+  },
+  "stamina_aboutHours": "約{hours}時間",
+  "@stamina_aboutHours": {
+    "placeholders": {
+      "hours": {}
+    }
+  },
+  "stamina_exhaustedNote": "スタミナを使い切ったため、回復するまで V5 の生成は Anlas で課金されます。",
+  "stamina_rateNote": "回復速度はサブスクリプションの期間で変わり、1 日あたり約 11〜14% です。全回復までの時間は目安です。",
+  "stamina_rulesTitle": "ルール",
+  "stamina_ruleConsumes": "スタミナを消費：V5・標準サイズ（面積 1024×1024 以下）・28 ステップ以下の、各リクエストの 1 枚目。",
+  "stamina_ruleAnlas": "Anlas で課金：大きいサイズ、28 ステップ超、1 回のリクエストで複数枚を生成するときの 2 枚目以降、スタミナ切れ後の生成。",
+  "stamina_ruleOtherModels": "V4.5 以前のモデルはスタミナの制限を受けません。",
+  "stamina_anlasBalance": "Anlas 残高",
+  "stamina_thisGeneration": "今回の生成",
+  "stamina_costStamina": "スタミナ",
+  "stamina_costFree": "無料",
+  "stamina_costStaminaAndAnlas": "スタミナ + {cost} Anlas",
+  "@stamina_costStaminaAndAnlas": {
+    "placeholders": {
+      "cost": {}
+    }
+  },
+  "stamina_costAnlas": "{cost} Anlas",
+  "@stamina_costAnlas": {
+    "placeholders": {
+      "cost": {}
+    }
   }
 }

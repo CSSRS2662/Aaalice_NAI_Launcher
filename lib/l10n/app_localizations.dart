@@ -26931,6 +26931,180 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Subscription expiry: {date}'**
   String settings_subscriptionExpiresOn(DateTime date);
+
+  /// No description provided for @stamina_title.
+  ///
+  /// In en, this message translates to:
+  /// **'V5 stamina'**
+  String get stamina_title;
+
+  /// No description provided for @stamina_subtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Opus usage limit that recharges over time'**
+  String get stamina_subtitle;
+
+  /// No description provided for @stamina_barSemantics.
+  ///
+  /// In en, this message translates to:
+  /// **'V5 stamina {percent}, tap for details'**
+  String stamina_barSemantics(Object percent);
+
+  /// No description provided for @stamina_stateAvailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Available'**
+  String get stamina_stateAvailable;
+
+  /// No description provided for @stamina_stateLow.
+  ///
+  /// In en, this message translates to:
+  /// **'Low'**
+  String get stamina_stateLow;
+
+  /// No description provided for @stamina_stateExhausted.
+  ///
+  /// In en, this message translates to:
+  /// **'Depleted'**
+  String get stamina_stateExhausted;
+
+  /// No description provided for @stamina_stateBonus.
+  ///
+  /// In en, this message translates to:
+  /// **'Includes bonus'**
+  String get stamina_stateBonus;
+
+  /// No description provided for @stamina_estimateImages.
+  ///
+  /// In en, this message translates to:
+  /// **'At current settings'**
+  String get stamina_estimateImages;
+
+  /// No description provided for @stamina_imagesValue.
+  ///
+  /// In en, this message translates to:
+  /// **'About {count} images'**
+  String stamina_imagesValue(Object count);
+
+  /// No description provided for @stamina_notConsumed.
+  ///
+  /// In en, this message translates to:
+  /// **'Stamina not used'**
+  String get stamina_notConsumed;
+
+  /// No description provided for @stamina_nextPercent.
+  ///
+  /// In en, this message translates to:
+  /// **'Next +1%'**
+  String get stamina_nextPercent;
+
+  /// No description provided for @stamina_timeToFull.
+  ///
+  /// In en, this message translates to:
+  /// **'Full in (estimate)'**
+  String get stamina_timeToFull;
+
+  /// No description provided for @stamina_full.
+  ///
+  /// In en, this message translates to:
+  /// **'Full'**
+  String get stamina_full;
+
+  /// No description provided for @stamina_overCap.
+  ///
+  /// In en, this message translates to:
+  /// **'Above cap, recharge paused'**
+  String get stamina_overCap;
+
+  /// No description provided for @stamina_hoursMinutes.
+  ///
+  /// In en, this message translates to:
+  /// **'{hours}h {minutes}m'**
+  String stamina_hoursMinutes(Object hours, Object minutes);
+
+  /// No description provided for @stamina_aboutDaysHours.
+  ///
+  /// In en, this message translates to:
+  /// **'About {days}d {hours}h'**
+  String stamina_aboutDaysHours(Object days, Object hours);
+
+  /// No description provided for @stamina_aboutHours.
+  ///
+  /// In en, this message translates to:
+  /// **'About {hours}h'**
+  String stamina_aboutHours(Object hours);
+
+  /// No description provided for @stamina_exhaustedNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Stamina is depleted, so V5 generations are billed in Anlas until it recharges.'**
+  String get stamina_exhaustedNote;
+
+  /// No description provided for @stamina_rateNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Recharge speed depends on subscription age, about 11–14% per day; the time to full is an estimate.'**
+  String get stamina_rateNote;
+
+  /// No description provided for @stamina_rulesTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Rules'**
+  String get stamina_rulesTitle;
+
+  /// No description provided for @stamina_ruleConsumes.
+  ///
+  /// In en, this message translates to:
+  /// **'Uses stamina: V5 at normal size (up to a 1024×1024 area) and at most 28 steps, for the first image of each request.'**
+  String get stamina_ruleConsumes;
+
+  /// No description provided for @stamina_ruleAnlas.
+  ///
+  /// In en, this message translates to:
+  /// **'Billed in Anlas: large sizes, more than 28 steps, extra images in a multi-image request, and generations after stamina runs out.'**
+  String get stamina_ruleAnlas;
+
+  /// No description provided for @stamina_ruleOtherModels.
+  ///
+  /// In en, this message translates to:
+  /// **'V4.5 and earlier models are not limited by stamina.'**
+  String get stamina_ruleOtherModels;
+
+  /// No description provided for @stamina_anlasBalance.
+  ///
+  /// In en, this message translates to:
+  /// **'Anlas balance'**
+  String get stamina_anlasBalance;
+
+  /// No description provided for @stamina_thisGeneration.
+  ///
+  /// In en, this message translates to:
+  /// **'This generation'**
+  String get stamina_thisGeneration;
+
+  /// No description provided for @stamina_costStamina.
+  ///
+  /// In en, this message translates to:
+  /// **'Stamina'**
+  String get stamina_costStamina;
+
+  /// No description provided for @stamina_costFree.
+  ///
+  /// In en, this message translates to:
+  /// **'Free'**
+  String get stamina_costFree;
+
+  /// No description provided for @stamina_costStaminaAndAnlas.
+  ///
+  /// In en, this message translates to:
+  /// **'Stamina + {cost} Anlas'**
+  String stamina_costStaminaAndAnlas(Object cost);
+
+  /// No description provided for @stamina_costAnlas.
+  ///
+  /// In en, this message translates to:
+  /// **'{cost} Anlas'**
+  String stamina_costAnlas(Object cost);
 }
 
 class _AppLocalizationsDelegate

@@ -14811,6 +14811,109 @@ class AppLocalizationsZh extends AppLocalizations {
 
     return '会员到期日期：$dateString';
   }
+
+  @override
+  String get stamina_title => 'V5 体力';
+
+  @override
+  String get stamina_subtitle => 'Opus 使用上限，随时间自动回充';
+
+  @override
+  String stamina_barSemantics(Object percent) {
+    return 'V5 体力 $percent，点按查看详情';
+  }
+
+  @override
+  String get stamina_stateAvailable => '可用';
+
+  @override
+  String get stamina_stateLow => '偏低';
+
+  @override
+  String get stamina_stateExhausted => '已耗尽';
+
+  @override
+  String get stamina_stateBonus => '含活动加成';
+
+  @override
+  String get stamina_estimateImages => '当前设置约可生成';
+
+  @override
+  String stamina_imagesValue(Object count) {
+    return '约 $count 张';
+  }
+
+  @override
+  String get stamina_notConsumed => '当前设置不消耗体力';
+
+  @override
+  String get stamina_nextPercent => '下一个 1% 回充';
+
+  @override
+  String get stamina_timeToFull => '回满（估算）';
+
+  @override
+  String get stamina_full => '已满';
+
+  @override
+  String get stamina_overCap => '超出上限，暂停回充';
+
+  @override
+  String stamina_hoursMinutes(Object hours, Object minutes) {
+    return '$hours 小时 $minutes 分';
+  }
+
+  @override
+  String stamina_aboutDaysHours(Object days, Object hours) {
+    return '约 $days 天 $hours 小时';
+  }
+
+  @override
+  String stamina_aboutHours(Object hours) {
+    return '约 $hours 小时';
+  }
+
+  @override
+  String get stamina_exhaustedNote => '体力已耗尽，V5 生成改按 Anlas 计费；体力自动回充后恢复免费生成。';
+
+  @override
+  String get stamina_rateNote => '回充速度随订阅时长不同，约每天 11%–14%，回满时间按此估算。';
+
+  @override
+  String get stamina_rulesTitle => '规则';
+
+  @override
+  String get stamina_ruleConsumes =>
+      '消耗体力：V5，标准尺寸（面积不超过 1024×1024），不超过 28 步，每个请求的第一张。';
+
+  @override
+  String get stamina_ruleAnlas =>
+      '按 Anlas 计费：大尺寸、超过 28 步、一次请求多张时的其余张数，以及体力耗尽后的生成。';
+
+  @override
+  String get stamina_ruleOtherModels => 'V4.5 及更早模型不受体力限制。';
+
+  @override
+  String get stamina_anlasBalance => 'Anlas 余额';
+
+  @override
+  String get stamina_thisGeneration => '本次生成';
+
+  @override
+  String get stamina_costStamina => '体力';
+
+  @override
+  String get stamina_costFree => '免费';
+
+  @override
+  String stamina_costStaminaAndAnlas(Object cost) {
+    return '体力 + $cost Anlas';
+  }
+
+  @override
+  String stamina_costAnlas(Object cost) {
+    return '$cost Anlas';
+  }
 }
 
 /// The translations for Chinese, using the Han script (`zh_Hant`).
@@ -29620,5 +29723,108 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
     final String dateString = dateDateFormat.format(date);
 
     return '會員到期日期：$dateString';
+  }
+
+  @override
+  String get stamina_title => 'V5 體力';
+
+  @override
+  String get stamina_subtitle => 'Opus 使用上限，隨時間自動回充';
+
+  @override
+  String stamina_barSemantics(Object percent) {
+    return 'V5 體力 $percent，點按查看詳情';
+  }
+
+  @override
+  String get stamina_stateAvailable => '可用';
+
+  @override
+  String get stamina_stateLow => '偏低';
+
+  @override
+  String get stamina_stateExhausted => '已耗盡';
+
+  @override
+  String get stamina_stateBonus => '含活動加成';
+
+  @override
+  String get stamina_estimateImages => '目前設定約可生成';
+
+  @override
+  String stamina_imagesValue(Object count) {
+    return '約 $count 張';
+  }
+
+  @override
+  String get stamina_notConsumed => '目前設定不消耗體力';
+
+  @override
+  String get stamina_nextPercent => '下一個 1% 回充';
+
+  @override
+  String get stamina_timeToFull => '回滿（估算）';
+
+  @override
+  String get stamina_full => '已滿';
+
+  @override
+  String get stamina_overCap => '超出上限，暫停回充';
+
+  @override
+  String stamina_hoursMinutes(Object hours, Object minutes) {
+    return '$hours 小時 $minutes 分';
+  }
+
+  @override
+  String stamina_aboutDaysHours(Object days, Object hours) {
+    return '約 $days 天 $hours 小時';
+  }
+
+  @override
+  String stamina_aboutHours(Object hours) {
+    return '約 $hours 小時';
+  }
+
+  @override
+  String get stamina_exhaustedNote => '體力已耗盡，V5 生成改按 Anlas 計費；體力自動回充後恢復免費生成。';
+
+  @override
+  String get stamina_rateNote => '回充速度隨訂閱時長不同，約每天 11%–14%，回滿時間依此估算。';
+
+  @override
+  String get stamina_rulesTitle => '規則';
+
+  @override
+  String get stamina_ruleConsumes =>
+      '消耗體力：V5，標準尺寸（面積不超過 1024×1024），不超過 28 步，每個請求的第一張。';
+
+  @override
+  String get stamina_ruleAnlas =>
+      '按 Anlas 計費：大尺寸、超過 28 步、一次請求多張時的其餘張數，以及體力耗盡後的生成。';
+
+  @override
+  String get stamina_ruleOtherModels => 'V4.5 及更早模型不受體力限制。';
+
+  @override
+  String get stamina_anlasBalance => 'Anlas 餘額';
+
+  @override
+  String get stamina_thisGeneration => '本次生成';
+
+  @override
+  String get stamina_costStamina => '體力';
+
+  @override
+  String get stamina_costFree => '免費';
+
+  @override
+  String stamina_costStaminaAndAnlas(Object cost) {
+    return '體力 + $cost Anlas';
+  }
+
+  @override
+  String stamina_costAnlas(Object cost) {
+    return '$cost Anlas';
   }
 }

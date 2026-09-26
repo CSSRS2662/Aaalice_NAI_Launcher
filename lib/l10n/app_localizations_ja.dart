@@ -15077,4 +15077,109 @@ class AppLocalizationsJa extends AppLocalizations {
 
     return 'メンバーシップ有効期限：$dateString';
   }
+
+  @override
+  String get stamina_title => 'V5 スタミナ';
+
+  @override
+  String get stamina_subtitle => '時間とともに回復する Opus の利用上限';
+
+  @override
+  String stamina_barSemantics(Object percent) {
+    return 'V5 スタミナ $percent、タップで詳細';
+  }
+
+  @override
+  String get stamina_stateAvailable => '利用可能';
+
+  @override
+  String get stamina_stateLow => '残りわずか';
+
+  @override
+  String get stamina_stateExhausted => '使い切りました';
+
+  @override
+  String get stamina_stateBonus => 'ボーナス込み';
+
+  @override
+  String get stamina_estimateImages => '現在の設定で生成可能';
+
+  @override
+  String stamina_imagesValue(Object count) {
+    return '約 $count 枚';
+  }
+
+  @override
+  String get stamina_notConsumed => 'スタミナを消費しません';
+
+  @override
+  String get stamina_nextPercent => '次の +1%';
+
+  @override
+  String get stamina_timeToFull => '全回復まで（目安）';
+
+  @override
+  String get stamina_full => '満タン';
+
+  @override
+  String get stamina_overCap => '上限超過のため回復停止中';
+
+  @override
+  String stamina_hoursMinutes(Object hours, Object minutes) {
+    return '$hours時間$minutes分';
+  }
+
+  @override
+  String stamina_aboutDaysHours(Object days, Object hours) {
+    return '約$days日$hours時間';
+  }
+
+  @override
+  String stamina_aboutHours(Object hours) {
+    return '約$hours時間';
+  }
+
+  @override
+  String get stamina_exhaustedNote =>
+      'スタミナを使い切ったため、回復するまで V5 の生成は Anlas で課金されます。';
+
+  @override
+  String get stamina_rateNote =>
+      '回復速度はサブスクリプションの期間で変わり、1 日あたり約 11〜14% です。全回復までの時間は目安です。';
+
+  @override
+  String get stamina_rulesTitle => 'ルール';
+
+  @override
+  String get stamina_ruleConsumes =>
+      'スタミナを消費：V5・標準サイズ（面積 1024×1024 以下）・28 ステップ以下の、各リクエストの 1 枚目。';
+
+  @override
+  String get stamina_ruleAnlas =>
+      'Anlas で課金：大きいサイズ、28 ステップ超、1 回のリクエストで複数枚を生成するときの 2 枚目以降、スタミナ切れ後の生成。';
+
+  @override
+  String get stamina_ruleOtherModels => 'V4.5 以前のモデルはスタミナの制限を受けません。';
+
+  @override
+  String get stamina_anlasBalance => 'Anlas 残高';
+
+  @override
+  String get stamina_thisGeneration => '今回の生成';
+
+  @override
+  String get stamina_costStamina => 'スタミナ';
+
+  @override
+  String get stamina_costFree => '無料';
+
+  @override
+  String stamina_costStaminaAndAnlas(Object cost) {
+    return 'スタミナ + $cost Anlas';
+  }
+
+  @override
+  String stamina_costAnlas(Object cost) {
+    return '$cost Anlas';
+  }
 }

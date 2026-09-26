@@ -7119,5 +7119,71 @@
         "format": "yMMMd"
       }
     }
+  },
+  "stamina_title": "V5 stamina",
+  "stamina_subtitle": "Opus usage limit that recharges over time",
+  "stamina_barSemantics": "V5 stamina {percent}, tap for details",
+  "@stamina_barSemantics": {
+    "placeholders": {
+      "percent": {}
+    }
+  },
+  "stamina_stateAvailable": "Available",
+  "stamina_stateLow": "Low",
+  "stamina_stateExhausted": "Depleted",
+  "stamina_stateBonus": "Includes bonus",
+  "stamina_estimateImages": "At current settings",
+  "stamina_imagesValue": "About {count} images",
+  "@stamina_imagesValue": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "stamina_notConsumed": "Stamina not used",
+  "stamina_nextPercent": "Next +1%",
+  "stamina_timeToFull": "Full in (estimate)",
+  "stamina_full": "Full",
+  "stamina_overCap": "Above cap, recharge paused",
+  "stamina_hoursMinutes": "{hours}h {minutes}m",
+  "@stamina_hoursMinutes": {
+    "placeholders": {
+      "hours": {},
+      "minutes": {}
+    }
+  },
+  "stamina_aboutDaysHours": "About {days}d {hours}h",
+  "@stamina_aboutDaysHours": {
+    "placeholders": {
+      "days": {},
+      "hours": {}
+    }
+  },
+  "stamina_aboutHours": "About {hours}h",
+  "@stamina_aboutHours": {
+    "placeholders": {
+      "hours": {}
+    }
+  },
+  "stamina_exhaustedNote": "Stamina is depleted, so V5 generations are billed in Anlas until it recharges.",
+  "stamina_rateNote": "Recharge speed depends on subscription age, about 11–14% per day; the time to full is an estimate.",
+  "stamina_rulesTitle": "Rules",
+  "stamina_ruleConsumes": "Uses stamina: V5 at normal size (up to a 1024×1024 area) and at most 28 steps, for the first image of each request.",
+  "stamina_ruleAnlas": "Billed in Anlas: large sizes, more than 28 steps, extra images in a multi-image request, and generations after stamina runs out.",
+  "stamina_ruleOtherModels": "V4.5 and earlier models are not limited by stamina.",
+  "stamina_anlasBalance": "Anlas balance",
+  "stamina_thisGeneration": "This generation",
+  "stamina_costStamina": "Stamina",
+  "stamina_costFree": "Free",
+  "stamina_costStaminaAndAnlas": "Stamina + {cost} Anlas",
+  "@stamina_costStaminaAndAnlas": {
+    "placeholders": {
+      "cost": {}
+    }
+  },
+  "stamina_costAnlas": "{cost} Anlas",
+  "@stamina_costAnlas": {
+    "placeholders": {
+      "cost": {}
+    }
   }
 }

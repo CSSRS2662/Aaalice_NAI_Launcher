@@ -7188,5 +7188,71 @@
         "format": "yMMMd"
       }
     }
+  },
+  "stamina_title": "V5 体力",
+  "stamina_subtitle": "Opus 使用上限，随时间自动回充",
+  "stamina_barSemantics": "V5 体力 {percent}，点按查看详情",
+  "@stamina_barSemantics": {
+    "placeholders": {
+      "percent": {}
+    }
+  },
+  "stamina_stateAvailable": "可用",
+  "stamina_stateLow": "偏低",
+  "stamina_stateExhausted": "已耗尽",
+  "stamina_stateBonus": "含活动加成",
+  "stamina_estimateImages": "当前设置约可生成",
+  "stamina_imagesValue": "约 {count} 张",
+  "@stamina_imagesValue": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "stamina_notConsumed": "当前设置不消耗体力",
+  "stamina_nextPercent": "下一个 1% 回充",
+  "stamina_timeToFull": "回满（估算）",
+  "stamina_full": "已满",
+  "stamina_overCap": "超出上限，暂停回充",
+  "stamina_hoursMinutes": "{hours} 小时 {minutes} 分",
+  "@stamina_hoursMinutes": {
+    "placeholders": {
+      "hours": {},
+      "minutes": {}
+    }
+  },
+  "stamina_aboutDaysHours": "约 {days} 天 {hours} 小时",
+  "@stamina_aboutDaysHours": {
+    "placeholders": {
+      "days": {},
+      "hours": {}
+    }
+  },
+  "stamina_aboutHours": "约 {hours} 小时",
+  "@stamina_aboutHours": {
+    "placeholders": {
+      "hours": {}
+    }
+  },
+  "stamina_exhaustedNote": "体力已耗尽，V5 生成改按 Anlas 计费；体力自动回充后恢复免费生成。",
+  "stamina_rateNote": "回充速度随订阅时长不同，约每天 11%–14%，回满时间按此估算。",
+  "stamina_rulesTitle": "规则",
+  "stamina_ruleConsumes": "消耗体力：V5，标准尺寸（面积不超过 1024×1024），不超过 28 步，每个请求的第一张。",
+  "stamina_ruleAnlas": "按 Anlas 计费：大尺寸、超过 28 步、一次请求多张时的其余张数，以及体力耗尽后的生成。",
+  "stamina_ruleOtherModels": "V4.5 及更早模型不受体力限制。",
+  "stamina_anlasBalance": "Anlas 余额",
+  "stamina_thisGeneration": "本次生成",
+  "stamina_costStamina": "体力",
+  "stamina_costFree": "免费",
+  "stamina_costStaminaAndAnlas": "体力 + {cost} Anlas",
+  "@stamina_costStaminaAndAnlas": {
+    "placeholders": {
+      "cost": {}
+    }
+  },
+  "stamina_costAnlas": "{cost} Anlas",
+  "@stamina_costAnlas": {
+    "placeholders": {
+      "cost": {}
+    }
   }
 }

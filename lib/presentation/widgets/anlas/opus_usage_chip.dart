@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/services/opus_usage_estimator.dart';
 import '../../../core/utils/localization_extension.dart';
 import '../../../data/models/image/image_params.dart';
 import '../../providers/cost_estimate_provider.dart';
@@ -19,24 +20,6 @@ class OpusUsageChip extends ConsumerWidget {
   final bool compact;
 
   const OpusUsageChip({super.key, this.compact = false});
-
-  /// 网页端按 1% ≈ 17.3 张估算剩余可生成数（1MP 以内 1 份/张口径）。
-  static const double _imagesPerPercent = 17.3;
-
-  /// 网页端的面积扣份档位：大图一张消耗多份配额。
-  static const List<(int, int)> _quotaUnitTiers = [
-    (1048576, 1),
-    (1747627, 2),
-    (2446678, 3),
-    (3145728, 4),
-  ];
-
-  static int _quotaUnitsForArea(int area) {
-    for (final (maxArea, units) in _quotaUnitTiers) {
-      if (area <= maxArea) return units;
-    }
-    return _quotaUnitTiers.last.$2;
-  }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -73,8 +56,10 @@ class OpusUsageChip extends ConsumerWidget {
         ? theme.colorScheme.error
         : theme.colorScheme.primary;
     // 按当前生成尺寸折算：大图一张消耗多份配额，估算张数随之缩减。
-    final quotaUnits = _quotaUnitsForArea(modelInfo.area);
-    final estimatedImages = (percent * _imagesPerPercent / quotaUnits).round();
+    final estimatedImages = OpusUsageEstimator.estimateImages(
+      percent: percent,
+      area: modelInfo.area,
+    );
 
     final tooltip = exhausted
         ? l10n.generation_opusUsageExhausted

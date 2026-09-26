@@ -15493,4 +15493,110 @@ class AppLocalizationsEn extends AppLocalizations {
 
     return 'Subscription expiry: $dateString';
   }
+
+  @override
+  String get stamina_title => 'V5 stamina';
+
+  @override
+  String get stamina_subtitle => 'Opus usage limit that recharges over time';
+
+  @override
+  String stamina_barSemantics(Object percent) {
+    return 'V5 stamina $percent, tap for details';
+  }
+
+  @override
+  String get stamina_stateAvailable => 'Available';
+
+  @override
+  String get stamina_stateLow => 'Low';
+
+  @override
+  String get stamina_stateExhausted => 'Depleted';
+
+  @override
+  String get stamina_stateBonus => 'Includes bonus';
+
+  @override
+  String get stamina_estimateImages => 'At current settings';
+
+  @override
+  String stamina_imagesValue(Object count) {
+    return 'About $count images';
+  }
+
+  @override
+  String get stamina_notConsumed => 'Stamina not used';
+
+  @override
+  String get stamina_nextPercent => 'Next +1%';
+
+  @override
+  String get stamina_timeToFull => 'Full in (estimate)';
+
+  @override
+  String get stamina_full => 'Full';
+
+  @override
+  String get stamina_overCap => 'Above cap, recharge paused';
+
+  @override
+  String stamina_hoursMinutes(Object hours, Object minutes) {
+    return '${hours}h ${minutes}m';
+  }
+
+  @override
+  String stamina_aboutDaysHours(Object days, Object hours) {
+    return 'About ${days}d ${hours}h';
+  }
+
+  @override
+  String stamina_aboutHours(Object hours) {
+    return 'About ${hours}h';
+  }
+
+  @override
+  String get stamina_exhaustedNote =>
+      'Stamina is depleted, so V5 generations are billed in Anlas until it recharges.';
+
+  @override
+  String get stamina_rateNote =>
+      'Recharge speed depends on subscription age, about 11–14% per day; the time to full is an estimate.';
+
+  @override
+  String get stamina_rulesTitle => 'Rules';
+
+  @override
+  String get stamina_ruleConsumes =>
+      'Uses stamina: V5 at normal size (up to a 1024×1024 area) and at most 28 steps, for the first image of each request.';
+
+  @override
+  String get stamina_ruleAnlas =>
+      'Billed in Anlas: large sizes, more than 28 steps, extra images in a multi-image request, and generations after stamina runs out.';
+
+  @override
+  String get stamina_ruleOtherModels =>
+      'V4.5 and earlier models are not limited by stamina.';
+
+  @override
+  String get stamina_anlasBalance => 'Anlas balance';
+
+  @override
+  String get stamina_thisGeneration => 'This generation';
+
+  @override
+  String get stamina_costStamina => 'Stamina';
+
+  @override
+  String get stamina_costFree => 'Free';
+
+  @override
+  String stamina_costStaminaAndAnlas(Object cost) {
+    return 'Stamina + $cost Anlas';
+  }
+
+  @override
+  String stamina_costAnlas(Object cost) {
+    return '$cost Anlas';
+  }
 }
