@@ -3,70 +3,70 @@ version: alpha
 name: Aaalice NAI Launcher
 description: Quiet Layered Utility for a local-first, cross-platform NovelAI creative workspace
 colors:
-  primary: "#F0EAD6"
-  on-primary: "#1A1A1A"
-  primary-container: "#5C4A3D"
-  on-primary-container: "#FFF5EE"
-  secondary: "#DC143C"
-  on-secondary: "#FFFFFF"
-  tertiary: "#D2691E"
-  on-tertiary: "#281406"
-  surface: "#1A1A1A"
-  on-surface: "#F0EAD6"
-  on-surface-variant: "#D4CFC0"
-  outline: "#525252"
-  error: "#DC143C"
-  error-container: "#5C1A1A"
+  primary: "#EF8558"
+  on-primary: "#2A1208"
+  primary-container: "#5A2A17"
+  on-primary-container: "#FFDBCB"
+  secondary: "#B5ACA2"
+  on-secondary: "#1A1816"
+  tertiary: "#8FB5FF"
+  on-tertiary: "#0E2250"
+  surface: "#1A1816"
+  surface-container-low: "#23201D"
+  surface-container: "#2D2926"
+  surface-container-high: "#332F2B"
+  surface-container-highest: "#3B3632"
+  on-surface: "#F3EFE9"
+  on-surface-variant: "#B5ACA2"
+  outline: "#857D74"
+  error: "#FF8A80"
+  error-container: "#5C1A16"
   on-error-container: "#FFDAD6"
 typography:
   display-large:
-    fontFamily: "Oswald"
+    fontFamily: "Manrope"
     fontSize: "57px"
-    fontWeight: 400
-    letterSpacing: "-0.25px"
-  headline-small:
-    fontFamily: "Oswald"
-    fontSize: "24px"
     fontWeight: 600
+    letterSpacing: "-1px"
+  headline-small:
+    fontFamily: "Manrope"
+    fontSize: "24px"
+    fontWeight: 700
+    letterSpacing: "-0.2px"
   title-large:
-    fontFamily: "Oswald"
-    fontSize: "22px"
-    fontWeight: 500
+    fontFamily: "Manrope"
+    fontSize: "20px"
+    fontWeight: 700
+    letterSpacing: "-0.1px"
   title-medium:
-    fontFamily: "Courier Prime"
+    fontFamily: "Manrope"
     fontSize: "16px"
-    fontWeight: 500
-    letterSpacing: "0.15px"
+    fontWeight: 700
   body-large:
-    fontFamily: "Courier Prime"
+    fontFamily: "Manrope"
     fontSize: "16px"
-    fontWeight: 400
-    letterSpacing: "0.5px"
+    fontWeight: 500
   body-medium:
-    fontFamily: "Courier Prime"
+    fontFamily: "Manrope"
     fontSize: "14px"
-    fontWeight: 400
-    letterSpacing: "0.25px"
+    fontWeight: 500
   body-small:
-    fontFamily: "Courier Prime"
+    fontFamily: "Manrope"
     fontSize: "12px"
-    fontWeight: 400
-    letterSpacing: "0.4px"
+    fontWeight: 500
   label-large:
-    fontFamily: "Courier Prime"
+    fontFamily: "Manrope"
     fontSize: "14px"
-    fontWeight: 500
-    letterSpacing: "0.1px"
+    fontWeight: 700
   label-medium:
-    fontFamily: "Courier Prime"
+    fontFamily: "Manrope"
     fontSize: "12px"
-    fontWeight: 500
-    letterSpacing: "0.5px"
+    fontWeight: 600
 rounded:
-  sm: "4px"
-  md: "6px"
-  lg: "8px"
-  xl: "12px"
+  sm: "10px"
+  md: "12px"
+  lg: "16px"
+  xl: "16px"
   panel: "24px"
   pill: "100px"
 spacing:
@@ -127,7 +127,7 @@ components:
 
 Aaalice NAI Launcher 是高频创作工具，而不是视觉陈列品。Prompt、图像、参数、状态和操作是视觉主体；容器、主题装饰与品牌表达退到背景，只在帮助理解任务时出现。整体气质克制、专业、内容优先，默认状态安静，交互状态清楚而及时。
 
-系统以 Flutter Material 3 为行为基础，以 `ColorScheme`、`TextTheme`、`AppThemeExtension`、`PromptSemanticColors` 和公共组件表达稳定语义。主题可以改变颜色、字体、形状与轻量动效，但不能改变信息架构、操作顺序、密度边界、可访问性或桌面与 Android 的能力等价。frontmatter 记录 Grunge Collage 暗色主题的设计锚点，供阅读与设计参考，不是可直接复制的运行时配置；最终数值以 `ThemeComposer`、palette、typography、shape preset 和公共组件为准，变更时同步核对。其他主题沿用同一语义角色，不创建另一套组件规则。
+系统以 Flutter Material 3 为行为基础，以 `ColorScheme`、`TextTheme`、`AppThemeExtension`、`PromptSemanticColors` 和公共组件表达稳定语义。应用只提供一套 Pocket 主题，分浅色与深色两种明暗，设置里可选“浅色 / 深色 / 跟随系统”；两种明暗共享同一语义角色、组件规则与信息架构。frontmatter 记录深色的设计锚点，供阅读与设计参考，不是可直接复制的运行时配置；最终数值以 `ThemeComposer`、`PocketPalette`、`PocketTypography`、`PocketShapes`、`PocketMotion` 和公共组件为准，变更时同步核对。
 
 **Key Characteristics:**
 
@@ -136,35 +136,35 @@ Aaalice NAI Launcher 是高频创作工具，而不是视觉陈列品。Prompt�
 - 常用控件和重复交互使用同一套共享组件，统一尺寸、间距、视觉状态、命中区和响应式行为。页面只决定内容与挂载位置，不自行复制外观或改写交互；确有语义差异时提供清晰、有限的变体。组件抽取与状态边界遵循 `AGENTS.md` 的代码组织约定。
 - tonal layered 深度：静态内容依赖色面，阴影留给浮层和图像交互。
 - 桌面与移动端共享业务组件、状态和命令，但采用各自自然的导航与输入方式。
-- 多主题共享同一信息层级、语义色、命中区和交互结果。
+- 浅色与深色共享同一信息层级、语义色、命中区和交互结果。
 
 **The Content Before Container Rule.** 如果去掉边框后层级仍然清楚，就不要把边框加回来。
 
 ## Colors
 
-默认主题以旧纸奶油、炭黑画布和猩红信号形成高对比的创作工作台；所有主题都通过 Material 3 语义角色替换色值，组件不得直接依赖某一主题的视觉颜色。
+Pocket 主题以暖中性底色和余烬强调色构成克制的工具界面：浅色是暖白画布上浮起的纯净分组卡片，深色是暖炭画布上逐级提亮的容器。组件只通过 Material 3 语义角色取色，不得直接写死某一种明暗下的颜色。
 
 ### Primary
 
-- **旧纸奶油（`primary`）**：默认暗色主题的主操作、当前选择、焦点和关键进度；使用必须稀少，避免与内容竞争。
-- **深褐容器（`primary-container`）**：选中项、低强调主色背景和需要持续可见的状态。
+- **余烬（`primary`）**：主操作、当前选择、焦点和关键进度；使用必须稀少，避免与内容竞争。浅色 `#C4502A` 配白字，深色 `#EF8558` 配深色字。
+- **余烬容器（`primary-container`）**：选中项、低强调主色背景和需要持续可见的状态。
 
 ### Secondary
 
-- **猩红信号（`secondary`）**：来源强调和少量主题个性；错误语义必须仍通过 `error` 角色表达，即使默认主题两者同色。
+- **暖灰（`secondary`）**：中性的次级强调，不承担品牌表达；错误语义必须通过 `error` 角色表达。
 
 ### Tertiary
 
-- **锈橙辅助（`tertiary`）**：次级分类和辅助强调，不承担主操作。
+- **雾蓝（`tertiary`）**：次级分类和辅助强调（例如标签模式），不承担主操作。
 
 ### Neutral
 
-- **炭黑画布（`surface`）**：页面、工作区和默认暗色表面。
-- **旧纸正文（`on-surface`）**：主文本与默认图标。
-- **暖灰元数据（`on-surface-variant`）**：说明、路径、统计与次级图标。
-- **石墨边界（`outline`）**：必要的结构线、输入轮廓和精确边界，不作为普通容器装饰。
+- **暖白 / 暖炭画布（`surface`）**：页面与工作区底色。
+- **正文（`on-surface`）**：主文本与默认图标。
+- **元数据（`on-surface-variant`）**：说明、路径、统计与次级图标。
+- **边界（`outline`）**：必要的结构线、输入轮廓和精确边界，不作为普通容器装饰。
 
-Material 表面按职责使用：Canvas=`surface`，Section=`surfaceContainerLow`，Control=`surfaceContainer` / `surfaceContainerHighest`，Overlay=`surfaceContainerHigh`。同一页面最多出现三个明显表面层级。
+Material 表面按职责使用：Canvas=`surface`，Section=`surfaceContainerLow`，Control=`surfaceContainer` / `surfaceContainerHighest`，Overlay=`surfaceContainerHigh`。浅色下分组与浮层浮于画布之上、控件压暗于画布；深色下容器逐级提亮。中性色面只带轻微暖调（三通道差不超过 16/255）。同一页面最多出现三个明显表面层级。
 
 ### 跨端中性色面规范
 
@@ -183,7 +183,7 @@ Material 表面按职责使用：Canvas=`surface`，Section=`surfaceContainerLow
 
 ## Typography
 
-默认主题使用 Oswald 构成紧凑标题骨架，以 Courier Prime 承载正文与控制标签；其他主题或用户字体设置可以替换字体族，但必须保留 Material 文字角色、字号层级和可读性。中文正文不额外增加 letter spacing。
+主题使用 Manrope：标题靠字重和略收的字距建立层级，正文与标签不额外加字距；中文字形回退到系统字体。用户字体设置可以替换字体族，但必须保留 Material 文字角色、字号层级和可读性。中文正文不额外增加 letter spacing。
 
 - **Display / Headline**：用于少量大标题和页面标题；Operate 界面通常从 `headlineSmall` 或更低层级开始，避免宣传页式巨型标题。
 - **Title**：`titleLarge` 用于页面或主面板标题，`titleMedium` / `titleSmall` 用于分组和条目标题。
@@ -219,7 +219,9 @@ Compact/Medium 下没有持久侧栏时，页面名称保留在主工具栏，�
 
 ### Generation workspace identity
 
-画布是高密度创作工作区，不套用 collection workspace 的整条页面工具栏。Expanded/Wide 下，页面身份固定在展开的生成控制栏顶部，以无副标题的紧凑 Section 色面显示“画布”及画笔图标，并与侧栏折叠操作同排；经典布局与官网式布局必须复用 `GenerationWorkspaceHeader`。Compact/Medium 下由 AppBar 显示相同图标与 `nav_canvas` 文案；进入提示词全屏编辑等子任务后，AppBar 改为当前任务标题。侧栏收起时只保留参数展开入口，不重复页面标题。
+画布是高密度创作工作区，不套用 collection workspace 的整条页面工具栏。Expanded/Wide 下，页面身份固定在展开的生成控制栏顶部，以无副标题的紧凑 Section 色面显示“画布”及画笔图标，并与侧栏折叠操作同排；经典布局与官网式布局必须复用 `GenerationWorkspaceHeader`。侧栏收起时只保留参数展开入口，不重复页面标题。
+
+Compact/Medium 使用生成工作台：顶栏左侧为当前模型（点按进入参数页），右侧为 Anlas 余额、智能体与队列；其下是“图像 → 提示词 → 参数 → 参考 → 历史”页签，历史固定在最右侧。生成按钮与 V5 体力条固定在底部，所有页签共用；点按生成后切到图像页直接呈现流式预览，进度填充在生成按钮内部。生成结束时若不在图像页，图像页签显示新结果标记。体力条在主界面只显示条本身，不附文字或张数，点按打开详情（剩余量、估算张数、回充时间、规则与本次消耗）；只在 Opus 订阅、订阅响应带有额度数据且当前模型受限（V5）时出现。软键盘弹出时收起页签栏与生成底栏，把高度留给正在编辑的内容。宽横屏时图像常驻左侧，右侧只保留编辑类页签。页签状态跨断点保留；提示词编辑器始终挂载，其他面板首次进入时构建后常驻。
 
 经典布局的角色编辑位于左侧生成控制栏，顺序固定在种子之后、反推与图生图等辅助输入面板之前，作为独立的可折叠一级工作区呈现；中央工作区只承载主提示词、图像预览和生成操作。官网式布局在提示词侧栏呈现同一角色模块，两种布局必须共享模型可用性、角色数据、折叠状态、摘要、添加命令和纵向编辑结构。移动端继续使用独立角色管理界面，不把桌面侧栏结构塞入参数面板。支持角色的模型即使尚无角色，也必须保留首个角色的显式添加入口，不能因空列表隐藏整个模块。
 
@@ -247,11 +249,11 @@ Compact/Medium 下没有持久侧栏时，页面名称保留在主工具栏，�
 
 ## Shapes
 
-默认主题使用小而清晰的圆角：微型与 chip 为 4px，按钮为 6px，输入和普通 Card 为 8px，图像卡片为 12px。Adaptive bottom sheet 使用 24px 顶部圆角，居中 Dialog 使用四周 24px 圆角；这些值属于大型浮层，不应下放到普通卡片。常驻 side panel 不是模态浮层，沿用所属工作区的 Section 形状。
+主题使用克制的圆角层级：控件与 chip 为 10px，按钮与输入为 12px，分组卡片与图像卡片为 16px。Adaptive bottom sheet 使用 24px 顶部圆角，居中 Dialog 使用四周 24px 圆角；这些值属于大型浮层，不应下放到普通卡片。常驻 side panel 不是模态浮层，沿用所属工作区的 Section 形状。
 
 业务组件声明 `control`、`card`、`dialog`、`menu`、`panel`、`circle` 或 `pill` 等语义角色，实际值由当前 shape preset 和 `AppThemeExtension` 提供。父子圆角通常递减；内层只有 chip、状态标记或圆形控件可以更圆。
 
-默认组件不使用全胶囊和全大圆角。明确采用 `PillShapes` 的现有主题可以保留个性化形状，但不得改变布局密度、命中区、信息架构与操作语义。
+默认组件不使用全胶囊和全大圆角；小型状态徽标与计数可以使用胶囊形。
 
 **The Semantic Shape Rule.** 页面选择形状角色，不复制圆角数字；硬编码只允许稳定的签名组件尺寸，并应逐步归并到主题或公共组件。
 
