@@ -5,11 +5,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:nai_launcher/l10n/app_localizations.dart';
 import 'package:nai_launcher/presentation/providers/bulk_operation_provider.dart';
-import 'package:nai_launcher/presentation/providers/update_provider.dart';
 import 'package:nai_launcher/presentation/widgets/bulk_progress_dialog.dart';
 import 'package:nai_launcher/presentation/widgets/common/emoji_picker_dialog.dart';
 import 'package:nai_launcher/presentation/widgets/common/themed_input_dialog.dart';
-import 'package:nai_launcher/presentation/widgets/common/update_check_dialog.dart';
 
 class _StaticBulkOperationNotifier extends BulkOperationNotifier {
   @override
@@ -19,11 +17,6 @@ class _StaticBulkOperationNotifier extends BulkOperationNotifier {
     currentProgress: 1,
     totalItems: 4,
   );
-}
-
-class _CheckingUpdateNotifier extends UpdateStateNotifier {
-  @override
-  UpdateState build() => const UpdateState(status: UpdateStatus.checking);
 }
 
 void main() {
@@ -122,40 +115,6 @@ void main() {
     await tester.pumpAndSettle();
     expect(result, 'valid name');
   });
-
-  testWidgets(
-    'update manager keeps its non-dismissible barrier in a centered dialog',
-    (tester) async {
-      await pumpHost(
-        tester,
-        size: const Size(1000, 800),
-        overrides: [
-          updateStateNotifierProvider.overrideWith(_CheckingUpdateNotifier.new),
-        ],
-        trigger: (context) => FilledButton(
-          onPressed: () => unawaited(UpdateCheckDialog.show(context)),
-          child: const Text('Open update'),
-        ),
-      );
-
-      await tester.tap(find.text('Open update'));
-      await tester.pump();
-      await tester.pump(const Duration(milliseconds: 300));
-      expect(
-        find.byKey(const ValueKey('adaptive-centered-form')),
-        findsOneWidget,
-      );
-      expect(find.byType(Dialog), findsNothing);
-
-      await tester.tapAt(const Offset(50, 400));
-      await tester.pump(const Duration(milliseconds: 100));
-      expect(find.text('Checking for updates...'), findsOneWidget);
-
-      await tester.tap(find.text('Cancel'));
-      await tester.pumpAndSettle();
-      expect(find.text('Checking for updates...'), findsNothing);
-    },
-  );
 
   testWidgets('bulk manager uses a locked compact panel and preserves false', (
     tester,

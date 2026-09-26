@@ -6,10 +6,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:nai_launcher/core/constants/app_version.dart';
 import 'package:nai_launcher/core/services/diagnostic_log_export_service.dart';
-import 'package:nai_launcher/core/services/update_check_service.dart';
 import 'package:nai_launcher/core/storage/local_storage_service.dart';
 import 'package:nai_launcher/l10n/app_localizations.dart';
-import 'package:nai_launcher/presentation/providers/update_provider.dart';
 import 'package:nai_launcher/presentation/screens/settings/sections/about_settings_section.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 
@@ -17,7 +15,6 @@ void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
   late _MockDiagnosticLogExportService exportService;
-  late _MockUpdateCheckService updateService;
 
   setUpAll(() async {
     PackageInfo.setMockInitialValues(
@@ -32,9 +29,6 @@ void main() {
 
   setUp(() {
     exportService = _MockDiagnosticLogExportService();
-    updateService = _MockUpdateCheckService();
-    when(updateService.getLastCheckTime).thenAnswer((_) async => null);
-    when(updateService.shouldIncludePrerelease).thenReturn(false);
   });
 
   testWidgets('导出诊断日志入口可见，并在无日志时给出恢复提示', (tester) async {
@@ -45,7 +39,7 @@ void main() {
           const DiagnosticLogExportResult(DiagnosticLogExportStatus.noLogs),
     );
 
-    await _pumpSubject(tester, exportService, updateService);
+    await _pumpSubject(tester, exportService);
 
     final tile = find.byKey(const ValueKey('export-diagnostic-logs'));
     expect(tile, findsOneWidget);
@@ -66,7 +60,7 @@ void main() {
     ).thenAnswer((_) => completer.future);
     final semantics = tester.ensureSemantics();
 
-    await _pumpSubject(tester, exportService, updateService);
+    await _pumpSubject(tester, exportService);
     final tileFinder = find.byKey(const ValueKey('export-diagnostic-logs'));
     await tester.tap(tileFinder);
     await tester.pump();
@@ -95,7 +89,7 @@ void main() {
       (_) async =>
           const DiagnosticLogExportResult(DiagnosticLogExportStatus.cancelled),
     );
-    await _pumpSubject(tester, exportService, updateService);
+    await _pumpSubject(tester, exportService);
     final tileFinder = find.byKey(const ValueKey('export-diagnostic-logs'));
 
     await tester.tap(tileFinder);
@@ -133,7 +127,6 @@ void main() {
       await _pumpSubject(
         tester,
         exportService,
-        updateService,
         locale: scenario.locale,
         textScale: 1.3,
       );
@@ -148,8 +141,7 @@ void main() {
 
 Future<void> _pumpSubject(
   WidgetTester tester,
-  DiagnosticLogExportService exportService,
-  UpdateCheckService updateService, {
+  DiagnosticLogExportService exportService, {
   Locale locale = const Locale('zh'),
   double textScale = 1,
 }) async {
@@ -159,8 +151,6 @@ Future<void> _pumpSubject(
         localStorageServiceProvider.overrideWithValue(
           _MemoryLocalStorageService(),
         ),
-        updateCheckServiceProvider.overrideWithValue(updateService),
-        updateStateProvider.overrideWith(_FakeUpdateStateNotifier.new),
         diagnosticLogExportServiceProvider.overrideWithValue(exportService),
       ],
       child: MaterialApp(
@@ -184,13 +174,6 @@ Future<void> _pumpSubject(
 
 class _MockDiagnosticLogExportService extends Mock
     implements DiagnosticLogExportService {}
-
-class _MockUpdateCheckService extends Mock implements UpdateCheckService {}
-
-class _FakeUpdateStateNotifier extends UpdateStateNotifier {
-  @override
-  UpdateState build() => const UpdateState();
-}
 
 class _MemoryLocalStorageService extends LocalStorageService {
   final Map<String, Object?> _values = {};

@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:url_launcher/url_launcher.dart';
 
-import '../../core/constants/community_links.dart';
 import '../../core/utils/localization_extension.dart';
 import '../../data/models/auth/saved_account.dart';
 import '../adaptive/adaptive_presenter.dart';
@@ -11,10 +9,7 @@ import '../agent_chat/providers/agent_chat_notifier.dart';
 import '../providers/account_manager_provider.dart';
 import '../providers/auth_provider.dart';
 import '../providers/replication_queue_provider.dart';
-import '../providers/update_provider.dart';
 import '../services/mobile_image_metadata_importer.dart';
-import '../widgets/common/app_toast.dart';
-import '../widgets/navigation/main_nav_rail.dart';
 import '../widgets/settings/account_profile_sheet.dart';
 import 'app_branch.dart';
 import 'app_routes.dart';
@@ -34,7 +29,6 @@ Future<void> showMobileMorePanel({
       ((context, ref) =>
           MobileImageMetadataImporter.shared.run(context: context, ref: ref));
   final queueCount = ref.read(replicationQueueNotifierProvider).count;
-  final hasUpdate = ref.read(updateStateProvider).hasNewVersion;
   final activePanel = ref.read(shellPanelProvider);
   final authState = ref.read(authNotifierProvider);
   final accounts = ref.read(accountManagerNotifierProvider).accounts;
@@ -60,7 +54,6 @@ Future<void> showMobileMorePanel({
       style: Theme.of(context).textTheme.titleLarge,
     ),
     builder: (panelContext, scrollController) {
-      final largeText = MediaQuery.textScalerOf(panelContext).scale(14) > 18.2;
       return Column(
         children: [
           Expanded(
@@ -176,7 +169,6 @@ Future<void> showMobileMorePanel({
                     key: const ValueKey('mobile-more-settings'),
                     icon: Icons.settings_outlined,
                     label: panelContext.l10n.settings_title,
-                    showBadge: hasUpdate,
                     onTap: () => _selectBranch(
                       panelContext,
                       navigationShell,
@@ -187,85 +179,10 @@ Future<void> showMobileMorePanel({
               ),
             ),
           ),
-          const Divider(height: 1, indent: 16, endIndent: 16),
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
-            child: largeText
-                ? Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      _MobileCommunityButton(
-                        key: const ValueKey('mobile-more-discord'),
-                        icon: const Icon(Icons.discord, size: 20),
-                        label: panelContext.l10n.nav_joinDiscord,
-                        backgroundColor: const Color(0xFF5865F2),
-                        onPressed: () => _openCommunityLink(
-                          panelContext,
-                          CommunityLinks.discord,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      _MobileCommunityButton(
-                        key: const ValueKey('mobile-more-github'),
-                        icon: const GitHubLogo(color: Colors.white, size: 20),
-                        label: panelContext.l10n.nav_projectRepository,
-                        backgroundColor: const Color(0xFF2D333B),
-                        onPressed: () => _openCommunityLink(
-                          panelContext,
-                          CommunityLinks.github,
-                        ),
-                      ),
-                    ],
-                  )
-                : Row(
-                    children: [
-                      Expanded(
-                        child: _MobileCommunityButton(
-                          key: const ValueKey('mobile-more-discord'),
-                          icon: const Icon(Icons.discord, size: 20),
-                          label: panelContext.l10n.nav_joinDiscord,
-                          backgroundColor: const Color(0xFF5865F2),
-                          onPressed: () => _openCommunityLink(
-                            panelContext,
-                            CommunityLinks.discord,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: _MobileCommunityButton(
-                          key: const ValueKey('mobile-more-github'),
-                          icon: const GitHubLogo(color: Colors.white, size: 20),
-                          label: panelContext.l10n.nav_projectRepository,
-                          backgroundColor: const Color(0xFF2D333B),
-                          onPressed: () => _openCommunityLink(
-                            panelContext,
-                            CommunityLinks.github,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-          ),
         ],
       );
     },
   );
-}
-
-Future<void> _openCommunityLink(BuildContext panelContext, String url) async {
-  var opened = false;
-  try {
-    opened = await launchUrl(
-      Uri.parse(url),
-      mode: LaunchMode.externalApplication,
-    );
-  } catch (_) {
-    opened = false;
-  }
-  if (!opened && panelContext.mounted) {
-    AppToast.error(panelContext, panelContext.l10n.cannotOpenUrl);
-  }
 }
 
 void _selectBranch(
@@ -275,42 +192,6 @@ void _selectBranch(
 ) {
   Navigator.of(panelContext).pop();
   navigationShell.goBranch(branch.index);
-}
-
-class _MobileCommunityButton extends StatelessWidget {
-  const _MobileCommunityButton({
-    super.key,
-    required this.icon,
-    required this.label,
-    required this.backgroundColor,
-    required this.onPressed,
-  });
-
-  final Widget icon;
-  final String label;
-  final Color backgroundColor;
-  final VoidCallback onPressed;
-
-  @override
-  Widget build(BuildContext context) {
-    final largeText = MediaQuery.textScalerOf(context).scale(14) > 18.2;
-    return FilledButton.tonalIcon(
-      onPressed: onPressed,
-      style: FilledButton.styleFrom(
-        backgroundColor: backgroundColor,
-        foregroundColor: Colors.white,
-        minimumSize: const Size.fromHeight(56),
-        padding: const EdgeInsets.symmetric(horizontal: 10),
-      ),
-      icon: icon,
-      label: Text(
-        label,
-        maxLines: largeText ? null : 1,
-        overflow: largeText ? TextOverflow.visible : TextOverflow.ellipsis,
-        textAlign: TextAlign.center,
-      ),
-    );
-  }
 }
 
 class _MobileMoreDestination extends StatelessWidget {

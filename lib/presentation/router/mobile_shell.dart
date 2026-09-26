@@ -7,9 +7,7 @@ import '../../core/platform/platform_capabilities.dart';
 import '../../core/utils/localization_extension.dart';
 import '../providers/mobile_shell_overlay_provider.dart';
 import '../providers/replication_queue_provider.dart';
-import '../providers/update_provider.dart';
 import '../widgets/common/app_toast.dart';
-import '../widgets/common/update_notice_banner.dart';
 import 'android_root_back_guard.dart';
 import 'app_branch.dart';
 import 'global_status_banners.dart';
@@ -39,9 +37,6 @@ class MobileShell extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final activePanel = ref.watch(shellPanelProvider);
-    final showUpdateBadge = ref.watch(
-      updateStateProvider.select((state) => state.hasNewVersion),
-    );
     final queueCount = ref.watch(
       replicationQueueNotifierProvider.select((state) => state.count),
     );
@@ -79,7 +74,6 @@ class MobileShell extends ConsumerWidget {
                   Expanded(child: content),
                 ],
               ),
-              const UpdateNoticeOverlay(),
               ShellPanelsOverlay(
                 key: panelOverlayKey,
                 activePanel: activePanel,
@@ -130,7 +124,7 @@ class MobileShell extends ConsumerWidget {
                   ),
                   NavigationDestination(
                     icon: Badge(
-                      isLabelVisible: queueCount > 0 || showUpdateBadge,
+                      isLabelVisible: queueCount > 0,
                       label: queueCount > 0
                           ? Text(
                               queueCount > 99 ? '99+' : queueCount.toString(),
@@ -140,7 +134,7 @@ class MobileShell extends ConsumerWidget {
                       child: const Icon(Icons.apps_outlined),
                     ),
                     selectedIcon: Badge(
-                      isLabelVisible: queueCount > 0 || showUpdateBadge,
+                      isLabelVisible: queueCount > 0,
                       label: queueCount > 0
                           ? Text(
                               queueCount > 99 ? '99+' : queueCount.toString(),

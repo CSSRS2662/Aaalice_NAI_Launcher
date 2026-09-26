@@ -166,8 +166,8 @@ void main() {
     expect(find.text('本地图库'), findsOneWidget);
     expect(find.text('在线画廊'), findsOneWidget);
     expect(find.text('统计'), findsOneWidget);
-    expect(find.text('Discord 社群'), findsOneWidget);
-    expect(find.text('GitHub 仓库'), findsOneWidget);
+    expect(find.text('Discord 社群'), findsNothing);
+    expect(find.text('GitHub 仓库'), findsNothing);
     expect(find.text('智能体'), findsOneWidget);
     expect(find.text('队列管理'), findsOneWidget);
     expect(find.text('收起侧边栏'), findsOneWidget);

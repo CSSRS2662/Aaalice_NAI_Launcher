@@ -18,7 +18,6 @@ import '../../widgets/auth/login_form_container.dart';
 import '../../widgets/auth/network_troubleshooting_dialog.dart';
 import '../../widgets/common/app_toast.dart';
 import '../../widgets/common/themed_divider.dart';
-import '../../widgets/common/update_notice_banner.dart';
 
 /// 登录页面 - QQ 风格
 class LoginScreen extends ConsumerStatefulWidget {
@@ -147,7 +146,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 },
               ),
             ),
-            const UpdateNoticeOverlay(),
           ],
         ),
       ),

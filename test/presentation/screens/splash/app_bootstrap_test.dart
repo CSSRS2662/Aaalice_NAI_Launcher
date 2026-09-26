@@ -7,7 +7,6 @@ import 'package:nai_launcher/core/constants/app_version.dart';
 import 'package:nai_launcher/core/services/data_migration_service.dart';
 import 'package:nai_launcher/core/storage/local_storage_service.dart';
 import 'package:nai_launcher/presentation/providers/startup_initialization_provider.dart';
-import 'package:nai_launcher/presentation/providers/update_provider.dart';
 import 'package:nai_launcher/presentation/screens/splash/app_bootstrap.dart';
 import 'package:nai_launcher/presentation/screens/splash/splash_screen.dart';
 import 'package:package_info_plus/package_info_plus.dart';
@@ -92,87 +91,6 @@ void main() {
     expect(calls.where((call) => call == 'migration'), hasLength(1));
     expect(calls.where((call) => call == 'database'), hasLength(1));
     expect(calls.where((call) => call == 'criticalServices'), hasLength(1));
-  });
-
-  testWidgets('主应用显示后自动执行更新检测且自定义构建器不会绕过', (tester) async {
-    var updateChecks = 0;
-
-    await tester.pumpWidget(
-      _buildApp(
-        tasks: _successfulTasks(),
-        autoUpdateDelay: Duration.zero,
-        autoUpdateCheckRunner: (_) async {
-          updateChecks++;
-        },
-      ),
-    );
-    await _pumpAsync(tester);
-
-    expect(find.byKey(const ValueKey('main_app')), findsOneWidget);
-    expect(find.byType(AutomaticUpdateCheck), findsOneWidget);
-
-    await tester.pump(const Duration(milliseconds: 1));
-    expect(updateChecks, 1);
-  });
-
-  testWidgets('持续动画不会阻止真实自动检测入口执行', (tester) async {
-    var checks = 0;
-    await tester.pumpWidget(
-      ProviderScope(
-        overrides: [
-          automaticUpdateCheckProvider(onStartup: true).overrideWith((
-            ref,
-          ) async {
-            checks++;
-          }),
-        ],
-        child: const AutomaticUpdateCheck(
-          delay: Duration(seconds: 1),
-          child: MaterialApp(home: CircularProgressIndicator()),
-        ),
-      ),
-    );
-    await tester.pump(const Duration(seconds: 1));
-    await tester.pump();
-    expect(checks, 1);
-    await tester.pumpWidget(const SizedBox());
-  });
-
-  testWidgets('后台暂停检测，回到前台补查且不并发重复请求', (tester) async {
-    var checks = 0;
-    final pending = Completer<void>();
-    tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed);
-    await tester.pumpWidget(
-      ProviderScope(
-        child: AutomaticUpdateCheck(
-          delay: const Duration(seconds: 1),
-          checkRunner: (_) async {
-            checks++;
-            if (checks == 2) await pending.future;
-          },
-          child: const SizedBox(),
-        ),
-      ),
-    );
-    await tester.pump(const Duration(seconds: 1));
-    expect(checks, 1);
-    tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.paused);
-    await tester.pump(const Duration(hours: 1));
-    expect(checks, 1);
-    tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed);
-    await tester.pump(const Duration(seconds: 1));
-    expect(checks, 2);
-    tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.inactive);
-    tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed);
-    await tester.pump(const Duration(seconds: 1));
-    expect(checks, 2);
-    pending.complete();
-    await tester.pump();
-    await tester.pump(const Duration(minutes: 5));
-    expect(checks, 3);
-    await tester.pumpWidget(const SizedBox());
-    await tester.pump(const Duration(minutes: 5));
-    expect(checks, 3);
   });
 
   testWidgets('数据库失败保留 Splash，点击重试后才进入主应用', (tester) async {
@@ -294,8 +212,6 @@ double _splashOverlayOpacity(WidgetTester tester) {
 
 Widget _buildApp({
   required StartupInitializationTasks tasks,
-  Duration autoUpdateDelay = const Duration(seconds: 3),
-  AutomaticUpdateCheckRunner? autoUpdateCheckRunner,
   VoidCallback? onWarmupComplete,
   WidgetBuilder? mainAppBuilder,
 }) {
@@ -305,8 +221,6 @@ Widget _buildApp({
       startupInitializationTasksProvider.overrideWithValue(tasks),
     ],
     child: AppBootstrap(
-      autoUpdateDelay: autoUpdateDelay,
-      autoUpdateCheckRunner: autoUpdateCheckRunner,
       onWarmupComplete: onWarmupComplete,
       mainAppBuilder:
           mainAppBuilder ??

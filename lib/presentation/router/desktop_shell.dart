@@ -8,7 +8,6 @@ import '../agent_chat/providers/agent_chat_notifier.dart';
 import '../providers/layout_state_provider.dart';
 import '../widgets/navigation/main_nav_rail.dart';
 import 'app_branch.dart';
-import '../widgets/common/update_notice_banner.dart';
 import 'global_status_banners.dart';
 import 'shell_panels_overlay.dart';
 
@@ -134,7 +133,6 @@ class _DesktopShellState extends ConsumerState<DesktopShell> {
                             Expanded(child: widget.content),
                           ],
                         ),
-                        const UpdateNoticeOverlay(),
                         Positioned.fill(
                           key: const ValueKey('desktop-panel-overlay-layer'),
                           child: ShellPanelsOverlay(

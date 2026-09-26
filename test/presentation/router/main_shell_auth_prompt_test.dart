@@ -211,19 +211,20 @@ void main() {
     );
     await tester.tap(moreDestination);
     await tester.pumpAndSettle();
-    final discord = find.byKey(const ValueKey('mobile-more-discord'));
+    final settings = find.byKey(const ValueKey('mobile-more-settings'));
     await tester.scrollUntilVisible(
-      discord,
+      settings,
       240,
       scrollable: find.byType(Scrollable).last,
     );
     await tester.pumpAndSettle();
-    expect(discord, findsOneWidget);
-    expect(find.byKey(const ValueKey('mobile-more-github')), findsOneWidget);
+    expect(settings, findsOneWidget);
+    expect(find.byKey(const ValueKey('mobile-more-discord')), findsNothing);
+    expect(find.byKey(const ValueKey('mobile-more-github')), findsNothing);
     expect(tester.takeException(), isNull);
     router.pop();
     await tester.pumpAndSettle();
-    expect(find.byKey(const ValueKey('mobile-more-discord')), findsNothing);
+    expect(settings, findsNothing);
 
     final shellOverlay = find.byType(ShellPanelsOverlay);
     expect(shellOverlay, findsOneWidget);

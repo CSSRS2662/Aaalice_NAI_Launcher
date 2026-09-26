@@ -252,7 +252,6 @@ const portableSettingKeys = <String>{
   StorageKeys.queueFailureStrategy,
   StorageKeys.tagLibraryViewMode,
   StorageKeys.notificationSoundEnabled,
-  StorageKeys.includePrereleaseUpdates,
   StorageKeys.hfTranslationRefreshInterval,
   StorageKeys.danbooruTagsHotThreshold,
   StorageKeys.danbooruTagsHotPreset,

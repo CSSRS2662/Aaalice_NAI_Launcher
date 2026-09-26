@@ -5,7 +5,6 @@
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
-    <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
     <uses-permission
         android:name="android.permission.WRITE_EXTERNAL_STORAGE"
         android:maxSdkVersion="28" />
@@ -55,15 +54,6 @@
             android:authorities="${applicationId}.SuperClipboardDataProvider"
             android:exported="false"
             android:grantUriPermissions="true" />
-        <provider
-            android:name="androidx.core.content.FileProvider"
-            android:authorities="${applicationId}.update_file_provider"
-            android:exported="false"
-            android:grantUriPermissions="true">
-            <meta-data
-                android:name="android.support.FILE_PROVIDER_PATHS"
-                android:resource="@xml/update_file_paths" />
-        </provider>
     </application>
 
     <queries>
@@ -78,10 +68,6 @@
         <intent>
             <action android:name="android.intent.action.VIEW" />
             <data android:scheme="https" />
-        </intent>
-        <intent>
-            <action android:name="android.intent.action.VIEW" />
-            <data android:mimeType="application/vnd.android.package-archive" />
         </intent>
     </queries>
 </manifest>

@@ -86,14 +86,8 @@ void main() {
       await tester.pumpAndSettle();
       expect(settings.hitTestable(), findsOneWidget);
 
-      for (final key in const [
-        ValueKey('mobile-more-discord'),
-        ValueKey('mobile-more-github'),
-      ]) {
-        final button = find.byKey(key);
-        expect(button.hitTestable(), findsOneWidget);
-        expect(tester.getRect(button).bottom, lessThanOrEqualTo(768));
-      }
+      expect(find.byKey(const ValueKey('mobile-more-discord')), findsNothing);
+      expect(find.byKey(const ValueKey('mobile-more-github')), findsNothing);
 
       await tester.scrollUntilVisible(
         entry,

@@ -8,7 +8,6 @@ import io.flutter.plugin.common.MethodChannel
 
 class MainActivity : FlutterActivity() {
     private var questionNotifications: AgentQuestionNotifications? = null
-    private var appInstaller: AndroidAppInstaller? = null
     private var assetCopyChannel: AndroidAssetCopyChannel? = null
     private var fileExportChannel: AndroidFileExportChannel? = null
     private var generationServiceChannel: MethodChannel? = null
@@ -23,10 +22,6 @@ class MainActivity : FlutterActivity() {
             flutterEngine.dartExecutor.binaryMessenger,
         )
         assetCopyChannel = AndroidAssetCopyChannel(
-            this,
-            flutterEngine.dartExecutor.binaryMessenger,
-        )
-        appInstaller = AndroidAppInstaller(
             this,
             flutterEngine.dartExecutor.binaryMessenger,
         )
@@ -99,7 +94,6 @@ class MainActivity : FlutterActivity() {
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
-        if (appInstaller?.onActivityResult(requestCode) == true) return
         fileExportChannel?.onActivityResult(requestCode, resultCode, data)
     }
 
@@ -114,8 +108,6 @@ class MainActivity : FlutterActivity() {
         imageShareChannel = null
         questionNotifications?.dispose()
         questionNotifications = null
-        appInstaller?.dispose()
-        appInstaller = null
         assetCopyChannel?.dispose()
         assetCopyChannel = null
         fileExportChannel?.dispose()
