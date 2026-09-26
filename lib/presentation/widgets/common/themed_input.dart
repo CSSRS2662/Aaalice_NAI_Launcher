@@ -6,6 +6,7 @@ import '../../adaptive/interaction_policy.dart';
 import 'input_surface_container.dart';
 import 'themed_confirm_dialog.dart';
 import 'themed_text_selection_toolbar.dart';
+import 'weight_adjust_toolbar.dart';
 
 /// 统一样式的输入框组件
 ///
@@ -324,6 +325,23 @@ class _ThemedInputState extends State<ThemedInput> {
     }
   }
 
+  Widget _buildContextMenu(
+    BuildContext context,
+    EditableTextState editableTextState,
+  ) {
+    // Flutter may invoke the builder with an overlay context. The input
+    // state's own context is the one that remains under the weight wrapper.
+    if (WeightAdjustToolbarWrapper.suppressesNativeContextMenu(this.context)) {
+      return const SizedBox.shrink(
+        key: ValueKey('prompt-weight-native-context-menu-suppressed'),
+      );
+    }
+    return (widget.contextMenuBuilder ?? themedContextMenuBuilder)(
+      context,
+      editableTextState,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -406,7 +424,7 @@ class _ThemedInputState extends State<ThemedInput> {
       decoration: inputDecoration,
       // 不传时用带主题字体的默认实现：Flutter 自带的工具栏按钮会绕开
       // 主题字体，右键菜单会一直是系统默认字体。
-      contextMenuBuilder: widget.contextMenuBuilder ?? themedContextMenuBuilder,
+      contextMenuBuilder: _buildContextMenu,
     );
 
     final textField = widget.enableNativeRedoShortcut

@@ -1014,6 +1014,18 @@ class _UnifiedPromptInputState extends ConsumerState<UnifiedPromptInput> {
     return true;
   }
 
+  void _copyWeightSelection() {
+    if (_handleExpandedClipboardAction(isCut: false)) return;
+    final controller = _effectiveController;
+    final selection = controller.selection;
+    if (!selection.isValid || selection.isCollapsed) return;
+    unawaited(
+      Clipboard.setData(
+        ClipboardData(text: selection.textInside(controller.text)),
+      ),
+    );
+  }
+
   Widget _buildContextMenu(
     BuildContext context,
     EditableTextState editableTextState,
@@ -1493,6 +1505,7 @@ class _UnifiedPromptInputState extends ConsumerState<UnifiedPromptInput> {
         enabled: !widget.config.readOnly,
         enableAutocomplete: widget.config.enableAutocomplete,
         enableWheelAdjustment: enableWheelAdjustment,
+        onCopySelection: _copyWeightSelection,
         onChanged: _handleTextChanged,
         onSearch: (replace) => _openSearch(showReplace: replace),
         child: clipboardAwareInput,
@@ -1507,6 +1520,7 @@ class _UnifiedPromptInputState extends ConsumerState<UnifiedPromptInput> {
             focusNode: _effectiveFocusNode,
             enableWheelAdjustment: enableWheelAdjustment,
             enabled: !_tagMode && !widget.config.readOnly,
+            onCopySelection: _copyWeightSelection,
             child: clipboardAwareInput,
           );
 

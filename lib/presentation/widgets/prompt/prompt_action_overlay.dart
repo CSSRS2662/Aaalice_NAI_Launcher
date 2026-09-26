@@ -34,10 +34,14 @@ class PromptActionOverlay extends StatelessWidget {
     required this.anchor,
     required this.overlaySize,
     required this.child,
+    this.preferAbove = false,
+    this.gap = 6,
   });
   final Rect anchor;
   final Size overlaySize;
   final Widget child;
+  final bool preferAbove;
+  final double gap;
 
   @override
   Widget build(BuildContext context) {
@@ -58,6 +62,8 @@ class PromptActionOverlay extends StatelessWidget {
         delegate: _PromptActionLayout(
           anchor,
           Rect.fromLTRB(left, top, right, bottom),
+          preferAbove: preferAbove,
+          gap: gap,
         ),
         child: SingleChildScrollView(
           key: const ValueKey('prompt-action-viewport'),
@@ -69,9 +75,16 @@ class PromptActionOverlay extends StatelessWidget {
 }
 
 class _PromptActionLayout extends SingleChildLayoutDelegate {
-  const _PromptActionLayout(this.anchor, this.bounds);
+  const _PromptActionLayout(
+    this.anchor,
+    this.bounds, {
+    required this.preferAbove,
+    required this.gap,
+  });
   final Rect anchor;
   final Rect bounds;
+  final bool preferAbove;
+  final double gap;
   @override
   BoxConstraints getConstraintsForChild(BoxConstraints constraints) =>
       BoxConstraints(
@@ -80,8 +93,8 @@ class _PromptActionLayout extends SingleChildLayoutDelegate {
       );
   @override
   Offset getPositionForChild(Size size, Size childSize) {
-    final above = anchor.top - childSize.height - 6;
-    final y = above >= bounds.top ? above : anchor.bottom + 6;
+    final above = anchor.top - childSize.height - gap;
+    final y = preferAbove || above >= bounds.top ? above : anchor.bottom + gap;
     return Offset(
       anchor.left.clamp(
         bounds.left,
@@ -96,5 +109,8 @@ class _PromptActionLayout extends SingleChildLayoutDelegate {
 
   @override
   bool shouldRelayout(_PromptActionLayout oldDelegate) =>
-      anchor != oldDelegate.anchor || bounds != oldDelegate.bounds;
+      anchor != oldDelegate.anchor ||
+      bounds != oldDelegate.bounds ||
+      preferAbove != oldDelegate.preferAbove ||
+      gap != oldDelegate.gap;
 }

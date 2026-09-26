@@ -712,6 +712,114 @@ void main() {
     );
   });
 
+  testWidgets(
+    'touch selection uses one toolbar above the prompt and keyboard',
+    (tester) async {
+      debugDefaultTargetPlatformOverride = TargetPlatform.android;
+      addTearDown(() => debugDefaultTargetPlatformOverride = null);
+      await tester.binding.setSurfaceSize(const Size(400, 800));
+      addTearDown(() => tester.binding.setSurfaceSize(null));
+      final prompt = TextEditingController(text: 'cat, dog');
+      final focus = FocusNode();
+      addTearDown(prompt.dispose);
+      addTearDown(focus.dispose);
+      String? clipboard;
+      tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
+        SystemChannels.platform,
+        (call) async {
+          if (call.method == 'Clipboard.setData') {
+            clipboard = (call.arguments as Map)['text'] as String;
+          }
+          return null;
+        },
+      );
+      addTearDown(
+        () => tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
+          SystemChannels.platform,
+          null,
+        ),
+      );
+
+      await tester.pumpWidget(
+        MaterialApp(
+          locale: const Locale('en'),
+          supportedLocales: AppLocalizations.supportedLocales,
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          builder: (context, child) => MediaQuery(
+            data: MediaQuery.of(context).copyWith(
+              padding: const EdgeInsets.only(top: 24),
+              viewInsets: const EdgeInsets.only(bottom: 260),
+            ),
+            child: child!,
+          ),
+          home: InteractionPolicyScope(
+            initialPolicy: InteractionPolicy.touchFirst,
+            child: Scaffold(
+              body: Align(
+                alignment: Alignment.bottomCenter,
+                child: SizedBox(
+                  height: 160,
+                  child: WeightAdjustToolbarWrapper(
+                    controller: prompt,
+                    focusNode: focus,
+                    child: ThemedInput(
+                      controller: prompt,
+                      focusNode: focus,
+                      maxLines: null,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+      final promptEditable = find.byWidgetPredicate(
+        (widget) => widget is EditableText && widget.controller == prompt,
+      );
+      final editableState = tester.state<EditableTextState>(promptEditable);
+      final renderEditable = editableState.renderEditable;
+      final pressTarget = MatrixUtils.transformRect(
+        renderEditable.getTransformTo(null),
+        renderEditable.getLocalRectForCaret(const TextPosition(offset: 1)),
+      );
+      await tester.longPressAt(pressTarget.center);
+      await tester.pumpAndSettle();
+      expect(prompt.selection.textInside(prompt.text), 'cat');
+
+      final caret = MatrixUtils.transformRect(
+        renderEditable.getTransformTo(null),
+        renderEditable.getLocalRectForCaret(const TextPosition(offset: 0)),
+      );
+      final weightToolbar = find.byKey(
+        const ValueKey('weight_adjust_toolbar_surface'),
+      );
+      final toolbarRect = tester.getRect(weightToolbar);
+      expect(toolbarRect.bottom, lessThan(caret.top));
+      expect(toolbarRect.bottom, lessThanOrEqualTo(532));
+
+      final contextMenu = tester
+          .widget<EditableText>(promptEditable)
+          .contextMenuBuilder!(editableState.context, editableState);
+      expect(
+        contextMenu.key,
+        const ValueKey('prompt-weight-native-context-menu-suppressed'),
+      );
+      expect(find.byType(AdaptiveTextSelectionToolbar), findsNothing);
+
+      await tester.tap(
+        find.byKey(const ValueKey('prompt-selection-copy-button')),
+      );
+      await tester.pump();
+      expect(clipboard, 'cat');
+      await tester.tap(find.byTooltip('Disable'));
+      await tester.pump();
+      expect(prompt.text, '/*disabled:cat*/, dog');
+      expect(tester.takeException(), isNull);
+      debugDefaultTargetPlatformOverride = null;
+    },
+  );
+
   testWidgets('narrow 3x toolbar stays on-screen and supports keyboard', (
     tester,
   ) async {

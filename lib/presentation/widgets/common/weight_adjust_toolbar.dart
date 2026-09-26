@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
+import 'package:flutter/services.dart';
 import 'package:nai_launcher/core/utils/localization_extension.dart';
 
 import '../prompt/prompt_weight_editing.dart';
@@ -45,6 +46,9 @@ class WeightAdjustToolbarWrapper extends StatefulWidget {
   /// 是否允许通过鼠标滚轮调整权重
   final bool enableWheelAdjustment;
 
+  /// Copies the semantic prompt selection when the host projects or expands it.
+  final VoidCallback? onCopySelection;
+
   const WeightAdjustToolbarWrapper({
     super.key,
     required this.child,
@@ -52,7 +56,18 @@ class WeightAdjustToolbarWrapper extends StatefulWidget {
     this.focusNode,
     this.enabled = true,
     this.enableWheelAdjustment = true,
+    this.onCopySelection,
   });
+
+  /// Weight-enabled prompt fields use the unified toolbar for touch selection.
+  /// The context-menu callback can race the selection listener, so ownership
+  /// is scoped to the enabled field instead of the overlay's visible state.
+  static bool suppressesNativeContextMenu(BuildContext context) {
+    final scope = context
+        .getInheritedWidgetOfExactType<_WeightAdjustContextMenuScope>();
+    return context.interactionPolicy.prefersTouchPresentation &&
+        (scope?.suppressesNativeMenu() ?? false);
+  }
 
   @override
   State<WeightAdjustToolbarWrapper> createState() =>
@@ -229,7 +244,10 @@ class _WeightAdjustToolbarWrapperState
       child: OverlayPortal.overlayChildLayoutBuilder(
         controller: _overlayController,
         overlayChildBuilder: _buildToolbarOverlay,
-        child: KeyedSubtree(key: _textFieldKey, child: widget.child),
+        child: _WeightAdjustContextMenuScope(
+          suppressesNativeMenu: () => widget.enabled,
+          child: KeyedSubtree(key: _textFieldKey, child: widget.child),
+        ),
       ),
     );
   }
@@ -286,12 +304,25 @@ class _WeightAdjustToolbarWrapperState
       caretRect: caretRect,
       overlaySize: layoutInfo.overlaySize,
       onClose: _hideToolbar,
+      onCopySelection: widget.onCopySelection,
       enableWheelAdjustment: widget.enableWheelAdjustment,
       onInteractingChanged: (interacting) {
         _isInteractingWithToolbar = interacting;
       },
     );
   }
+}
+
+class _WeightAdjustContextMenuScope extends InheritedWidget {
+  const _WeightAdjustContextMenuScope({
+    required this.suppressesNativeMenu,
+    required super.child,
+  });
+
+  final bool Function() suppressesNativeMenu;
+
+  @override
+  bool updateShouldNotify(_WeightAdjustContextMenuScope oldWidget) => false;
 }
 
 class WeightAdjustScrollPhysics extends ScrollPhysics {
@@ -330,6 +361,7 @@ class _WeightAdjustToolbar extends StatelessWidget {
     required this.caretRect,
     required this.overlaySize,
     required this.onClose,
+    required this.onCopySelection,
     required this.enableWheelAdjustment,
     required this.onInteractingChanged,
   });
@@ -337,6 +369,7 @@ class _WeightAdjustToolbar extends StatelessWidget {
   final Rect caretRect;
   final Size overlaySize;
   final VoidCallback onClose;
+  final VoidCallback? onCopySelection;
   final bool enableWheelAdjustment;
   final ValueChanged<bool> onInteractingChanged;
 
@@ -378,6 +411,18 @@ class _WeightAdjustToolbar extends StatelessWidget {
     );
   }
 
+  void _copySelection() {
+    if (onCopySelection case final copy?) {
+      copy();
+      return;
+    }
+    final selection = controller.selection;
+    if (!selection.isValid || selection.isCollapsed) return;
+    Clipboard.setData(
+      ClipboardData(text: selection.textInside(controller.text)),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final selection = controller.selection;
@@ -395,6 +440,8 @@ class _WeightAdjustToolbar extends StatelessWidget {
     return PromptActionOverlay(
       anchor: caretRect,
       overlaySize: overlaySize,
+      preferAbove: context.interactionPolicy.prefersTouchPresentation,
+      gap: context.interactionPolicy.prefersTouchPresentation ? 18 : 6,
       child: TextFieldTapRegion(
         child: Listener(
           onPointerDown: (_) => onInteractingChanged(true),
@@ -416,6 +463,12 @@ class _WeightAdjustToolbar extends StatelessWidget {
                 onWeight: _weight,
                 onStep: _step,
                 trailing: [
+                  IconButton(
+                    key: const ValueKey('prompt-selection-copy-button'),
+                    tooltip: context.l10n.common_copy,
+                    onPressed: _copySelection,
+                    icon: const Icon(Icons.copy_rounded, size: 18),
+                  ),
                   if (tags.isNotEmpty)
                     IconButton(
                       key: const ValueKey('text-selection-enabled-button'),

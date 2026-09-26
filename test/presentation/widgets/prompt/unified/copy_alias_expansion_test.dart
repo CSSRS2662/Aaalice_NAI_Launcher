@@ -247,6 +247,29 @@ void main() {
     });
   });
 
+  testWidgets('权重工具栏复制复用相同的别名展开语义', (tester) async {
+    await onWindows(() async {
+      await pumpInput(tester, resolveAliasOnCopy: true);
+      final field = find.byType(TextField);
+      await tester.enterText(field, _promptText);
+      final editable = tester.widget<EditableText>(find.byType(EditableText));
+      editable.controller.selection = const TextSelection(
+        baseOffset: 0,
+        extentOffset: _promptText.length,
+      );
+      await tester.pumpAndSettle();
+
+      await tester.tap(
+        find.byKey(const ValueKey('prompt-selection-copy-button')),
+      );
+      await tester.pump();
+
+      expect(lastClipboardText(), _expandedText);
+      expect(clipboardWriteCount(), 1);
+      expect(tester.takeException(), isNull);
+    });
+  });
+
   testWidgets('选区不含别名时不额外写入剪贴板', (tester) async {
     await onWindows(() async {
       await pumpInput(tester, resolveAliasOnCopy: true);
