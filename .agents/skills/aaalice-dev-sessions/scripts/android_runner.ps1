@@ -519,7 +519,7 @@ if (-not [string]::IsNullOrWhiteSpace($EmulatorId)) {
 
     # Reused emulators keep their warm system/Gradle caches, but never restore a stale
     # launcher screen as this session's result.
-    & $adbCommand -s $selectedDevice.id shell am force-stop com.aaalice.nai_launcher | Out-Null
+    & $adbCommand -s $selectedDevice.id shell am force-stop com.cssrs2662.aaalicepocket | Out-Null
     & $adbCommand -s $selectedDevice.id shell input keyevent HOME | Out-Null
 }
 
@@ -555,7 +555,7 @@ $currentProcess = Get-Process -Id $PID
     ).ToUnixTimeMilliseconds()
     deviceId = [string]$selectedDevice.id
     deviceName = [string]$selectedDevice.name
-    packageName = 'com.aaalice.nai_launcher'
+    packageName = 'com.cssrs2662.aaalicepocket'
     repoRoot = [string]$repoRoot
     controller = 'codex'
     launchedEmulator = $ownsSelectedEmulator

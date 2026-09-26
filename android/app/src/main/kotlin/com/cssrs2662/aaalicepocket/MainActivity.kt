@@ -1,4 +1,4 @@
-package com.aaalice.nai_launcher
+package com.cssrs2662.aaalicepocket
 
 import android.content.Intent
 import android.os.Build

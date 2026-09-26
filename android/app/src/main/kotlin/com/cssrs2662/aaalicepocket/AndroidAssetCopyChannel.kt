@@ -1,4 +1,4 @@
-package com.aaalice.nai_launcher
+package com.cssrs2662.aaalicepocket
 
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.plugin.common.BinaryMessenger

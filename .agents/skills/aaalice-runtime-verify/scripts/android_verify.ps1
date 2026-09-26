@@ -15,7 +15,7 @@ $ErrorActionPreference = 'Stop'
 $scriptDir = Split-Path -Parent $PSCommandPath
 $repoRoot = Resolve-Path -LiteralPath (Join-Path $scriptDir '../../../..')
 $sessionPath = Join-Path $repoRoot 'tool/.tmp/android_hot_reload_session.json'
-$packageName = 'com.aaalice.nai_launcher'
+$packageName = 'com.cssrs2662.aaalicepocket'
 
 if (Test-Path -LiteralPath $sessionPath -PathType Leaf) {
     $session = Get-Content -LiteralPath $sessionPath -Raw -Encoding UTF8 | ConvertFrom-Json

@@ -23,7 +23,7 @@ def hasReleaseSigning = [
 ].every { it != null && !it.trim().isEmpty() }
 
 android {
-    namespace = "com.aaalice.nai_launcher"
+    namespace = "com.cssrs2662.aaalicepocket"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 
@@ -33,7 +33,7 @@ android {
     }
 
     defaultConfig {
-        applicationId = "com.aaalice.nai_launcher"
+        applicationId = "com.cssrs2662.aaalicepocket"
         minSdkVersion = flutter.minSdkVersion
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode

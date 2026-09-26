@@ -1,4 +1,4 @@
-package com.aaalice.nai_launcher
+package com.cssrs2662.aaalicepocket
 
 import android.app.Activity
 import android.content.ActivityNotFoundException
