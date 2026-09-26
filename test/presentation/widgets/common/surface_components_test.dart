@@ -12,7 +12,7 @@ import 'package:nai_launcher/presentation/widgets/common/themed_switch.dart';
 
 void main() {
   testWidgets('普通卡片和设置分组不绘制完整结构边框', (tester) async {
-    final theme = AppTheme.getTheme(AppStyle.grungeCollage, Brightness.dark);
+    final theme = AppTheme.getTheme(Brightness.dark);
     await tester.pumpWidget(
       MaterialApp(
         theme: theme,

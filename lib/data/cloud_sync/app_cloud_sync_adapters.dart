@@ -197,6 +197,7 @@ CloudSyncDataAdapterRegistry createAppCloudSyncAdapterRegistry({
 const portableSettingKeys = <String>{
   'dlss_options',
   StorageKeys.themeType,
+  StorageKeys.themeMode,
   StorageKeys.fontFamily,
   StorageKeys.fontScale,
   StorageKeys.locale,

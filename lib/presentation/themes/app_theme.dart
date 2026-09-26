@@ -2,237 +2,42 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../providers/font_provider.dart';
+import 'presets/pocket_theme.dart';
 
-// Import all 16 theme presets
-import 'presets/bold_retro_theme.dart';
-import 'presets/grunge_collage_theme.dart';
-import 'presets/fluid_saturated_theme.dart';
-import 'presets/material_you_theme.dart';
-import 'presets/flat_design_theme.dart';
-import 'presets/hand_drawn_theme.dart';
-import 'presets/midnight_editorial_theme.dart';
-import 'presets/zen_minimalist_theme.dart';
-import 'presets/minimal_glass_theme.dart';
-import 'presets/neo_dark_theme.dart';
-import 'presets/pro_ai_theme.dart';
-import 'presets/social_theme.dart';
-import 'presets/retro_wave_theme.dart';
-import 'presets/brutalist_theme.dart';
-import 'presets/apple_light_theme.dart';
-import 'presets/system_theme.dart';
+/// 主题明暗偏好：浅色、深色或跟随系统。
+enum AppThemeMode {
+  system,
+  light,
+  dark;
 
-/// 风格类型枚举 - 16 套主题
-enum AppStyle {
-  // 8 套新设计主题
-  grungeCollage, // 拼贴朋克 (默认)
-  boldRetro, // 复古现代主义
-  fluidSaturated, // 流体饱和
-  materialYou, // Material You
-  flatDesign, // 扁平设计
-  handDrawn, // 手绘风格
-  midnightEditorial, // 午夜编辑
-  zenMinimalist, // 禅意极简
-  // 8 套重构主题 (原 styles/ 目录)
-  minimalGlass, // 原 herdingStyle - 金黄深青层叠
-  neoDark, // 原 linearStyle - Linear 风格
-  proAi, // 原 invokeStyle - InvokeAI 风格
-  social, // 原 discordStyle - Discord 风格
-  retroWave, // 原 cassetteFuturism - 复古未来
-  brutalist, // 原 motorolaFixBeeper - LCD 电子
-  appleLight, // 原 pureLight - 纯净白
-  system, // 跟随系统
-}
-
-extension AppStyleExtension on AppStyle {
-  /// 主题元数据映射
-  static final _metadata = <AppStyle, _ThemeMetadata>{
-    AppStyle.boldRetro: _ThemeMetadata(
-      BoldRetroTheme.displayName,
-      BoldRetroTheme.description,
-      BoldRetroTheme.supportsDarkMode,
-    ),
-    AppStyle.grungeCollage: _ThemeMetadata(
-      GrungeCollageTheme.displayName,
-      GrungeCollageTheme.description,
-      GrungeCollageTheme.supportsDarkMode,
-    ),
-    AppStyle.fluidSaturated: _ThemeMetadata(
-      FluidSaturatedTheme.displayName,
-      FluidSaturatedTheme.description,
-      FluidSaturatedTheme.supportsDarkMode,
-    ),
-    AppStyle.materialYou: _ThemeMetadata(
-      MaterialYouTheme.displayName,
-      MaterialYouTheme.description,
-      MaterialYouTheme.supportsDarkMode,
-    ),
-    AppStyle.flatDesign: _ThemeMetadata(
-      FlatDesignTheme.displayName,
-      FlatDesignTheme.description,
-      FlatDesignTheme.supportsDarkMode,
-    ),
-    AppStyle.handDrawn: _ThemeMetadata(
-      HandDrawnTheme.displayName,
-      HandDrawnTheme.description,
-      HandDrawnTheme.supportsDarkMode,
-    ),
-    AppStyle.midnightEditorial: _ThemeMetadata(
-      MidnightEditorialTheme.displayName,
-      MidnightEditorialTheme.description,
-      MidnightEditorialTheme.supportsDarkMode,
-    ),
-    AppStyle.zenMinimalist: _ThemeMetadata(
-      ZenMinimalistTheme.displayName,
-      ZenMinimalistTheme.description,
-      ZenMinimalistTheme.supportsDarkMode,
-    ),
-    AppStyle.minimalGlass: _ThemeMetadata(
-      MinimalGlassTheme.displayName,
-      MinimalGlassTheme.description,
-      MinimalGlassTheme.supportsDarkMode,
-    ),
-    AppStyle.neoDark: _ThemeMetadata(
-      NeoDarkTheme.displayName,
-      NeoDarkTheme.description,
-      NeoDarkTheme.supportsDarkMode,
-    ),
-    AppStyle.proAi: _ThemeMetadata(
-      ProAiTheme.displayName,
-      ProAiTheme.description,
-      ProAiTheme.supportsDarkMode,
-    ),
-    AppStyle.social: _ThemeMetadata(
-      SocialTheme.displayName,
-      SocialTheme.description,
-      SocialTheme.supportsDarkMode,
-    ),
-    AppStyle.retroWave: _ThemeMetadata(
-      RetroWaveTheme.displayName,
-      RetroWaveTheme.description,
-      RetroWaveTheme.supportsDarkMode,
-    ),
-    AppStyle.brutalist: _ThemeMetadata(
-      BrutalistTheme.displayName,
-      BrutalistTheme.description,
-      BrutalistTheme.supportsDarkMode,
-    ),
-    AppStyle.appleLight: _ThemeMetadata(
-      AppleLightTheme.displayName,
-      AppleLightTheme.description,
-      AppleLightTheme.supportsDarkMode,
-    ),
-    AppStyle.system: _ThemeMetadata(
-      SystemTheme.displayName,
-      SystemTheme.description,
-      SystemTheme.supportsDarkMode,
-    ),
+  ThemeMode get themeMode => switch (this) {
+    AppThemeMode.system => ThemeMode.system,
+    AppThemeMode.light => ThemeMode.light,
+    AppThemeMode.dark => ThemeMode.dark,
   };
 
-  _ThemeMetadata get _meta => _metadata[this]!;
-
-  String get displayName => _meta.displayName;
-  String get description => _meta.description;
-  bool get supportsDarkMode => _meta.supportsDarkMode;
+  /// 持久化值；未知或缺失时回到跟随系统。
+  static AppThemeMode fromStorage(String? value) {
+    for (final mode in AppThemeMode.values) {
+      if (mode.name == value) return mode;
+    }
+    return AppThemeMode.system;
+  }
 }
 
-/// 主题元数据
-class _ThemeMetadata {
-  final String displayName;
-  final String description;
-  final bool supportsDarkMode;
-
-  const _ThemeMetadata(
-    this.displayName,
-    this.description,
-    this.supportsDarkMode,
-  );
-}
-
-/// 应用主题管理器
+/// 应用主题管理器：只保留一套浅色与深色配色。
 class AppTheme {
   AppTheme._();
 
-  /// 主题构建器映射
-  static final _themeBuilders = <AppStyle, _ThemeBuilder>{
-    AppStyle.boldRetro: _ThemeBuilder(
-      () => BoldRetroTheme.light,
-      () => BoldRetroTheme.dark,
-    ),
-    AppStyle.grungeCollage: _ThemeBuilder(
-      () => GrungeCollageTheme.light,
-      () => GrungeCollageTheme.dark,
-    ),
-    AppStyle.fluidSaturated: _ThemeBuilder(
-      () => FluidSaturatedTheme.light,
-      () => FluidSaturatedTheme.dark,
-    ),
-    AppStyle.materialYou: _ThemeBuilder(
-      () => MaterialYouTheme.light,
-      () => MaterialYouTheme.dark,
-    ),
-    AppStyle.flatDesign: _ThemeBuilder(
-      () => FlatDesignTheme.light,
-      () => FlatDesignTheme.dark,
-    ),
-    AppStyle.handDrawn: _ThemeBuilder(
-      () => HandDrawnTheme.light,
-      () => HandDrawnTheme.dark,
-    ),
-    AppStyle.midnightEditorial: _ThemeBuilder(
-      () => MidnightEditorialTheme.light,
-      () => MidnightEditorialTheme.dark,
-    ),
-    AppStyle.zenMinimalist: _ThemeBuilder(
-      () => ZenMinimalistTheme.light,
-      () => ZenMinimalistTheme.dark,
-    ),
-    AppStyle.minimalGlass: _ThemeBuilder(
-      () => MinimalGlassTheme.light,
-      () => MinimalGlassTheme.dark,
-    ),
-    AppStyle.neoDark: _ThemeBuilder(
-      () => NeoDarkTheme.light,
-      () => NeoDarkTheme.dark,
-    ),
-    AppStyle.proAi: _ThemeBuilder(
-      () => ProAiTheme.light,
-      () => ProAiTheme.dark,
-    ),
-    AppStyle.social: _ThemeBuilder(
-      () => SocialTheme.light,
-      () => SocialTheme.dark,
-    ),
-    AppStyle.retroWave: _ThemeBuilder(
-      () => RetroWaveTheme.light,
-      () => RetroWaveTheme.dark,
-    ),
-    AppStyle.brutalist: _ThemeBuilder(
-      () => BrutalistTheme.light,
-      () => BrutalistTheme.dark,
-    ),
-    AppStyle.appleLight: _ThemeBuilder(
-      () => AppleLightTheme.light,
-      () => AppleLightTheme.dark,
-    ),
-    AppStyle.system: _ThemeBuilder(
-      () => SystemTheme.light,
-      () => SystemTheme.dark,
-    ),
-  };
+  static final ThemeData _light = PocketTheme.light;
+  static final ThemeData _dark = PocketTheme.dark;
 
-  /// 获取指定风格的主题
+  /// 获取指定明暗的主题
   ///
   /// [fontConfig] 为 null 或系统默认时，保留主题原生字体；
   /// 有值时用用户选择覆盖主题字体。
-  static ThemeData getTheme(
-    AppStyle style,
-    Brightness brightness, {
-    FontConfig? fontConfig,
-  }) {
-    final builder = _themeBuilders[style]!;
-    final baseTheme = brightness == Brightness.light
-        ? builder.light
-        : builder.dark;
+  static ThemeData getTheme(Brightness brightness, {FontConfig? fontConfig}) {
+    final baseTheme = brightness == Brightness.light ? _light : _dark;
 
     // 使用主题原生字体
     if (fontConfig == null || fontConfig.fontFamily.isEmpty) {
@@ -354,15 +159,4 @@ class AppTheme {
           tooltipTheme.waitDuration ?? const Duration(milliseconds: 500),
     );
   }
-}
-
-class _ThemeBuilder {
-  _ThemeBuilder(this._buildLight, this._buildDark);
-
-  final ThemeData Function() _buildLight;
-  final ThemeData Function() _buildDark;
-
-  // Only the selected preset and brightness should initialize fonts and styles.
-  late final ThemeData light = _buildLight();
-  late final ThemeData dark = _buildDark();
 }

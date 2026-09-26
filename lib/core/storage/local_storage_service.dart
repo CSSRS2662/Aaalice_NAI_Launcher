@@ -44,15 +44,12 @@ class LocalStorageService {
 
   // ==================== Theme ====================
 
-  /// 获取风格类型索引
-  int getThemeIndex() {
-    // 默认值 0 对应 AppStyle.grungeCollage (拼贴朋克风格)
-    return getSetting<int>(StorageKeys.themeType, defaultValue: 0) ?? 0;
-  }
+  /// 获取主题明暗偏好（system / light / dark），未设置时返回 null
+  String? getThemeMode() => getSetting<String>(StorageKeys.themeMode);
 
-  /// 保存主题类型索引
-  Future<void> setThemeIndex(int index) async {
-    await setSetting(StorageKeys.themeType, index);
+  /// 保存主题明暗偏好
+  Future<void> setThemeMode(String mode) async {
+    await setSetting(StorageKeys.themeMode, mode);
   }
 
   // ==================== Font ====================

@@ -11,12 +11,12 @@ void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
   GoogleFonts.config.allowRuntimeFetching = false;
 
-  for (final style in AppStyle.values) {
-    for (final brightness in Brightness.values) {
+  for (final brightness in Brightness.values) {
+    {
       testWidgets(
-        '${style.name}/${brightness.name}: input depth and prompt control contrast',
+        'pocket/${brightness.name}: input depth and prompt control contrast',
         (tester) async {
-          final theme = AppTheme.getTheme(style, brightness);
+          final theme = AppTheme.getTheme(brightness);
           final scheme = theme.colorScheme;
           expect(theme.chipTheme.backgroundColor, Colors.transparent);
           expect(theme.chipTheme.selectedColor, scheme.primaryContainer);
@@ -107,7 +107,7 @@ void main() {
   testWidgets(
     'custom semantic colors survive theme composition and interpolate',
     (tester) async {
-      final first = AppTheme.getTheme(AppStyle.grungeCollage, Brightness.dark);
+      final first = AppTheme.getTheme(Brightness.dark);
       final original = first.promptSemanticColors;
       final custom = original.copyWith(positivePrompt: Colors.orange);
       final theme = first.copyWith(

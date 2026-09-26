@@ -5,7 +5,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:nai_launcher/l10n/app_localizations.dart';
 import 'package:nai_launcher/presentation/agent_chat/widgets/agent_chat_approval.dart';
 import 'package:nai_launcher/presentation/themes/core/layered_surface_style.dart';
-import 'package:nai_launcher/presentation/themes/modules/color/palettes/grunge_palette.dart';
+import 'package:nai_launcher/presentation/themes/modules/color/palettes/pocket_palette.dart';
 
 void main() {
   Widget app({
@@ -66,8 +66,8 @@ void main() {
       }
 
       for (final palette in [
-        const GrungePalette().lightScheme,
-        const GrungePalette().darkScheme,
+        const PocketPalette().lightScheme,
+        const PocketPalette().darkScheme,
       ]) {
         final scheme = resolveLayeredSurfaceColors(palette);
         await tester.pumpWidget(

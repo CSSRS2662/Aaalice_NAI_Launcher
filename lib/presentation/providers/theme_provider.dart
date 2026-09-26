@@ -5,35 +5,25 @@ import '../themes/app_theme.dart';
 
 part 'theme_provider.g.dart';
 
-/// 主题状态 Notifier
+/// 主题明暗偏好 Notifier
 @riverpod
 class ThemeNotifier extends _$ThemeNotifier {
   @override
-  AppStyle build() {
-    // 从本地存储加载主题
+  AppThemeMode build() {
     final storage = ref.read(localStorageServiceProvider);
-    final index = storage.getThemeIndex();
-
-    if (index >= 0 && index < AppStyle.values.length) {
-      return AppStyle.values[index];
-    }
-
-    return AppStyle.grungeCollage; // 默认风格 - 拼贴朋克
+    return AppThemeMode.fromStorage(storage.getThemeMode());
   }
 
-  /// 设置主题
-  Future<void> setTheme(AppStyle style) async {
-    state = style;
-
-    // 保存到本地存储
+  /// 设置明暗偏好
+  Future<void> setThemeMode(AppThemeMode mode) async {
+    state = mode;
     final storage = ref.read(localStorageServiceProvider);
-    await storage.setThemeIndex(style.index);
+    await storage.setThemeMode(mode.name);
   }
 
-  /// 切换到下一个主题
+  /// 依次切换 跟随系统 → 浅色 → 深色
   Future<void> nextTheme() async {
-    final currentIndex = state.index;
-    final nextIndex = (currentIndex + 1) % AppStyle.values.length;
-    await setTheme(AppStyle.values[nextIndex]);
+    const order = AppThemeMode.values;
+    await setThemeMode(order[(state.index + 1) % order.length]);
   }
 }

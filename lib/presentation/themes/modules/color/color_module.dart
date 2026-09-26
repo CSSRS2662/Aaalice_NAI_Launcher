@@ -6,14 +6,7 @@ library;
 import 'package:flutter/material.dart';
 import 'package:nai_launcher/presentation/themes/core/theme_modules.dart';
 
-export 'palettes/retro_palette.dart';
-export 'palettes/grunge_palette.dart';
-export 'palettes/fluid_palette.dart';
-export 'palettes/material_you_palette.dart';
-export 'palettes/flat_palette.dart';
-export 'palettes/hand_drawn_palette.dart';
-export 'palettes/editorial_palette.dart';
-export 'palettes/zen_palette.dart';
+export 'palettes/pocket_palette.dart';
 
 /// Base implementation of [ColorSchemeModule] with common utilities.
 abstract class BaseColorModule implements ColorSchemeModule {

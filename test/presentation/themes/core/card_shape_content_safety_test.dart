@@ -24,9 +24,9 @@ void main() {
 
   group('卡片圆角不裁内容', () {
     testWidgets('所有主题的卡片圆角都在安全上限内', (tester) async {
-      for (final style in AppStyle.values) {
+      {
         for (final brightness in Brightness.values) {
-          final corners = _cardCorners(AppTheme.getTheme(style, brightness));
+          final corners = _cardCorners(AppTheme.getTheme(brightness));
 
           for (final corner in [
             corners.topLeft,
@@ -38,7 +38,7 @@ void main() {
               corner.x,
               lessThanOrEqualTo(maxSafeRadius),
               reason:
-                  '${style.name}/${brightness.name} 卡片圆角 ${corner.x} 超过 '
+                  '${brightness.name} 卡片圆角 ${corner.x} 超过 '
                   '${maxSafeRadius.toStringAsFixed(1)}，'
                   '${contentPadding}px 内边距处的内容会被裁掉',
             );
@@ -48,31 +48,24 @@ void main() {
     });
 
     testWidgets('ElevatedCard 取到的圆角与 Card 实渲形状一致', (tester) async {
-      for (final style in AppStyle.values) {
-        for (final brightness in Brightness.values) {
-          final theme = AppTheme.getTheme(style, brightness);
+      for (final brightness in Brightness.values) {
+        final theme = AppTheme.getTheme(brightness);
 
-          expect(
-            theme.extension<AppThemeExtension>()!.cardRadius,
-            _cardCorners(theme).topLeft.x,
-            reason: '${style.name}/${brightness.name}',
-          );
-        }
+        expect(
+          theme.extension<AppThemeExtension>()!.cardRadius,
+          _cardCorners(theme).topLeft.x,
+          reason: brightness.name,
+        );
       }
     });
 
-    testWidgets('设置卡标题在最圆的主题下完整可见', (tester) async {
+    testWidgets('设置卡标题在卡片圆角下完整可见', (tester) async {
       tester.view.physicalSize = const Size(1400, 900);
       tester.view.devicePixelRatio = 1;
       addTearDown(tester.view.reset);
 
-      // 三套曾经把标题裁掉的主题。
-      for (final style in [
-        AppStyle.fluidSaturated,
-        AppStyle.materialYou,
-        AppStyle.appleLight,
-      ]) {
-        final theme = AppTheme.getTheme(style, Brightness.dark);
+      for (final brightness in Brightness.values) {
+        final theme = AppTheme.getTheme(brightness);
         await tester.pumpWidget(
           MaterialApp(
             theme: theme,
@@ -98,7 +91,7 @@ void main() {
           dx,
           greaterThanOrEqualTo(_cornerInset(radius, dy)),
           reason:
-              '${style.name} 圆角 $radius 在 y=$dy 处吃掉 '
+              '${brightness.name} 圆角 $radius 在 y=$dy 处吃掉 '
               '${_cornerInset(radius, dy).toStringAsFixed(1)}px，'
               '标题左边距只有 ${dx}px',
         );

@@ -36,6 +36,49 @@ void main() {
     }
   });
 
+  testWidgets('主题只提供浅色、深色与跟随系统，选择后立即保存', (tester) async {
+    await tester.binding.setSurfaceSize(const Size(1000, 1600));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+
+    await tester.pumpWidget(
+      const ProviderScope(
+        child: MaterialApp(
+          locale: Locale('zh'),
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: Scaffold(
+            body: SingleChildScrollView(child: AppearanceSettingsSection()),
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    final entry = find.byKey(const ValueKey('settings-theme-mode'));
+    expect(entry, findsOneWidget);
+    expect(
+      find.descendant(of: entry, matching: find.text('跟随系统')),
+      findsOneWidget,
+    );
+
+    await tester.tap(entry);
+    await tester.pumpAndSettle();
+    for (final mode in ['system', 'light', 'dark']) {
+      expect(
+        find.byKey(ValueKey('settings-theme-mode-$mode')),
+        findsOneWidget,
+      );
+    }
+    await tester.tap(find.byKey(const ValueKey('settings-theme-mode-dark')));
+    await tester.pumpAndSettle();
+
+    expect(
+      find.descendant(of: entry, matching: find.text('深色')),
+      findsOneWidget,
+    );
+    expect(LocalStorageService().getThemeMode(), 'dark');
+  });
+
   testWidgets('外观分类不再显示已移除的悬浮球设置', (tester) async {
     await tester.binding.setSurfaceSize(const Size(1000, 1600));
     addTearDown(() => tester.binding.setSurfaceSize(null));

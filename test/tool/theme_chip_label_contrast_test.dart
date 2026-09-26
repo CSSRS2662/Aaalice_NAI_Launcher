@@ -20,9 +20,9 @@ void main() {
       final wrongSurface = <String>[];
       final offenders = <String>[];
 
-      for (final style in AppStyle.values) {
+      {
         for (final brightness in Brightness.values) {
-          final theme = AppTheme.getTheme(style, brightness);
+          final theme = AppTheme.getTheme(brightness);
           for (final probe in _neutralChipProbes.entries) {
             await tester.pumpWidget(
               MaterialApp(
@@ -32,7 +32,7 @@ void main() {
             );
             await tester.pumpAndSettle();
 
-            final label = '${style.name}/${brightness.name}/${probe.key}';
+            final label = '${brightness.name}/${probe.key}';
             final measured = _measureChip(tester, theme);
 
             if (measured == null || measured.fill != Colors.transparent) {

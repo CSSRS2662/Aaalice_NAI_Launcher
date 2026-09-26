@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:nai_launcher/l10n/app_localizations.dart';
-import 'package:nai_launcher/presentation/themes/modules/color/palettes/grunge_palette.dart';
+import 'package:nai_launcher/presentation/themes/modules/color/palettes/pocket_palette.dart';
 import 'package:nai_launcher/presentation/themes/core/layered_surface_style.dart';
 import 'package:nai_launcher/presentation/widgets/prompt/prompt_action_overlay.dart';
 import 'package:nai_launcher/presentation/widgets/prompt/prompt_weight_controls.dart';
@@ -16,7 +16,7 @@ void main() {
       MaterialApp(
         theme: ThemeData(
           colorScheme: resolveLayeredSurfaceColors(
-            const GrungePalette().darkScheme,
+            const PocketPalette().darkScheme,
           ),
         ),
         supportedLocales: AppLocalizations.supportedLocales,

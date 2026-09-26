@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/semantics.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:nai_launcher/presentation/themes/modules/color/palettes/grunge_palette.dart';
 import 'package:nai_launcher/presentation/widgets/common/collapsible_image_panel.dart';
 
 void main() {
@@ -156,8 +155,16 @@ void main() {
     });
   }
 
-  testWidgets('Grunge 暗色主题的展开面板与侧栏 surface 保持可见色差', (tester) async {
-    final colorScheme = const GrungePalette().darkScheme;
+  testWidgets('缺少容器色阶的暗色配色下展开面板与侧栏 surface 保持可见色差', (
+    tester,
+  ) async {
+    // 只声明画布与前景，容器色阶回退到画布色，覆盖补全路径。
+    const colorScheme = ColorScheme.dark(
+      primary: Color(0xFFF0EAD6),
+      onPrimary: Color(0xFF1A1A1A),
+      surface: Color(0xFF1A1A1A),
+      onSurface: Color(0xFFF0EAD6),
+    );
     expect(colorScheme.surfaceContainerLow, colorScheme.surface);
 
     await tester.pumpWidget(

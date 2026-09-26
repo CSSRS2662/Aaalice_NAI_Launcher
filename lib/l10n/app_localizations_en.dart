@@ -614,7 +614,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get settings_appearance => 'Appearance';
 
   @override
-  String get settings_style => 'Style';
+  String get settings_themeMode => 'Theme';
 
   @override
   String get settings_font => 'Font';
@@ -723,10 +723,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get settings_comfyUiDesktopOnly => 'Available on desktop only';
 
   @override
-  String get settings_selectStyle => 'Select Style';
+  String get settings_themeModeSystem => 'Follow system';
 
   @override
-  String get settings_defaultPreset => 'Default';
+  String get settings_themeModeLight => 'Light';
+
+  @override
+  String get settings_themeModeDark => 'Dark';
 
   @override
   String get settings_selectFont => 'Select Font';

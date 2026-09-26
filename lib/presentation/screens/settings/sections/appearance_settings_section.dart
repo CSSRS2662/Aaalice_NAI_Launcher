@@ -48,15 +48,12 @@ class _AppearanceSettingsSectionState
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              // 主题选择
+              // 主题明暗
               ListTile(
-                leading: const Icon(Icons.palette_outlined),
-                title: Text(context.l10n.settings_style),
-                subtitle: Text(
-                  currentTheme == AppStyle.grungeCollage
-                      ? context.l10n.settings_defaultPreset
-                      : currentTheme.displayName,
-                ),
+                key: const ValueKey('settings-theme-mode'),
+                leading: const Icon(Icons.contrast_rounded),
+                title: Text(context.l10n.settings_themeMode),
+                subtitle: Text(_themeModeLabel(context, currentTheme)),
                 onTap: () => _showThemeDialog(context, currentTheme),
               ),
 
@@ -124,42 +121,38 @@ class _AppearanceSettingsSectionState
     );
   }
 
-  void _showThemeDialog(BuildContext context, AppStyle currentTheme) {
-    // grungeCollage 已是 enum 第一个，无需手动排序
-    const sortedStyles = AppStyle.values;
+  static String _themeModeLabel(BuildContext context, AppThemeMode mode) =>
+      switch (mode) {
+        AppThemeMode.system => context.l10n.settings_themeModeSystem,
+        AppThemeMode.light => context.l10n.settings_themeModeLight,
+        AppThemeMode.dark => context.l10n.settings_themeModeDark,
+      };
 
+  void _showThemeDialog(BuildContext context, AppThemeMode currentTheme) {
     showDialog(
       context: context,
       builder: (dialogContext) {
         return AlertDialog(
           scrollable: true,
-          title: Text(context.l10n.settings_selectStyle),
-          content: AdaptiveDialogFrame(
-            maxWidth: 300,
-            maxHeight: 400,
-            reservedVerticalSpace: 220,
-            scaleReservedVerticalSpace: true,
-            child: RadioGroup<AppStyle>(
-              groupValue: currentTheme,
-              onChanged: (value) {
-                if (value != null) {
-                  ref.read(themeNotifierProvider.notifier).setTheme(value);
-                  Navigator.pop(dialogContext);
-                }
-              },
-              child: ListView(
-                shrinkWrap: true,
-                children: sortedStyles.map((style) {
-                  // grungeCollage 使用多语言的"默认"
-                  final displayName = style == AppStyle.grungeCollage
-                      ? context.l10n.settings_defaultPreset
-                      : style.displayName;
-                  return RadioListTile<AppStyle>(
-                    title: Text(displayName),
-                    value: style,
-                  );
-                }).toList(),
-              ),
+          title: Text(context.l10n.settings_themeMode),
+          content: RadioGroup<AppThemeMode>(
+            groupValue: currentTheme,
+            onChanged: (value) {
+              if (value != null) {
+                ref.read(themeNotifierProvider.notifier).setThemeMode(value);
+                Navigator.pop(dialogContext);
+              }
+            },
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                for (final mode in AppThemeMode.values)
+                  RadioListTile<AppThemeMode>(
+                    key: ValueKey('settings-theme-mode-${mode.name}'),
+                    title: Text(_themeModeLabel(context, mode)),
+                    value: mode,
+                  ),
+              ],
             ),
           ),
           actions: [

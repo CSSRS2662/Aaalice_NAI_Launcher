@@ -8,16 +8,14 @@ void main() {
   GoogleFonts.config.allowRuntimeFetching = false;
 
   test('all app themes hide slider tick marks', () {
-    for (final style in AppStyle.values) {
-      for (final brightness in Brightness.values) {
-        final theme = AppTheme.getTheme(style, brightness);
+    for (final brightness in Brightness.values) {
+      final theme = AppTheme.getTheme(brightness);
 
-        expect(
-          theme.sliderTheme.tickMarkShape,
-          SliderTickMarkShape.noTickMark,
-          reason: '${style.name} ${brightness.name}',
-        );
-      }
+      expect(
+        theme.sliderTheme.tickMarkShape,
+        SliderTickMarkShape.noTickMark,
+        reason: brightness.name,
+      );
     }
   });
 }

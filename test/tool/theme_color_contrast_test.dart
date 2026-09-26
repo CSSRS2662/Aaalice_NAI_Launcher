@@ -32,15 +32,15 @@ void main() {
 
   group('主题配色对比度', () {
     testWidgets('所有主题必须挂载统一语义 token', (tester) async {
-      for (final style in AppStyle.values) {
+      {
         for (final brightness in Brightness.values) {
-          final theme = AppTheme.getTheme(style, brightness);
+          final theme = AppTheme.getTheme(brightness);
           final extension = theme.extension<AppThemeExtension>();
 
           expect(
             extension,
             isNotNull,
-            reason: '${style.name}/${brightness.name}',
+            reason: brightness.name,
           );
           expect(extension!.controlRadius, greaterThanOrEqualTo(0));
           expect(extension.cardRadius, greaterThanOrEqualTo(0));
@@ -57,12 +57,12 @@ void main() {
           expect(
             extension.fastDuration,
             lessThanOrEqualTo(const Duration(milliseconds: 180)),
-            reason: '${style.name}/${brightness.name} fast motion',
+            reason: '${brightness.name} fast motion',
           );
           expect(
             extension.slowDuration,
             lessThanOrEqualTo(const Duration(milliseconds: 300)),
-            reason: '${style.name}/${brightness.name} slow motion',
+            reason: '${brightness.name} slow motion',
           );
           expect(extension.dividerThickness, greaterThan(0));
           expect(extension.dividerColor.a, lessThan(0.2));
@@ -71,7 +71,7 @@ void main() {
     });
 
     testWidgets('页面转场在 Reduce Motion 下直接到终态', (tester) async {
-      final theme = AppTheme.getTheme(AppStyle.grungeCollage, Brightness.dark);
+      final theme = AppTheme.getTheme(Brightness.dark);
       final transitionBuilder =
           theme.pageTransitionsTheme.builders[TargetPlatform.windows]!;
       final route = PageRouteBuilder<void>(
@@ -105,9 +105,9 @@ void main() {
     });
 
     testWidgets('普通组件保持无描边，输入框使用低对比单层细边界', (tester) async {
-      for (final style in AppStyle.values) {
+      {
         for (final brightness in Brightness.values) {
-          final theme = AppTheme.getTheme(style, brightness);
+          final theme = AppTheme.getTheme(brightness);
           final cardShape = theme.cardTheme.shape;
           final outlinedSide = theme.outlinedButtonTheme.style?.side?.resolve(
             {},
@@ -120,43 +120,43 @@ void main() {
           expect(
             cardShape,
             isA<RoundedRectangleBorder>(),
-            reason: '${style.name}/${brightness.name}',
+            reason: brightness.name,
           );
           expect(
             (cardShape! as RoundedRectangleBorder).side.style,
             BorderStyle.none,
-            reason: '${style.name}/${brightness.name} card',
+            reason: '${brightness.name} card',
           );
           expect(
             outlinedSide?.style,
             BorderStyle.none,
-            reason: '${style.name}/${brightness.name} outlined button',
+            reason: '${brightness.name} outlined button',
           );
           expect(
             inputBorder,
             isA<OutlineInputBorder>(),
-            reason: '${style.name}/${brightness.name} input type',
+            reason: '${brightness.name} input type',
           );
           expect(
             (inputBorder! as OutlineInputBorder).borderSide.style,
             BorderStyle.solid,
-            reason: '${style.name}/${brightness.name} input border',
+            reason: '${brightness.name} input border',
           );
           expect(
             inputBorder.borderSide.width,
             lessThanOrEqualTo(1),
-            reason: '${style.name}/${brightness.name} input border width',
+            reason: '${brightness.name} input border width',
           );
           expect(
             dropdownElevation,
             8,
-            reason: '${style.name}/${brightness.name} dropdown elevation',
+            reason: '${brightness.name} dropdown elevation',
           );
           if (tooltipDecoration is BoxDecoration) {
             expect(
               tooltipDecoration.border,
               isNull,
-              reason: '${style.name}/${brightness.name} tooltip',
+              reason: '${brightness.name} tooltip',
             );
           }
         }
@@ -168,9 +168,9 @@ void main() {
     testWidgets('colorScheme 的 onXxx 对 Xxx 必须达 WCAG AA', (tester) async {
       final offenders = <String>[];
 
-      for (final style in AppStyle.values) {
+      {
         for (final brightness in Brightness.values) {
-          final cs = AppTheme.getTheme(style, brightness).colorScheme;
+          final cs = AppTheme.getTheme(brightness).colorScheme;
           final pairs = <String, (Color, Color)>{
             'primary/onPrimary': (cs.primary, cs.onPrimary),
             'primaryContainer/on': (cs.primaryContainer, cs.onPrimaryContainer),
@@ -196,7 +196,7 @@ void main() {
             final ratio = contrastRatio(pair.value.$2, pair.value.$1);
             if (ratio < wcagAA) {
               offenders.add(
-                '  ${style.name}/${brightness.name} ${pair.key}: '
+                '  ${brightness.name} ${pair.key}: '
                 '${hexOf(pair.value.$1)} 配 ${hexOf(pair.value.$2)} '
                 '= ${ratio.toStringAsFixed(2)}',
               );
@@ -218,9 +218,9 @@ void main() {
     testWidgets('常用交互组件的实际渲染必须达 WCAG AA', (tester) async {
       final offenders = <String>[];
 
-      for (final style in AppStyle.values) {
+      {
         for (final brightness in Brightness.values) {
-          final theme = AppTheme.getTheme(style, brightness);
+          final theme = AppTheme.getTheme(brightness);
           for (final probe in _componentProbes.entries) {
             await tester.pumpWidget(
               MaterialApp(
@@ -234,7 +234,7 @@ void main() {
             if (measured == null) continue;
             if (measured.ratio < wcagAA) {
               offenders.add(
-                '  ${style.name}/${brightness.name}/${probe.key}: '
+                '  ${brightness.name}/${probe.key}: '
                 '底=${hexOf(measured.background)} 字=${hexOf(measured.foreground)} '
                 '= ${measured.ratio.toStringAsFixed(2)}',
               );
@@ -265,11 +265,7 @@ void main() {
         fontFamily: 'LXGW ZhenKai GB',
         source: FontSource.system,
       );
-      final theme = AppTheme.getTheme(
-        AppStyle.grungeCollage,
-        Brightness.dark,
-        fontConfig: fontConfig,
-      );
+      final theme = AppTheme.getTheme(Brightness.dark, fontConfig: fontConfig);
       expect(
         theme.textTheme.labelLarge?.fontFamily,
         fontConfig.fontFamily,
@@ -282,14 +278,14 @@ void main() {
 
     testWidgets('组件字体必须与 textTheme 一致（主题原生字体）', (tester) async {
       final offenders = <String>[];
-      for (final style in AppStyle.values) {
-        final theme = AppTheme.getTheme(style, Brightness.dark);
+      for (final brightness in Brightness.values) {
+        final theme = AppTheme.getTheme(brightness);
         if (theme.textTheme.labelLarge?.fontFamily == null) continue;
         offenders.addAll(
           (await _findFontMismatches(
             tester,
             theme,
-          )).map((line) => '  ${style.name}:$line'),
+          )).map((line) => '  ${brightness.name}:$line'),
         );
       }
       expect(offenders, isEmpty, reason: _fontFailureHint(offenders));
@@ -305,11 +301,7 @@ void main() {
         fontFamily: 'LXGW ZhenKai GB',
         source: FontSource.system,
       );
-      final theme = AppTheme.getTheme(
-        AppStyle.grungeCollage,
-        Brightness.dark,
-        fontConfig: fontConfig,
-      );
+      final theme = AppTheme.getTheme(Brightness.dark, fontConfig: fontConfig);
       final expected = theme.textTheme.labelLarge?.fontFamily;
 
       final offenders = <String>[];

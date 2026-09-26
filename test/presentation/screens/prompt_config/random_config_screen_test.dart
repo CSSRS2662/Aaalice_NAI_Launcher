@@ -137,7 +137,7 @@ void main() {
           locale: const Locale('zh'),
           localizationsDelegates: AppLocalizations.localizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
-          theme: AppTheme.getTheme(AppStyle.grungeCollage, Brightness.dark),
+          theme: AppTheme.getTheme(Brightness.dark),
           home: const PromptConfigScreen(),
         ),
       ),

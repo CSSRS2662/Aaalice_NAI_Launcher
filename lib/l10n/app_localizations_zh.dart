@@ -585,7 +585,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get settings_appearance => '外观';
 
   @override
-  String get settings_style => '风格';
+  String get settings_themeMode => '主题';
 
   @override
   String get settings_font => '字体';
@@ -693,10 +693,13 @@ class AppLocalizationsZh extends AppLocalizations {
   String get settings_comfyUiDesktopOnly => '仅桌面端可用';
 
   @override
-  String get settings_selectStyle => '选择风格';
+  String get settings_themeModeSystem => '跟随系统';
 
   @override
-  String get settings_defaultPreset => '默认';
+  String get settings_themeModeLight => '浅色';
+
+  @override
+  String get settings_themeModeDark => '深色';
 
   @override
   String get settings_selectFont => '选择字体';
@@ -15391,7 +15394,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get settings_appearance => '外觀';
 
   @override
-  String get settings_style => '風格';
+  String get settings_themeMode => '主題';
 
   @override
   String get settings_font => '字型';
@@ -15499,10 +15502,13 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get settings_comfyUiDesktopOnly => '僅桌面版可用';
 
   @override
-  String get settings_selectStyle => '選擇風格';
+  String get settings_themeModeSystem => '跟隨系統';
 
   @override
-  String get settings_defaultPreset => '預設';
+  String get settings_themeModeLight => '淺色';
+
+  @override
+  String get settings_themeModeDark => '深色';
 
   @override
   String get settings_selectFont => '選擇字型';

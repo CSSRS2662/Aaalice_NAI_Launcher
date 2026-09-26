@@ -7,14 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:nai_launcher/presentation/themes/core/theme_modules.dart';
 
-export 'presets/retro_typography.dart';
-export 'presets/grunge_typography.dart';
-export 'presets/fluid_typography.dart';
-export 'presets/material_typography.dart';
-export 'presets/flat_typography.dart';
-export 'presets/hand_drawn_typography.dart';
-export 'presets/editorial_typography.dart';
-export 'presets/zen_typography.dart';
+export 'presets/pocket_typography.dart';
 
 /// Base implementation of [TypographyModule] with common utilities.
 abstract class BaseTypographyModule implements TypographyModule {

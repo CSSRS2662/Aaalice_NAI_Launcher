@@ -601,7 +601,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get settings_appearance => '外観';
 
   @override
-  String get settings_style => 'スタイル';
+  String get settings_themeMode => 'テーマ';
 
   @override
   String get settings_font => 'フォント';
@@ -709,10 +709,13 @@ class AppLocalizationsJa extends AppLocalizations {
   String get settings_comfyUiDesktopOnly => 'デスクトップ版でのみ利用できます';
 
   @override
-  String get settings_selectStyle => 'スタイルの選択';
+  String get settings_themeModeSystem => 'システムに合わせる';
 
   @override
-  String get settings_defaultPreset => 'デフォルト';
+  String get settings_themeModeLight => 'ライト';
+
+  @override
+  String get settings_themeModeDark => 'ダーク';
 
   @override
   String get settings_selectFont => 'フォントの選択';

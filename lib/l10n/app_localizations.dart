@@ -1205,11 +1205,11 @@ abstract class AppLocalizations {
   /// **'Appearance'**
   String get settings_appearance;
 
-  /// No description provided for @settings_style.
+  /// No description provided for @settings_themeMode.
   ///
   /// In en, this message translates to:
-  /// **'Style'**
-  String get settings_style;
+  /// **'Theme'**
+  String get settings_themeMode;
 
   /// No description provided for @settings_font.
   ///
@@ -1415,17 +1415,23 @@ abstract class AppLocalizations {
   /// **'Available on desktop only'**
   String get settings_comfyUiDesktopOnly;
 
-  /// No description provided for @settings_selectStyle.
+  /// No description provided for @settings_themeModeSystem.
   ///
   /// In en, this message translates to:
-  /// **'Select Style'**
-  String get settings_selectStyle;
+  /// **'Follow system'**
+  String get settings_themeModeSystem;
 
-  /// No description provided for @settings_defaultPreset.
+  /// No description provided for @settings_themeModeLight.
   ///
   /// In en, this message translates to:
-  /// **'Default'**
-  String get settings_defaultPreset;
+  /// **'Light'**
+  String get settings_themeModeLight;
+
+  /// No description provided for @settings_themeModeDark.
+  ///
+  /// In en, this message translates to:
+  /// **'Dark'**
+  String get settings_themeModeDark;
 
   /// No description provided for @settings_selectFont.
   ///

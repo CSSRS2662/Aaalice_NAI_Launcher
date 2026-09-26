@@ -21,7 +21,7 @@ import 'package:nai_launcher/presentation/agent_settings/providers/agent_setting
 import 'package:nai_launcher/data/models/prompt_assistant/prompt_assistant_models.dart';
 import 'package:nai_launcher/presentation/prompt_assistant/providers/web_access_provider.dart';
 import 'package:nai_launcher/presentation/themes/core/layered_surface_style.dart';
-import 'package:nai_launcher/presentation/themes/modules/color/palettes/grunge_palette.dart';
+import 'package:nai_launcher/presentation/themes/modules/color/palettes/pocket_palette.dart';
 import 'package:nai_launcher/presentation/widgets/common/model_family_icon.dart';
 import 'package:nai_launcher/presentation/widgets/common/ai_brand_icon.dart';
 
@@ -255,7 +255,7 @@ void main() {
   testWidgets('dark composer stays tonally separated from the chat canvas', (
     tester,
   ) async {
-    final colors = const GrungePalette().darkScheme;
+    final colors = const PocketPalette().darkScheme;
     await _pumpComposer(
       tester,
       width: 520,
@@ -308,7 +308,7 @@ void main() {
   testWidgets('enabled web access keeps a selected tonal surface', (
     tester,
   ) async {
-    final colors = const GrungePalette().darkScheme;
+    final colors = const PocketPalette().darkScheme;
     await _pumpComposer(
       tester,
       width: 520,
