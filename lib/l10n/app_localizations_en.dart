@@ -343,18 +343,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get nav_dictionary => 'Dictionary';
 
   @override
-  String get nav_discordCommunity => 'Discord Community';
-
-  @override
-  String get nav_githubRepo => 'GitHub Repository';
-
-  @override
-  String get nav_joinDiscord => 'Join Discord';
-
-  @override
-  String get nav_projectRepository => 'Project repository';
-
-  @override
   String get nav_expandSidebar => 'Expand sidebar';
 
   @override
@@ -689,12 +677,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get settings_aboutApplicationSection => 'Application';
 
   @override
-  String get settings_aboutUpdatesSection => 'Updates';
-
-  @override
-  String get settings_aboutResourcesSection => 'Project resources';
-
-  @override
   String get settings_integrationConnectionSection =>
       'Connection and availability';
 
@@ -774,13 +756,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String settings_version(Object version) {
     return 'Version $version';
   }
-
-  @override
-  String get settings_openSource => 'Open Source';
-
-  @override
-  String get settings_openSourceSubtitle =>
-      'View source code and documentation';
 
   @override
   String get settings_fileLogging => 'Record application logs';
@@ -3341,9 +3316,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get gallery_seedCopied => 'Seed copied';
-
-  @override
-  String get gallery_sendToKritaAction => 'Send to Krita';
 
   @override
   String get gallery_upscalePanelLoaded =>
@@ -5929,9 +5901,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get localGallery_sendToPreciseReference => 'Send to Precise Reference';
-
-  @override
-  String get localGallery_sendToKrita => 'Send to Krita';
 
   @override
   String get localGallery_importImageMetadata => 'Import Image Metadata';
@@ -10247,9 +10216,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get image_viewDetail => 'View details';
 
   @override
-  String get discordShare_action => 'Share to Discord';
-
-  @override
   String get discordShare_title => 'Share to Discord';
 
   @override
@@ -11800,182 +11766,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String get checkForUpdate => 'Check for Updates';
 
   @override
-  String get neverChecked => 'Never checked';
-
-  @override
   String lastCheckedAt(Object time) {
     return 'Last checked: $time';
   }
 
   @override
-  String get includePrereleaseUpdates => 'Include Prerelease Versions';
-
-  @override
-  String get includePrereleaseUpdatesDescription =>
-      'Include beta/alpha versions when checking for updates';
-
-  @override
   String get updateAvailable => 'Update Available';
 
   @override
-  String get updateChecking => 'Checking for updates...';
-
-  @override
-  String get updateDownloading => 'Downloading update...';
-
-  @override
-  String get updateInstalling => 'Starting installer...';
-
-  @override
-  String get updateUpToDate => 'Already up to date';
-
-  @override
-  String get updateError => 'Failed to check for updates';
-
-  @override
-  String get updateErrorNetwork =>
-      'Unable to reach the update server. Check your network or proxy settings and try again.';
-
-  @override
-  String get updateErrorServerBusy =>
-      'The update server is busy. Please try again later.';
-
-  @override
-  String get updateErrorReleaseNotReady =>
-      'The latest release files are not ready yet. Please try again later.';
-
-  @override
-  String get updateErrorServiceUnavailable =>
-      'The update server is temporarily unavailable. Please try again later.';
-
-  @override
-  String get updateErrorInvalidMetadata =>
-      'Update information could not be verified. Try again later or download from the Release page.';
-
-  @override
-  String get updateErrorUnknown =>
-      'Unable to check for updates right now. Please try again later.';
-
-  @override
   String get currentVersion => 'Current Version';
-
-  @override
-  String get latestVersion => 'Latest Version';
-
-  @override
-  String get releaseNotes => 'Release Notes';
-
-  @override
-  String get viewReleasePage => 'View Release';
-
-  @override
-  String get updatePortableManualHint =>
-      'This build cannot update in-app. Please download the new version from the Release page.';
-
-  @override
-  String updateDownloadingProgress(Object percent) {
-    return 'Downloading update package: $percent%';
-  }
-
-  @override
-  String updateDownloadSizeSpeed(Object received, Object total, Object speed) {
-    return '$received / $total · $speed';
-  }
-
-  @override
-  String get updateDownloaded => 'Update Package Ready';
-
-  @override
-  String updateDownloadedHint(Object version) {
-    return 'v$version has been downloaded and verified. Installing will close the app and restart it automatically.';
-  }
-
-  @override
-  String get updateInstallAndRestart => 'Install and Restart';
-
-  @override
-  String get updateInstallNow => 'Install Now';
-
-  @override
-  String get updateInstallLater => 'Install Later';
-
-  @override
-  String get updateDownload => 'Download Update';
-
-  @override
-  String get updateDownloadCancelled =>
-      'Download cancelled; you can resume later';
-
-  @override
-  String get updateDownloadFailed => 'Failed to download the update';
-
-  @override
-  String get updateInstallFailed => 'Failed to install the update';
-
-  @override
-  String get updateInstallingHint =>
-      'The installer has started. The app will close and finish updating automatically.';
-
-  @override
-  String get updateInstallConfirmationTitle => 'Install the update now?';
-
-  @override
-  String get updateInstallConfirmationBody =>
-      'The app will shut down safely, install the update, and restart automatically. Active generation and download tasks will stop, so save anything important first.';
-
-  @override
-  String get updateActiveTasksWarning =>
-      'Queue tasks are still active. Installing will stop the current task.';
-
-  @override
-  String get remindMeLater => 'Remind Me in 4 Hours';
-
-  @override
-  String get skipThisVersion => 'Skip This Version';
-
-  @override
-  String updateNoticeAvailable(Object version) {
-    return 'Version v$version is available';
-  }
-
-  @override
-  String get updateNoticeAvailableSubtitle =>
-      'Download, verify, and safely install the update in the app';
-
-  @override
-  String get updateNoticeManualSubtitle =>
-      'This platform must be updated manually from the Release page';
-
-  @override
-  String updateNoticeReady(Object version) {
-    return 'Version v$version is ready';
-  }
-
-  @override
-  String get updateNoticeReadySubtitle =>
-      'The package is verified and ready to install';
-
-  @override
-  String get updateNoticeFailed => 'The previous update did not finish';
-
-  @override
-  String get updateViewDetails => 'View Update';
-
-  @override
-  String updateSettingsAvailable(Object version) {
-    return 'v$version is available; select to view details';
-  }
-
-  @override
-  String updateSettingsReady(Object version) {
-    return 'v$version is downloaded; select to install';
-  }
-
-  @override
-  String get goToDownload => 'Go to Download';
-
-  @override
-  String get versionSkipped => 'Version skipped';
 
   @override
   String get cannotOpenUrl => 'Cannot open link';
@@ -13630,19 +13429,6 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get settings_clearLocalOnnxModelsContent =>
       'This removes the ONNX models and label files imported on this device.';
-
-  @override
-  String updateAndroidDownloadedHint(Object version) {
-    return 'v$version has been downloaded and verified. Open Android\'s system installer to continue the update.';
-  }
-
-  @override
-  String get updateAndroidInstallingHint =>
-      'Opening Android\'s system installer. Follow the system prompt to confirm the update.';
-
-  @override
-  String get updateAndroidInstallConfirmationBody =>
-      'Android\'s system installer will open. After you confirm, Android will replace the app without clearing local data. Active generation and download tasks may stop, so save anything important first.';
 
   @override
   String get vibeDetail_setAsCover => 'Set selected image as cover';

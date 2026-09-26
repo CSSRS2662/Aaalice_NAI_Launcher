@@ -143,10 +143,6 @@
   "nav_statistics": "統計",
   "nav_randomConfig": "ランダム構成",
   "nav_dictionary": "辞書",
-  "nav_discordCommunity": "Discord コミュニティ",
-  "nav_githubRepo": "GitHub リポジトリ",
-  "nav_joinDiscord": "Discord に参加",
-  "nav_projectRepository": "プロジェクトリポジトリ",
   "nav_expandSidebar": "サイドバーを展開",
   "nav_collapseSidebar": "サイドバーを折りたたむ",
   "auth_login": "ログイン",
@@ -259,8 +255,6 @@
   "settings_networkProxySection": "プロキシ接続",
   "settings_shortcutManagementSection": "ショートカット管理",
   "settings_aboutApplicationSection": "アプリ情報",
-  "settings_aboutUpdatesSection": "アップデート",
-  "settings_aboutResourcesSection": "プロジェクト情報",
   "settings_integrationConnectionSection": "接続と利用状況",
   "settings_generationInputSection": "入力",
   "settings_generationOutputSection": "画像出力",
@@ -295,8 +289,6 @@
       "version": {}
     }
   },
-  "settings_openSource": "オープンソース",
-  "settings_openSourceSubtitle": "ソース コードとドキュメントを表示する",
   "settings_fileLogging": "アプリケーション ログを記録する",
   "settings_fileLoggingSubtitle": "デフォルトではオフ。トラブルシューティングの場合にのみ有効にします。有効にすると、ログはDocuments/NAI_Launcher/logsに書き込まれます。無効にすると、ログ ファイルは作成または書き込まれなくなります。",
   "settings_exportDiagnosticLogs": "診断ログをエクスポート",
@@ -1476,7 +1468,6 @@
   "gallery_metaSmea": "SMEA",
   "gallery_promptCopied": "プロンプトがコピーされました",
   "gallery_seedCopied": "シードがコピーされました",
-  "gallery_sendToKritaAction": "Krita に送信",
   "gallery_upscalePanelLoaded": "Image2Image の拡大パネルを読み込みました",
   "gallery_readImageFailed": "画像の読み取りに失敗しました: {error}",
   "@gallery_readImageFailed": {
@@ -2611,7 +2602,6 @@
   "localGallery_sendToReversePrompt": "逆プロンプトに送信",
   "localGallery_sendToStyleTransfer": "バイブストランスファーに送信",
   "localGallery_sendToPreciseReference": "精密参照に送信",
-  "localGallery_sendToKrita": "Krita に送信",
   "localGallery_importImageMetadata": "画像メタデータをインポート",
   "localGallery_copyPrompt": "プロンプトのコピー",
   "localGallery_copySeed": "シードをコピー",
@@ -4953,7 +4943,6 @@
   "settings_historyClickBehavior_linked": "プレビュー連動",
   "settings_historyClickBehavior_linkedDescription": "クリックで中央プレビューを切り替え、ダブルクリックまたは長押しで詳細を開き、左右キーで移動します",
   "image_viewDetail": "詳細を表示",
-  "discordShare_action": "Discord に共有",
   "discordShare_title": "Discord に共有",
   "discordShare_subtitle": "画像を Aaalice コミュニティチャンネルに投稿します",
   "discordShare_verifyTitle": "Discord メンバーシップを確認",
@@ -5669,89 +5658,14 @@
     }
   },
   "checkForUpdate": "アップデートを確認してください",
-  "neverChecked": "チェックされていません",
   "lastCheckedAt": "最終チェック日: {time}",
   "@lastCheckedAt": {
     "placeholders": {
       "time": {}
     }
   },
-  "includePrereleaseUpdates": "プレリリース バージョンを含む",
-  "includePrereleaseUpdatesDescription": "更新をチェックするときにベータ/アルファ バージョンを含めます",
   "updateAvailable": "アップデートが利用可能です",
-  "updateChecking": "アップデートをチェックしています...",
-  "updateUpToDate": "すでに最新です",
-  "updateError": "更新の確認に失敗しました",
-  "updateErrorNetwork": "更新サーバーに接続できません。ネットワークまたはプロキシ設定を確認して、もう一度お試しください。",
-  "updateErrorServerBusy": "更新サーバーが混み合っています。しばらくしてからもう一度お試しください。",
-  "updateErrorReleaseNotReady": "最新バージョンのリリースファイルはまだ準備中です。しばらくしてからもう一度お試しください。",
-  "updateErrorServiceUnavailable": "更新サーバーは一時的に利用できません。しばらくしてからもう一度お試しください。",
-  "updateErrorInvalidMetadata": "更新情報を検証できませんでした。後でもう一度試すか、Release ページからダウンロードしてください。",
-  "updateErrorUnknown": "現在アップデートを確認できません。しばらくしてからもう一度お試しください。",
   "currentVersion": "現在のバージョン",
-  "latestVersion": "最新バージョン",
-  "releaseNotes": "リリースノート",
-  "viewReleasePage": "Release を表示",
-  "remindMeLater": "4時間後に通知",
-  "skipThisVersion": "このバージョンをスキップ",
-  "updateDownload": "更新をダウンロード",
-  "updateInstallNow": "今すぐインストール",
-  "updateInstallFailed": "更新のインストールに失敗しました",
-  "updateInstallConfirmationTitle": "今すぐ更新をインストールしますか？",
-  "updateInstallConfirmationBody": "アプリを安全に終了して更新をインストールし、自動的に再起動します。実行中の生成・ダウンロードタスクは停止するため、必要な内容を先に保存してください。",
-  "updateActiveTasksWarning": "キュータスクが実行中です。インストールすると現在のタスクは停止します。",
-  "updateNoticeAvailable": "新しいバージョン v{version} があります",
-  "@updateNoticeAvailable": {
-    "placeholders": {"version": {}}
-  },
-  "updateNoticeAvailableSubtitle": "アプリ内で更新をダウンロード、検証し、安全にインストールできます",
-  "updateNoticeManualSubtitle": "このプラットフォームでは Release ページから手動で更新してください",
-  "updateNoticeReady": "バージョン v{version} の準備ができました",
-  "@updateNoticeReady": {
-    "placeholders": {"version": {}}
-  },
-  "updateNoticeReadySubtitle": "パッケージは検証済みで、インストールできます",
-  "updateNoticeFailed": "前回の更新は完了しませんでした",
-  "updateViewDetails": "更新を表示",
-  "updateSettingsAvailable": "v{version} が利用可能です。選択して詳細を表示",
-  "@updateSettingsAvailable": {
-    "placeholders": {"version": {}}
-  },
-  "updateSettingsReady": "v{version} はダウンロード済みです。選択してインストール",
-  "@updateSettingsReady": {
-    "placeholders": {"version": {}}
-  },
-  "goToDownload": "ダウンロードに移動",
-  "updateDownloading": "アップデートをダウンロードしています...",
-  "updateDownloadingProgress": "更新パッケージをダウンロードしています: {percent}%",
-  "@updateDownloadingProgress": {
-    "placeholders": {
-      "percent": {}
-    }
-  },
-  "updateDownloadSizeSpeed": "{received} / {total} · {speed}",
-  "@updateDownloadSizeSpeed": {
-    "placeholders": {
-      "received": {},
-      "total": {},
-      "speed": {}
-    }
-  },
-  "updateDownloaded": "更新パッケージの準備ができました",
-  "updateDownloadedHint": "v{version} をダウンロードし、検証が完了しました。インストールするとアプリが終了し、自動的に再起動します。",
-  "@updateDownloadedHint": {
-    "placeholders": {
-      "version": {}
-    }
-  },
-  "updateInstallAndRestart": "インストールして再起動",
-  "updateInstallLater": "後でインストール",
-  "updateDownloadCancelled": "ダウンロードをキャンセルしました。後で再開できます",
-  "updateDownloadFailed": "更新のダウンロードに失敗しました",
-  "updateInstalling": "インストーラーを起動しています...",
-  "updateInstallingHint": "インストーラーが起動しました。アプリは終了し、自動的に更新が完了します。",
-  "updatePortableManualHint": "このビルドはアプリ内更新に対応していません。Release ページから新しいバージョンを手動でダウンロードしてください。",
-  "versionSkipped": "バージョンがスキップされました",
   "cannotOpenUrl": "リンクを開けません",
 
   "model3d_editorTitle": "3Dモデルレイヤー",
@@ -6581,10 +6495,6 @@
   "@settings_localOnnxManagedFiles": {"placeholders":{"count":{"type":"int"}}},
   "settings_clearLocalOnnxModelsTitle": "ローカル ONNX モデルを消去しますか？",
   "settings_clearLocalOnnxModelsContent": "この端末にインポートした ONNX モデルとラベルファイルを削除します。",
-  "updateAndroidDownloadedHint": "v{version} をダウンロードし、検証が完了しました。Android のシステムインストーラーを開いて更新を続行できます。",
-  "@updateAndroidDownloadedHint": {"placeholders":{"version":{}}},
-  "updateAndroidInstallingHint": "Android のシステムインストーラーを開いています。システムの案内に従って更新を確認してください。",
-  "updateAndroidInstallConfirmationBody": "Android のシステムインストーラーを開きます。確認後、ローカルデータを消去せずにアプリが更新されます。実行中の生成・ダウンロードタスクが停止する場合があるため、必要な内容を先に保存してください。",
   "vibeDetail_setAsCover": "選択した画像をカバーに設定",
   "vibeDetail_bundleChildParameters": "子 Vibe {index} のインポートパラメーターを表示しています。",
   "@vibeDetail_bundleChildParameters": {"placeholders":{"index":{"type":"int"}}},

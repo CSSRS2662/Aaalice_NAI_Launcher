@@ -336,18 +336,6 @@ class AppLocalizationsJa extends AppLocalizations {
   String get nav_dictionary => '辞書';
 
   @override
-  String get nav_discordCommunity => 'Discord コミュニティ';
-
-  @override
-  String get nav_githubRepo => 'GitHub リポジトリ';
-
-  @override
-  String get nav_joinDiscord => 'Discord に参加';
-
-  @override
-  String get nav_projectRepository => 'プロジェクトリポジトリ';
-
-  @override
   String get nav_expandSidebar => 'サイドバーを展開';
 
   @override
@@ -676,12 +664,6 @@ class AppLocalizationsJa extends AppLocalizations {
   String get settings_aboutApplicationSection => 'アプリ情報';
 
   @override
-  String get settings_aboutUpdatesSection => 'アップデート';
-
-  @override
-  String get settings_aboutResourcesSection => 'プロジェクト情報';
-
-  @override
   String get settings_integrationConnectionSection => '接続と利用状況';
 
   @override
@@ -759,12 +741,6 @@ class AppLocalizationsJa extends AppLocalizations {
   String settings_version(Object version) {
     return 'バージョン $version';
   }
-
-  @override
-  String get settings_openSource => 'オープンソース';
-
-  @override
-  String get settings_openSourceSubtitle => 'ソース コードとドキュメントを表示する';
 
   @override
   String get settings_fileLogging => 'アプリケーション ログを記録する';
@@ -3260,9 +3236,6 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get gallery_seedCopied => 'シードがコピーされました';
-
-  @override
-  String get gallery_sendToKritaAction => 'Krita に送信';
 
   @override
   String get gallery_upscalePanelLoaded => 'Image2Image の拡大パネルを読み込みました';
@@ -5775,9 +5748,6 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get localGallery_sendToPreciseReference => '精密参照に送信';
-
-  @override
-  String get localGallery_sendToKrita => 'Krita に送信';
 
   @override
   String get localGallery_importImageMetadata => '画像メタデータをインポート';
@@ -10004,9 +9974,6 @@ class AppLocalizationsJa extends AppLocalizations {
   String get image_viewDetail => '詳細を表示';
 
   @override
-  String get discordShare_action => 'Discord に共有';
-
-  @override
   String get discordShare_title => 'Discord に共有';
 
   @override
@@ -11511,176 +11478,15 @@ class AppLocalizationsJa extends AppLocalizations {
   String get checkForUpdate => 'アップデートを確認してください';
 
   @override
-  String get neverChecked => 'チェックされていません';
-
-  @override
   String lastCheckedAt(Object time) {
     return '最終チェック日: $time';
   }
 
   @override
-  String get includePrereleaseUpdates => 'プレリリース バージョンを含む';
-
-  @override
-  String get includePrereleaseUpdatesDescription =>
-      '更新をチェックするときにベータ/アルファ バージョンを含めます';
-
-  @override
   String get updateAvailable => 'アップデートが利用可能です';
 
   @override
-  String get updateChecking => 'アップデートをチェックしています...';
-
-  @override
-  String get updateDownloading => 'アップデートをダウンロードしています...';
-
-  @override
-  String get updateInstalling => 'インストーラーを起動しています...';
-
-  @override
-  String get updateUpToDate => 'すでに最新です';
-
-  @override
-  String get updateError => '更新の確認に失敗しました';
-
-  @override
-  String get updateErrorNetwork =>
-      '更新サーバーに接続できません。ネットワークまたはプロキシ設定を確認して、もう一度お試しください。';
-
-  @override
-  String get updateErrorServerBusy => '更新サーバーが混み合っています。しばらくしてからもう一度お試しください。';
-
-  @override
-  String get updateErrorReleaseNotReady =>
-      '最新バージョンのリリースファイルはまだ準備中です。しばらくしてからもう一度お試しください。';
-
-  @override
-  String get updateErrorServiceUnavailable =>
-      '更新サーバーは一時的に利用できません。しばらくしてからもう一度お試しください。';
-
-  @override
-  String get updateErrorInvalidMetadata =>
-      '更新情報を検証できませんでした。後でもう一度試すか、Release ページからダウンロードしてください。';
-
-  @override
-  String get updateErrorUnknown => '現在アップデートを確認できません。しばらくしてからもう一度お試しください。';
-
-  @override
   String get currentVersion => '現在のバージョン';
-
-  @override
-  String get latestVersion => '最新バージョン';
-
-  @override
-  String get releaseNotes => 'リリースノート';
-
-  @override
-  String get viewReleasePage => 'Release を表示';
-
-  @override
-  String get updatePortableManualHint =>
-      'このビルドはアプリ内更新に対応していません。Release ページから新しいバージョンを手動でダウンロードしてください。';
-
-  @override
-  String updateDownloadingProgress(Object percent) {
-    return '更新パッケージをダウンロードしています: $percent%';
-  }
-
-  @override
-  String updateDownloadSizeSpeed(Object received, Object total, Object speed) {
-    return '$received / $total · $speed';
-  }
-
-  @override
-  String get updateDownloaded => '更新パッケージの準備ができました';
-
-  @override
-  String updateDownloadedHint(Object version) {
-    return 'v$version をダウンロードし、検証が完了しました。インストールするとアプリが終了し、自動的に再起動します。';
-  }
-
-  @override
-  String get updateInstallAndRestart => 'インストールして再起動';
-
-  @override
-  String get updateInstallNow => '今すぐインストール';
-
-  @override
-  String get updateInstallLater => '後でインストール';
-
-  @override
-  String get updateDownload => '更新をダウンロード';
-
-  @override
-  String get updateDownloadCancelled => 'ダウンロードをキャンセルしました。後で再開できます';
-
-  @override
-  String get updateDownloadFailed => '更新のダウンロードに失敗しました';
-
-  @override
-  String get updateInstallFailed => '更新のインストールに失敗しました';
-
-  @override
-  String get updateInstallingHint => 'インストーラーが起動しました。アプリは終了し、自動的に更新が完了します。';
-
-  @override
-  String get updateInstallConfirmationTitle => '今すぐ更新をインストールしますか？';
-
-  @override
-  String get updateInstallConfirmationBody =>
-      'アプリを安全に終了して更新をインストールし、自動的に再起動します。実行中の生成・ダウンロードタスクは停止するため、必要な内容を先に保存してください。';
-
-  @override
-  String get updateActiveTasksWarning => 'キュータスクが実行中です。インストールすると現在のタスクは停止します。';
-
-  @override
-  String get remindMeLater => '4時間後に通知';
-
-  @override
-  String get skipThisVersion => 'このバージョンをスキップ';
-
-  @override
-  String updateNoticeAvailable(Object version) {
-    return '新しいバージョン v$version があります';
-  }
-
-  @override
-  String get updateNoticeAvailableSubtitle =>
-      'アプリ内で更新をダウンロード、検証し、安全にインストールできます';
-
-  @override
-  String get updateNoticeManualSubtitle =>
-      'このプラットフォームでは Release ページから手動で更新してください';
-
-  @override
-  String updateNoticeReady(Object version) {
-    return 'バージョン v$version の準備ができました';
-  }
-
-  @override
-  String get updateNoticeReadySubtitle => 'パッケージは検証済みで、インストールできます';
-
-  @override
-  String get updateNoticeFailed => '前回の更新は完了しませんでした';
-
-  @override
-  String get updateViewDetails => '更新を表示';
-
-  @override
-  String updateSettingsAvailable(Object version) {
-    return 'v$version が利用可能です。選択して詳細を表示';
-  }
-
-  @override
-  String updateSettingsReady(Object version) {
-    return 'v$version はダウンロード済みです。選択してインストール';
-  }
-
-  @override
-  String get goToDownload => 'ダウンロードに移動';
-
-  @override
-  String get versionSkipped => 'バージョンがスキップされました';
 
   @override
   String get cannotOpenUrl => 'リンクを開けません';
@@ -13270,19 +13076,6 @@ class AppLocalizationsJa extends AppLocalizations {
   @override
   String get settings_clearLocalOnnxModelsContent =>
       'この端末にインポートした ONNX モデルとラベルファイルを削除します。';
-
-  @override
-  String updateAndroidDownloadedHint(Object version) {
-    return 'v$version をダウンロードし、検証が完了しました。Android のシステムインストーラーを開いて更新を続行できます。';
-  }
-
-  @override
-  String get updateAndroidInstallingHint =>
-      'Android のシステムインストーラーを開いています。システムの案内に従って更新を確認してください。';
-
-  @override
-  String get updateAndroidInstallConfirmationBody =>
-      'Android のシステムインストーラーを開きます。確認後、ローカルデータを消去せずにアプリが更新されます。実行中の生成・ダウンロードタスクが停止する場合があるため、必要な内容を先に保存してください。';
 
   @override
   String get vibeDetail_setAsCover => '選択した画像をカバーに設定';

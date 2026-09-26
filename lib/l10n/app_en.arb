@@ -148,10 +148,6 @@
   "nav_statistics": "Statistics",
   "nav_randomConfig": "Random Config",
   "nav_dictionary": "Dictionary",
-  "nav_discordCommunity": "Discord Community",
-  "nav_githubRepo": "GitHub Repository",
-  "nav_joinDiscord": "Join Discord",
-  "nav_projectRepository": "Project repository",
   "nav_expandSidebar": "Expand sidebar",
   "nav_collapseSidebar": "Collapse sidebar",
 
@@ -268,8 +264,6 @@
   "settings_networkProxySection": "Proxy connection",
   "settings_shortcutManagementSection": "Shortcut management",
   "settings_aboutApplicationSection": "Application",
-  "settings_aboutUpdatesSection": "Updates",
-  "settings_aboutResourcesSection": "Project resources",
   "settings_integrationConnectionSection": "Connection and availability",
   "settings_generationInputSection": "Input",
   "settings_generationOutputSection": "Image Output",
@@ -304,8 +298,6 @@
       "version": {}
     }
   },
-  "settings_openSource": "Open Source",
-  "settings_openSourceSubtitle": "View source code and documentation",
   "settings_fileLogging": "Record application logs",
   "settings_fileLoggingSubtitle": "Off by default; enable only for troubleshooting. When enabled, logs are written to Documents/NAI_Launcher/logs. When disabled, log files are no longer created or written.",
   "settings_exportDiagnosticLogs": "Export diagnostic logs",
@@ -1488,7 +1480,6 @@
   "gallery_metaSmea": "SMEA",
   "gallery_promptCopied": "Prompt copied",
   "gallery_seedCopied": "Seed copied",
-  "gallery_sendToKritaAction": "Send to Krita",
   "gallery_upscalePanelLoaded": "Loaded the Image2Image Upscale panel",
   "gallery_readImageFailed": "Failed to read image: {error}",
   "@gallery_readImageFailed": {
@@ -2646,7 +2637,6 @@
   "localGallery_sendToReversePrompt": "Send to Reverse Prompt",
   "localGallery_sendToStyleTransfer": "Send to Vibe Transfer",
   "localGallery_sendToPreciseReference": "Send to Precise Reference",
-  "localGallery_sendToKrita": "Send to Krita",
   "localGallery_importImageMetadata": "Import Image Metadata",
   "localGallery_copyPrompt": "Copy Prompt",
   "localGallery_copySeed": "Copy Seed",
@@ -4927,7 +4917,6 @@
   "settings_historyClickBehavior_linked": "Linked preview",
   "settings_historyClickBehavior_linkedDescription": "Click to switch the central preview, double-click or hold for details, and browse with Left/Right",
   "image_viewDetail": "View details",
-  "discordShare_action": "Share to Discord",
   "discordShare_title": "Share to Discord",
   "discordShare_subtitle": "Post this image to an Aaalice community channel",
   "discordShare_verifyTitle": "Verify your Discord membership",
@@ -5661,90 +5650,15 @@
   },
 
   "checkForUpdate": "Check for Updates",
-  "neverChecked": "Never checked",
   "lastCheckedAt": "Last checked: {time}",
   "@lastCheckedAt": {
     "placeholders": {
       "time": {}
     }
   },
-  "includePrereleaseUpdates": "Include Prerelease Versions",
-  "includePrereleaseUpdatesDescription": "Include beta/alpha versions when checking for updates",
 
   "updateAvailable": "Update Available",
-  "updateChecking": "Checking for updates...",
-  "updateDownloading": "Downloading update...",
-  "updateInstalling": "Starting installer...",
-  "updateUpToDate": "Already up to date",
-  "updateError": "Failed to check for updates",
-  "updateErrorNetwork": "Unable to reach the update server. Check your network or proxy settings and try again.",
-  "updateErrorServerBusy": "The update server is busy. Please try again later.",
-  "updateErrorReleaseNotReady": "The latest release files are not ready yet. Please try again later.",
-  "updateErrorServiceUnavailable": "The update server is temporarily unavailable. Please try again later.",
-  "updateErrorInvalidMetadata": "Update information could not be verified. Try again later or download from the Release page.",
-  "updateErrorUnknown": "Unable to check for updates right now. Please try again later.",
   "currentVersion": "Current Version",
-  "latestVersion": "Latest Version",
-  "releaseNotes": "Release Notes",
-  "viewReleasePage": "View Release",
-  "updatePortableManualHint": "This build cannot update in-app. Please download the new version from the Release page.",
-  "updateDownloadingProgress": "Downloading update package: {percent}%",
-  "@updateDownloadingProgress": {
-    "placeholders": {
-      "percent": {}
-    }
-  },
-  "updateDownloadSizeSpeed": "{received} / {total} · {speed}",
-  "@updateDownloadSizeSpeed": {
-    "placeholders": {
-      "received": {},
-      "total": {},
-      "speed": {}
-    }
-  },
-  "updateDownloaded": "Update Package Ready",
-  "updateDownloadedHint": "v{version} has been downloaded and verified. Installing will close the app and restart it automatically.",
-  "@updateDownloadedHint": {
-    "placeholders": {
-      "version": {}
-    }
-  },
-  "updateInstallAndRestart": "Install and Restart",
-  "updateInstallNow": "Install Now",
-  "updateInstallLater": "Install Later",
-  "updateDownload": "Download Update",
-  "updateDownloadCancelled": "Download cancelled; you can resume later",
-  "updateDownloadFailed": "Failed to download the update",
-  "updateInstallFailed": "Failed to install the update",
-  "updateInstallingHint": "The installer has started. The app will close and finish updating automatically.",
-  "updateInstallConfirmationTitle": "Install the update now?",
-  "updateInstallConfirmationBody": "The app will shut down safely, install the update, and restart automatically. Active generation and download tasks will stop, so save anything important first.",
-  "updateActiveTasksWarning": "Queue tasks are still active. Installing will stop the current task.",
-  "remindMeLater": "Remind Me in 4 Hours",
-  "skipThisVersion": "Skip This Version",
-  "updateNoticeAvailable": "Version v{version} is available",
-  "@updateNoticeAvailable": {
-    "placeholders": {"version": {}}
-  },
-  "updateNoticeAvailableSubtitle": "Download, verify, and safely install the update in the app",
-  "updateNoticeManualSubtitle": "This platform must be updated manually from the Release page",
-  "updateNoticeReady": "Version v{version} is ready",
-  "@updateNoticeReady": {
-    "placeholders": {"version": {}}
-  },
-  "updateNoticeReadySubtitle": "The package is verified and ready to install",
-  "updateNoticeFailed": "The previous update did not finish",
-  "updateViewDetails": "View Update",
-  "updateSettingsAvailable": "v{version} is available; select to view details",
-  "@updateSettingsAvailable": {
-    "placeholders": {"version": {}}
-  },
-  "updateSettingsReady": "v{version} is downloaded; select to install",
-  "@updateSettingsReady": {
-    "placeholders": {"version": {}}
-  },
-  "goToDownload": "Go to Download",
-  "versionSkipped": "Version skipped",
   "cannotOpenUrl": "Cannot open link",
 
   "model3d_editorTitle": "3D Model Layer",
@@ -6558,10 +6472,6 @@
   "@settings_localOnnxManagedFiles": {"placeholders":{"count":{"type":"int"}}},
   "settings_clearLocalOnnxModelsTitle": "Clear local ONNX models?",
   "settings_clearLocalOnnxModelsContent": "This removes the ONNX models and label files imported on this device.",
-  "updateAndroidDownloadedHint": "v{version} has been downloaded and verified. Open Android's system installer to continue the update.",
-  "@updateAndroidDownloadedHint": {"placeholders":{"version":{}}},
-  "updateAndroidInstallingHint": "Opening Android's system installer. Follow the system prompt to confirm the update.",
-  "updateAndroidInstallConfirmationBody": "Android's system installer will open. After you confirm, Android will replace the app without clearing local data. Active generation and download tasks may stop, so save anything important first.",
   "vibeDetail_setAsCover": "Set selected image as cover",
   "vibeDetail_bundleChildParameters": "Showing import parameters for child Vibe {index}.",
   "@vibeDetail_bundleChildParameters": {"placeholders":{"index":{"type":"int"}}},

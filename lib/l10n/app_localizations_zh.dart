@@ -332,18 +332,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get nav_dictionary => '词库';
 
   @override
-  String get nav_discordCommunity => 'Discord 社群';
-
-  @override
-  String get nav_githubRepo => 'GitHub 仓库';
-
-  @override
-  String get nav_joinDiscord => '加入 Discord';
-
-  @override
-  String get nav_projectRepository => '项目仓库';
-
-  @override
   String get nav_expandSidebar => '展开侧边栏';
 
   @override
@@ -660,12 +648,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get settings_aboutApplicationSection => '应用信息';
 
   @override
-  String get settings_aboutUpdatesSection => '更新';
-
-  @override
-  String get settings_aboutResourcesSection => '项目资源';
-
-  @override
   String get settings_integrationConnectionSection => '连接与可用性';
 
   @override
@@ -743,12 +725,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String settings_version(Object version) {
     return '版本 $version';
   }
-
-  @override
-  String get settings_openSource => '开源项目';
-
-  @override
-  String get settings_openSourceSubtitle => '查看源代码和文档';
 
   @override
   String get settings_fileLogging => '记录应用日志';
@@ -3214,9 +3190,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get gallery_seedCopied => '已复制 Seed';
 
   @override
-  String get gallery_sendToKritaAction => '发送到 Krita';
-
-  @override
   String get gallery_upscalePanelLoaded => '已载入图生图超分面板';
 
   @override
@@ -5671,9 +5644,6 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get localGallery_sendToPreciseReference => '发送到精准参考';
-
-  @override
-  String get localGallery_sendToKrita => '发送到 Krita';
 
   @override
   String get localGallery_importImageMetadata => '导入图片元数据';
@@ -9845,9 +9815,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get image_viewDetail => '查看详情';
 
   @override
-  String get discordShare_action => '分享到 Discord';
-
-  @override
   String get discordShare_title => '分享到 Discord';
 
   @override
@@ -11309,168 +11276,15 @@ class AppLocalizationsZh extends AppLocalizations {
   String get checkForUpdate => '检查更新';
 
   @override
-  String get neverChecked => '从未检查';
-
-  @override
   String lastCheckedAt(Object time) {
     return '上次检查: $time';
   }
 
   @override
-  String get includePrereleaseUpdates => '包含预发布版本';
-
-  @override
-  String get includePrereleaseUpdatesDescription => '检查更新时包含 beta/alpha 版本';
-
-  @override
   String get updateAvailable => '发现新版本';
 
   @override
-  String get updateChecking => '正在检查更新...';
-
-  @override
-  String get updateDownloading => '正在下载更新...';
-
-  @override
-  String get updateInstalling => '正在启动安装器...';
-
-  @override
-  String get updateUpToDate => '已是最新版本';
-
-  @override
-  String get updateError => '检查更新失败';
-
-  @override
-  String get updateErrorNetwork => '无法连接更新服务器，请检查网络或代理设置后重试。';
-
-  @override
-  String get updateErrorServerBusy => '更新服务器请求繁忙，请稍后重试。';
-
-  @override
-  String get updateErrorReleaseNotReady => '最新版本的发布文件尚未就绪，请稍后重试。';
-
-  @override
-  String get updateErrorServiceUnavailable => '更新服务器暂时不可用，请稍后重试。';
-
-  @override
-  String get updateErrorInvalidMetadata => '更新信息校验失败，请稍后重试或前往 Release 页面下载。';
-
-  @override
-  String get updateErrorUnknown => '暂时无法检查更新，请稍后重试。';
-
-  @override
   String get currentVersion => '当前版本';
-
-  @override
-  String get latestVersion => '最新版本';
-
-  @override
-  String get releaseNotes => '更新日志';
-
-  @override
-  String get viewReleasePage => '查看 Release';
-
-  @override
-  String get updatePortableManualHint => '当前构建不支持应用内更新，请前往 Release 页面手动下载新版。';
-
-  @override
-  String updateDownloadingProgress(Object percent) {
-    return '正在下载更新包：$percent%';
-  }
-
-  @override
-  String updateDownloadSizeSpeed(Object received, Object total, Object speed) {
-    return '$received / $total · $speed';
-  }
-
-  @override
-  String get updateDownloaded => '更新包已就绪';
-
-  @override
-  String updateDownloadedHint(Object version) {
-    return '新版本 v$version 已下载并通过校验。安装将关闭应用，完成后会自动重启。';
-  }
-
-  @override
-  String get updateInstallAndRestart => '安装并重启';
-
-  @override
-  String get updateInstallNow => '立即安装';
-
-  @override
-  String get updateInstallLater => '稍后安装';
-
-  @override
-  String get updateDownload => '下载更新';
-
-  @override
-  String get updateDownloadCancelled => '已取消下载，稍后可继续';
-
-  @override
-  String get updateDownloadFailed => '下载更新失败';
-
-  @override
-  String get updateInstallFailed => '安装更新失败';
-
-  @override
-  String get updateInstallingHint => '安装程序已启动，应用即将关闭并自动完成更新。';
-
-  @override
-  String get updateInstallConfirmationTitle => '现在安装更新？';
-
-  @override
-  String get updateInstallConfirmationBody =>
-      '应用将安全关闭并安装更新，完成后自动重新启动。进行中的生成和下载任务会停止，请先保存必要内容。';
-
-  @override
-  String get updateActiveTasksWarning => '检测到队列任务仍在运行，安装会停止当前任务。';
-
-  @override
-  String get remindMeLater => '4 小时后提醒';
-
-  @override
-  String get skipThisVersion => '忽略此版本';
-
-  @override
-  String updateNoticeAvailable(Object version) {
-    return '新版本 v$version 可用';
-  }
-
-  @override
-  String get updateNoticeAvailableSubtitle => '可在应用内下载、校验并安全安装更新';
-
-  @override
-  String get updateNoticeManualSubtitle => '当前平台需要前往 Release 页面手动更新';
-
-  @override
-  String updateNoticeReady(Object version) {
-    return '新版本 v$version 已准备好';
-  }
-
-  @override
-  String get updateNoticeReadySubtitle => '更新包已校验，可以立即安装';
-
-  @override
-  String get updateNoticeFailed => '上次更新没有完成';
-
-  @override
-  String get updateViewDetails => '查看更新';
-
-  @override
-  String updateSettingsAvailable(Object version) {
-    return '发现 v$version，点击查看更新内容';
-  }
-
-  @override
-  String updateSettingsReady(Object version) {
-    return 'v$version 已下载，点击安装';
-  }
-
-  @override
-  String get goToDownload => '前往下载';
-
-  @override
-  String get versionSkipped => '已忽略此版本';
 
   @override
   String get cannotOpenUrl => '无法打开链接';
@@ -13042,18 +12856,6 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get settings_clearLocalOnnxModelsContent => '将删除导入到此设备的 ONNX 模型及标签文件。';
-
-  @override
-  String updateAndroidDownloadedHint(Object version) {
-    return '新版本 v$version 已下载并通过校验。可以打开 Android 系统安装界面继续更新。';
-  }
-
-  @override
-  String get updateAndroidInstallingHint => '正在打开 Android 系统安装界面，请按系统提示确认更新。';
-
-  @override
-  String get updateAndroidInstallConfirmationBody =>
-      '将打开 Android 系统安装界面。确认安装后，系统会替换应用且不会清除本地数据；进行中的生成和下载任务可能停止，请先保存必要内容。';
 
   @override
   String get vibeDetail_setAsCover => '将所选图片设为封面';
@@ -15336,18 +15138,6 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get nav_dictionary => '詞庫';
 
   @override
-  String get nav_discordCommunity => 'Discord 社群';
-
-  @override
-  String get nav_githubRepo => 'GitHub 倉庫';
-
-  @override
-  String get nav_joinDiscord => '加入 Discord';
-
-  @override
-  String get nav_projectRepository => '專案倉庫';
-
-  @override
   String get nav_expandSidebar => '展開側邊欄';
 
   @override
@@ -15664,12 +15454,6 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get settings_aboutApplicationSection => '應用資訊';
 
   @override
-  String get settings_aboutUpdatesSection => '更新';
-
-  @override
-  String get settings_aboutResourcesSection => '專案資源';
-
-  @override
   String get settings_integrationConnectionSection => '連線與可用性';
 
   @override
@@ -15747,12 +15531,6 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String settings_version(Object version) {
     return '版本 $version';
   }
-
-  @override
-  String get settings_openSource => '開源專案';
-
-  @override
-  String get settings_openSourceSubtitle => '檢視原始碼和文件';
 
   @override
   String get settings_fileLogging => '記錄應用日誌';
@@ -18218,9 +17996,6 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get gallery_seedCopied => '已複製 Seed';
 
   @override
-  String get gallery_sendToKritaAction => '傳送到 Krita';
-
-  @override
   String get gallery_upscalePanelLoaded => '已載入圖生圖超分面板';
 
   @override
@@ -20675,9 +20450,6 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get localGallery_sendToPreciseReference => '傳送到精準參考';
-
-  @override
-  String get localGallery_sendToKrita => '傳送到 Krita';
 
   @override
   String get localGallery_importImageMetadata => '匯入圖片後設資料';
@@ -24849,9 +24621,6 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get image_viewDetail => '檢視詳情';
 
   @override
-  String get discordShare_action => '分享到 Discord';
-
-  @override
   String get discordShare_title => '分享到 Discord';
 
   @override
@@ -26313,168 +26082,15 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get checkForUpdate => '檢查更新';
 
   @override
-  String get neverChecked => '從未檢查';
-
-  @override
   String lastCheckedAt(Object time) {
     return '上次檢查: $time';
   }
 
   @override
-  String get includePrereleaseUpdates => '包含預釋出版本';
-
-  @override
-  String get includePrereleaseUpdatesDescription => '檢查更新時包含 beta/alpha 版本';
-
-  @override
   String get updateAvailable => '發現新版本';
 
   @override
-  String get updateChecking => '正在檢查更新...';
-
-  @override
-  String get updateDownloading => '正在下載更新...';
-
-  @override
-  String get updateInstalling => '正在啟動安裝器...';
-
-  @override
-  String get updateUpToDate => '已是最新版本';
-
-  @override
-  String get updateError => '檢查更新失敗';
-
-  @override
-  String get updateErrorNetwork => '無法連線更新伺服器，請檢查網路或代理設定後重試。';
-
-  @override
-  String get updateErrorServerBusy => '更新伺服器請求繁忙，請稍後重試。';
-
-  @override
-  String get updateErrorReleaseNotReady => '最新版本的釋出檔案尚未就緒，請稍後重試。';
-
-  @override
-  String get updateErrorServiceUnavailable => '更新伺服器暫時不可用，請稍後重試。';
-
-  @override
-  String get updateErrorInvalidMetadata => '更新資訊校驗失敗，請稍後重試或前往 Release 頁面下載。';
-
-  @override
-  String get updateErrorUnknown => '暫時無法檢查更新，請稍後重試。';
-
-  @override
   String get currentVersion => '當前版本';
-
-  @override
-  String get latestVersion => '最新版本';
-
-  @override
-  String get releaseNotes => '更新日誌';
-
-  @override
-  String get viewReleasePage => '查看 Release';
-
-  @override
-  String get updatePortableManualHint => '當前構建不支援應用內更新，請前往 Release 頁面手動下載新版。';
-
-  @override
-  String updateDownloadingProgress(Object percent) {
-    return '正在下載更新包：$percent%';
-  }
-
-  @override
-  String updateDownloadSizeSpeed(Object received, Object total, Object speed) {
-    return '$received / $total · $speed';
-  }
-
-  @override
-  String get updateDownloaded => '更新包已就緒';
-
-  @override
-  String updateDownloadedHint(Object version) {
-    return '新版本 v$version 已下載並透過校驗。安裝將關閉應用，完成後會自動重啟。';
-  }
-
-  @override
-  String get updateInstallAndRestart => '安裝並重啟';
-
-  @override
-  String get updateInstallNow => '立即安裝';
-
-  @override
-  String get updateInstallLater => '稍後安裝';
-
-  @override
-  String get updateDownload => '下載更新';
-
-  @override
-  String get updateDownloadCancelled => '已取消下載，稍後可繼續';
-
-  @override
-  String get updateDownloadFailed => '下載更新失敗';
-
-  @override
-  String get updateInstallFailed => '安裝更新失敗';
-
-  @override
-  String get updateInstallingHint => '安裝程式已啟動，應用即將關閉並自動完成更新。';
-
-  @override
-  String get updateInstallConfirmationTitle => '現在安裝更新？';
-
-  @override
-  String get updateInstallConfirmationBody =>
-      '應用將安全關閉並安裝更新，完成後自動重新啟動。進行中的生成和下載任務會停止，請先儲存必要內容。';
-
-  @override
-  String get updateActiveTasksWarning => '檢測到佇列任務仍在執行，安裝會停止當前任務。';
-
-  @override
-  String get remindMeLater => '4 小時後提醒';
-
-  @override
-  String get skipThisVersion => '忽略此版本';
-
-  @override
-  String updateNoticeAvailable(Object version) {
-    return '新版本 v$version 可用';
-  }
-
-  @override
-  String get updateNoticeAvailableSubtitle => '可在應用內下載、校驗並安全安裝更新';
-
-  @override
-  String get updateNoticeManualSubtitle => '當前平臺需要前往 Release 頁面手動更新';
-
-  @override
-  String updateNoticeReady(Object version) {
-    return '新版本 v$version 已準備好';
-  }
-
-  @override
-  String get updateNoticeReadySubtitle => '更新包已校驗，可以立即安裝';
-
-  @override
-  String get updateNoticeFailed => '上次更新沒有完成';
-
-  @override
-  String get updateViewDetails => '檢視更新';
-
-  @override
-  String updateSettingsAvailable(Object version) {
-    return '發現 v$version，點選檢視更新內容';
-  }
-
-  @override
-  String updateSettingsReady(Object version) {
-    return 'v$version 已下載，點選安裝';
-  }
-
-  @override
-  String get goToDownload => '前往下載';
-
-  @override
-  String get versionSkipped => '已忽略此版本';
 
   @override
   String get cannotOpenUrl => '無法開啟連結';
@@ -28047,18 +27663,6 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   @override
   String get settings_clearLocalOnnxModelsContent =>
       '將刪除此裝置上已匯入的 ONNX 模型及標籤檔案。';
-
-  @override
-  String updateAndroidDownloadedHint(Object version) {
-    return '新版本 v$version 已下載並透過校驗。可以開啟 Android 系統安裝介面繼續更新。';
-  }
-
-  @override
-  String get updateAndroidInstallingHint => '正在開啟 Android 系統安裝介面，請依系統提示確認更新。';
-
-  @override
-  String get updateAndroidInstallConfirmationBody =>
-      '將開啟 Android 系統安裝介面。確認安裝後，系統會替換應用且不會清除本機資料；進行中的生成和下載任務可能停止，請先儲存必要內容。';
 
   @override
   String get vibeDetail_setAsCover => '將所選圖片設為封面';

@@ -719,30 +719,6 @@ abstract class AppLocalizations {
   /// **'Dictionary'**
   String get nav_dictionary;
 
-  /// No description provided for @nav_discordCommunity.
-  ///
-  /// In en, this message translates to:
-  /// **'Discord Community'**
-  String get nav_discordCommunity;
-
-  /// No description provided for @nav_githubRepo.
-  ///
-  /// In en, this message translates to:
-  /// **'GitHub Repository'**
-  String get nav_githubRepo;
-
-  /// No description provided for @nav_joinDiscord.
-  ///
-  /// In en, this message translates to:
-  /// **'Join Discord'**
-  String get nav_joinDiscord;
-
-  /// No description provided for @nav_projectRepository.
-  ///
-  /// In en, this message translates to:
-  /// **'Project repository'**
-  String get nav_projectRepository;
-
   /// No description provided for @nav_expandSidebar.
   ///
   /// In en, this message translates to:
@@ -1355,18 +1331,6 @@ abstract class AppLocalizations {
   /// **'Application'**
   String get settings_aboutApplicationSection;
 
-  /// No description provided for @settings_aboutUpdatesSection.
-  ///
-  /// In en, this message translates to:
-  /// **'Updates'**
-  String get settings_aboutUpdatesSection;
-
-  /// No description provided for @settings_aboutResourcesSection.
-  ///
-  /// In en, this message translates to:
-  /// **'Project resources'**
-  String get settings_aboutResourcesSection;
-
   /// No description provided for @settings_integrationConnectionSection.
   ///
   /// In en, this message translates to:
@@ -1510,18 +1474,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Version {version}'**
   String settings_version(Object version);
-
-  /// No description provided for @settings_openSource.
-  ///
-  /// In en, this message translates to:
-  /// **'Open Source'**
-  String get settings_openSource;
-
-  /// No description provided for @settings_openSourceSubtitle.
-  ///
-  /// In en, this message translates to:
-  /// **'View source code and documentation'**
-  String get settings_openSourceSubtitle;
 
   /// No description provided for @settings_fileLogging.
   ///
@@ -6004,12 +5956,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Seed copied'**
   String get gallery_seedCopied;
-
-  /// No description provided for @gallery_sendToKritaAction.
-  ///
-  /// In en, this message translates to:
-  /// **'Send to Krita'**
-  String get gallery_sendToKritaAction;
 
   /// No description provided for @gallery_upscalePanelLoaded.
   ///
@@ -10514,12 +10460,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Send to Precise Reference'**
   String get localGallery_sendToPreciseReference;
-
-  /// No description provided for @localGallery_sendToKrita.
-  ///
-  /// In en, this message translates to:
-  /// **'Send to Krita'**
-  String get localGallery_sendToKrita;
 
   /// No description provided for @localGallery_importImageMetadata.
   ///
@@ -17982,12 +17922,6 @@ abstract class AppLocalizations {
   /// **'View details'**
   String get image_viewDetail;
 
-  /// No description provided for @discordShare_action.
-  ///
-  /// In en, this message translates to:
-  /// **'Share to Discord'**
-  String get discordShare_action;
-
   /// No description provided for @discordShare_title.
   ///
   /// In en, this message translates to:
@@ -20604,29 +20538,11 @@ abstract class AppLocalizations {
   /// **'Check for Updates'**
   String get checkForUpdate;
 
-  /// No description provided for @neverChecked.
-  ///
-  /// In en, this message translates to:
-  /// **'Never checked'**
-  String get neverChecked;
-
   /// No description provided for @lastCheckedAt.
   ///
   /// In en, this message translates to:
   /// **'Last checked: {time}'**
   String lastCheckedAt(Object time);
-
-  /// No description provided for @includePrereleaseUpdates.
-  ///
-  /// In en, this message translates to:
-  /// **'Include Prerelease Versions'**
-  String get includePrereleaseUpdates;
-
-  /// No description provided for @includePrereleaseUpdatesDescription.
-  ///
-  /// In en, this message translates to:
-  /// **'Include beta/alpha versions when checking for updates'**
-  String get includePrereleaseUpdatesDescription;
 
   /// No description provided for @updateAvailable.
   ///
@@ -20634,269 +20550,11 @@ abstract class AppLocalizations {
   /// **'Update Available'**
   String get updateAvailable;
 
-  /// No description provided for @updateChecking.
-  ///
-  /// In en, this message translates to:
-  /// **'Checking for updates...'**
-  String get updateChecking;
-
-  /// No description provided for @updateDownloading.
-  ///
-  /// In en, this message translates to:
-  /// **'Downloading update...'**
-  String get updateDownloading;
-
-  /// No description provided for @updateInstalling.
-  ///
-  /// In en, this message translates to:
-  /// **'Starting installer...'**
-  String get updateInstalling;
-
-  /// No description provided for @updateUpToDate.
-  ///
-  /// In en, this message translates to:
-  /// **'Already up to date'**
-  String get updateUpToDate;
-
-  /// No description provided for @updateError.
-  ///
-  /// In en, this message translates to:
-  /// **'Failed to check for updates'**
-  String get updateError;
-
-  /// No description provided for @updateErrorNetwork.
-  ///
-  /// In en, this message translates to:
-  /// **'Unable to reach the update server. Check your network or proxy settings and try again.'**
-  String get updateErrorNetwork;
-
-  /// No description provided for @updateErrorServerBusy.
-  ///
-  /// In en, this message translates to:
-  /// **'The update server is busy. Please try again later.'**
-  String get updateErrorServerBusy;
-
-  /// No description provided for @updateErrorReleaseNotReady.
-  ///
-  /// In en, this message translates to:
-  /// **'The latest release files are not ready yet. Please try again later.'**
-  String get updateErrorReleaseNotReady;
-
-  /// No description provided for @updateErrorServiceUnavailable.
-  ///
-  /// In en, this message translates to:
-  /// **'The update server is temporarily unavailable. Please try again later.'**
-  String get updateErrorServiceUnavailable;
-
-  /// No description provided for @updateErrorInvalidMetadata.
-  ///
-  /// In en, this message translates to:
-  /// **'Update information could not be verified. Try again later or download from the Release page.'**
-  String get updateErrorInvalidMetadata;
-
-  /// No description provided for @updateErrorUnknown.
-  ///
-  /// In en, this message translates to:
-  /// **'Unable to check for updates right now. Please try again later.'**
-  String get updateErrorUnknown;
-
   /// No description provided for @currentVersion.
   ///
   /// In en, this message translates to:
   /// **'Current Version'**
   String get currentVersion;
-
-  /// No description provided for @latestVersion.
-  ///
-  /// In en, this message translates to:
-  /// **'Latest Version'**
-  String get latestVersion;
-
-  /// No description provided for @releaseNotes.
-  ///
-  /// In en, this message translates to:
-  /// **'Release Notes'**
-  String get releaseNotes;
-
-  /// No description provided for @viewReleasePage.
-  ///
-  /// In en, this message translates to:
-  /// **'View Release'**
-  String get viewReleasePage;
-
-  /// No description provided for @updatePortableManualHint.
-  ///
-  /// In en, this message translates to:
-  /// **'This build cannot update in-app. Please download the new version from the Release page.'**
-  String get updatePortableManualHint;
-
-  /// No description provided for @updateDownloadingProgress.
-  ///
-  /// In en, this message translates to:
-  /// **'Downloading update package: {percent}%'**
-  String updateDownloadingProgress(Object percent);
-
-  /// No description provided for @updateDownloadSizeSpeed.
-  ///
-  /// In en, this message translates to:
-  /// **'{received} / {total} · {speed}'**
-  String updateDownloadSizeSpeed(Object received, Object total, Object speed);
-
-  /// No description provided for @updateDownloaded.
-  ///
-  /// In en, this message translates to:
-  /// **'Update Package Ready'**
-  String get updateDownloaded;
-
-  /// No description provided for @updateDownloadedHint.
-  ///
-  /// In en, this message translates to:
-  /// **'v{version} has been downloaded and verified. Installing will close the app and restart it automatically.'**
-  String updateDownloadedHint(Object version);
-
-  /// No description provided for @updateInstallAndRestart.
-  ///
-  /// In en, this message translates to:
-  /// **'Install and Restart'**
-  String get updateInstallAndRestart;
-
-  /// No description provided for @updateInstallNow.
-  ///
-  /// In en, this message translates to:
-  /// **'Install Now'**
-  String get updateInstallNow;
-
-  /// No description provided for @updateInstallLater.
-  ///
-  /// In en, this message translates to:
-  /// **'Install Later'**
-  String get updateInstallLater;
-
-  /// No description provided for @updateDownload.
-  ///
-  /// In en, this message translates to:
-  /// **'Download Update'**
-  String get updateDownload;
-
-  /// No description provided for @updateDownloadCancelled.
-  ///
-  /// In en, this message translates to:
-  /// **'Download cancelled; you can resume later'**
-  String get updateDownloadCancelled;
-
-  /// No description provided for @updateDownloadFailed.
-  ///
-  /// In en, this message translates to:
-  /// **'Failed to download the update'**
-  String get updateDownloadFailed;
-
-  /// No description provided for @updateInstallFailed.
-  ///
-  /// In en, this message translates to:
-  /// **'Failed to install the update'**
-  String get updateInstallFailed;
-
-  /// No description provided for @updateInstallingHint.
-  ///
-  /// In en, this message translates to:
-  /// **'The installer has started. The app will close and finish updating automatically.'**
-  String get updateInstallingHint;
-
-  /// No description provided for @updateInstallConfirmationTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Install the update now?'**
-  String get updateInstallConfirmationTitle;
-
-  /// No description provided for @updateInstallConfirmationBody.
-  ///
-  /// In en, this message translates to:
-  /// **'The app will shut down safely, install the update, and restart automatically. Active generation and download tasks will stop, so save anything important first.'**
-  String get updateInstallConfirmationBody;
-
-  /// No description provided for @updateActiveTasksWarning.
-  ///
-  /// In en, this message translates to:
-  /// **'Queue tasks are still active. Installing will stop the current task.'**
-  String get updateActiveTasksWarning;
-
-  /// No description provided for @remindMeLater.
-  ///
-  /// In en, this message translates to:
-  /// **'Remind Me in 4 Hours'**
-  String get remindMeLater;
-
-  /// No description provided for @skipThisVersion.
-  ///
-  /// In en, this message translates to:
-  /// **'Skip This Version'**
-  String get skipThisVersion;
-
-  /// No description provided for @updateNoticeAvailable.
-  ///
-  /// In en, this message translates to:
-  /// **'Version v{version} is available'**
-  String updateNoticeAvailable(Object version);
-
-  /// No description provided for @updateNoticeAvailableSubtitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Download, verify, and safely install the update in the app'**
-  String get updateNoticeAvailableSubtitle;
-
-  /// No description provided for @updateNoticeManualSubtitle.
-  ///
-  /// In en, this message translates to:
-  /// **'This platform must be updated manually from the Release page'**
-  String get updateNoticeManualSubtitle;
-
-  /// No description provided for @updateNoticeReady.
-  ///
-  /// In en, this message translates to:
-  /// **'Version v{version} is ready'**
-  String updateNoticeReady(Object version);
-
-  /// No description provided for @updateNoticeReadySubtitle.
-  ///
-  /// In en, this message translates to:
-  /// **'The package is verified and ready to install'**
-  String get updateNoticeReadySubtitle;
-
-  /// No description provided for @updateNoticeFailed.
-  ///
-  /// In en, this message translates to:
-  /// **'The previous update did not finish'**
-  String get updateNoticeFailed;
-
-  /// No description provided for @updateViewDetails.
-  ///
-  /// In en, this message translates to:
-  /// **'View Update'**
-  String get updateViewDetails;
-
-  /// No description provided for @updateSettingsAvailable.
-  ///
-  /// In en, this message translates to:
-  /// **'v{version} is available; select to view details'**
-  String updateSettingsAvailable(Object version);
-
-  /// No description provided for @updateSettingsReady.
-  ///
-  /// In en, this message translates to:
-  /// **'v{version} is downloaded; select to install'**
-  String updateSettingsReady(Object version);
-
-  /// No description provided for @goToDownload.
-  ///
-  /// In en, this message translates to:
-  /// **'Go to Download'**
-  String get goToDownload;
-
-  /// No description provided for @versionSkipped.
-  ///
-  /// In en, this message translates to:
-  /// **'Version skipped'**
-  String get versionSkipped;
 
   /// No description provided for @cannotOpenUrl.
   ///
@@ -23643,24 +23301,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'This removes the ONNX models and label files imported on this device.'**
   String get settings_clearLocalOnnxModelsContent;
-
-  /// No description provided for @updateAndroidDownloadedHint.
-  ///
-  /// In en, this message translates to:
-  /// **'v{version} has been downloaded and verified. Open Android\'s system installer to continue the update.'**
-  String updateAndroidDownloadedHint(Object version);
-
-  /// No description provided for @updateAndroidInstallingHint.
-  ///
-  /// In en, this message translates to:
-  /// **'Opening Android\'s system installer. Follow the system prompt to confirm the update.'**
-  String get updateAndroidInstallingHint;
-
-  /// No description provided for @updateAndroidInstallConfirmationBody.
-  ///
-  /// In en, this message translates to:
-  /// **'Android\'s system installer will open. After you confirm, Android will replace the app without clearing local data. Active generation and download tasks may stop, so save anything important first.'**
-  String get updateAndroidInstallConfirmationBody;
 
   /// No description provided for @vibeDetail_setAsCover.
   ///
