@@ -8,9 +8,9 @@ import '../../../../core/utils/localization_extension.dart';
 import '../../../adaptive/interaction_policy.dart';
 import '../../../providers/image_generation_provider.dart';
 import '../../../providers/prompt_regex_rules_provider.dart';
-import '../../../themes/theme_extension.dart';
 import '../../../widgets/character/character_prompt_button.dart';
 import '../../../widgets/prompt/fixed_tags_button.dart';
+import '../../../widgets/prompt/prompt_control_button.dart';
 import '../../../widgets/prompt/quality_tags_selector.dart';
 import '../../../widgets/prompt/regex_rules_dialog.dart';
 import '../../../widgets/prompt/toolbar/toolbar.dart';
@@ -586,70 +586,37 @@ class _MobileFullscreenToolbar extends StatelessWidget {
           );
         }
 
-        final roleActionsWidth = actionExtent * 3 + 8;
-        Widget buildPromptRoleActions() => Container(
+        final roleActionsWidth = actionExtent * 3 + 2;
+        Widget buildPromptRoleActions() => SizedBox(
           width: roleActionsWidth,
-          height: controlRowHeight,
-          padding: const EdgeInsets.symmetric(horizontal: 2),
-          decoration: BoxDecoration(
-            color: Theme.of(
-              context,
-            ).colorScheme.surfaceContainerHigh.withValues(alpha: 0.5),
-            borderRadius: BorderRadius.circular(
-              Theme.of(context).appTheme.controlRadius + 2,
-            ),
-          ),
-          child: Row(
+          child: PromptRoleSegmentGroup(
+            height: controlRowHeight,
             children: [
-              Expanded(
-                child: _MobilePromptToolbarAction(
-                  actionKey: const ValueKey(
-                    'generation_prompt_mobile_character_action',
-                  ),
-                  height: controlRowHeight,
-                  child: CharacterPromptButton(
-                    onManage: commands.showMobileCharacterManager,
-                    compact: true,
-                    iconOnly: true,
-                    showZeroCount: true,
-                  ),
+              _MobilePromptToolbarAction(
+                actionKey: const ValueKey(
+                  'generation_prompt_mobile_character_action',
+                ),
+                height: controlRowHeight,
+                child: CharacterPromptButton(
+                  onManage: commands.showMobileCharacterManager,
+                  segment: true,
                 ),
               ),
-              const SizedBox(width: 2),
-              Expanded(
-                child: _MobilePromptToolbarAction(
-                  actionKey: const ValueKey(
-                    'generation_prompt_mobile_fixed_tags_action',
-                  ),
-                  height: controlRowHeight,
-                  child: const FixedTagsButton(
-                    compact: true,
-                    iconOnly: true,
-                    showZeroCount: true,
-                  ),
+              _MobilePromptToolbarAction(
+                actionKey: const ValueKey(
+                  'generation_prompt_mobile_fixed_tags_action',
                 ),
+                height: controlRowHeight,
+                child: const FixedTagsButton(segment: true),
               ),
-              const SizedBox(width: 2),
-              Expanded(
-                child: _MobilePromptToolbarAction(
-                  actionKey: const ValueKey(
-                    'generation_prompt_mobile_quality_action',
-                  ),
-                  height: controlRowHeight,
-                  child: controller.isNegativeMode
-                      ? UcPresetSelector(
-                          model: model,
-                          compact: true,
-                          iconOnly: true,
-                          showStatusCount: true,
-                        )
-                      : QualityTagsSelector(
-                          model: model,
-                          compact: true,
-                          iconOnly: true,
-                          showStatusCount: true,
-                        ),
+              _MobilePromptToolbarAction(
+                actionKey: const ValueKey(
+                  'generation_prompt_mobile_quality_action',
                 ),
+                height: controlRowHeight,
+                child: controller.isNegativeMode
+                    ? UcPresetSelector(model: model, segment: true)
+                    : QualityTagsSelector(model: model, segment: true),
               ),
             ],
           ),

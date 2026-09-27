@@ -22,6 +22,7 @@ class FixedTagsButton extends ConsumerStatefulWidget {
     this.iconOnly = false,
     this.maxLabelWidth,
     this.showZeroCount = false,
+    this.segment = false,
   });
 
   /// 经典桌面提示词工具栏使用紧凑外观；触屏和独立入口保留标准命中高度。
@@ -29,6 +30,9 @@ class FixedTagsButton extends ConsumerStatefulWidget {
   final bool iconOnly;
   final double? maxLabelWidth;
   final bool showZeroCount;
+
+  /// 作为 [PromptRoleSegmentGroup] 的一个分段显示：图标加启用数量。
+  final bool segment;
 
   @override
   ConsumerState<FixedTagsButton> createState() => _FixedTagsButtonState();
@@ -57,83 +61,84 @@ class _FixedTagsButtonState extends ConsumerState<FixedTagsButton> {
         ),
         child: MediaQuery(
           data: mediaQuery,
-          child: Semantics(
-            button: true,
-            label: context.l10n.fixedTags_label,
-            child: PromptControlButton(
-              key: const Key('fixed-tags-button-surface'),
-              color: theme.promptSemanticColors.fixedTag,
-              active: hasEnabled,
-              onPressed: () {
-                final sidebarExpanded = ref.read(
-                  layoutStateNotifierProvider.select(
-                    (state) => state.fixedTagsSidebarExpanded,
-                  ),
-                );
-                if (!sidebarExpanded) _showFixedTagsDialog(context);
-              },
-              onLongPress: () => ref
-                  .read(layoutStateNotifierProvider.notifier)
-                  .toggleFixedTagsSidebar(),
-              padding: EdgeInsets.symmetric(
-                horizontal: widget.compact && widget.iconOnly
-                    ? 4
-                    : widget.compact
-                    ? 8
-                    : 10,
-                vertical: widget.compact ? 4 : 6,
-              ),
-              builder: (colors) => Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(
-                    hasEnabled ? Icons.push_pin : Icons.push_pin_outlined,
-                    size: widget.iconOnly
-                        ? 18
-                        : widget.compact
-                        ? 15
-                        : 16,
-                    color: colors.accent,
-                  ),
-                  if (!widget.iconOnly) ...[
-                    const SizedBox(width: 4),
-                    ConstrainedBox(
-                      constraints: BoxConstraints(
-                        maxWidth: widget.maxLabelWidth ?? double.infinity,
-                      ),
-                      child: Text(
-                        context.l10n.fixedTags_label,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                          fontSize: widget.compact ? 11 : 12,
-                          fontWeight: hasEnabled
-                              ? FontWeight.w600
-                              : FontWeight.w500,
-                          color: colors.foreground,
+          child: widget.segment
+              ? PromptRoleSegment(
+                  key: const Key('fixed-tags-button-surface'),
+                  icon: hasEnabled ? Icons.push_pin : Icons.push_pin_outlined,
+                  active: hasEnabled,
+                  count: enabledCount,
+                  semanticLabel: context.l10n.fixedTags_label,
+                  onPressed: _open,
+                  onLongPress: _toggleSidebar,
+                )
+              : Semantics(
+                  button: true,
+                  label: context.l10n.fixedTags_label,
+                  child: PromptControlButton(
+                    key: const Key('fixed-tags-button-surface'),
+                    color: theme.promptSemanticColors.fixedTag,
+                    active: hasEnabled,
+                    onPressed: _open,
+                    onLongPress: _toggleSidebar,
+                    padding: EdgeInsets.symmetric(
+                      horizontal: widget.compact && widget.iconOnly
+                          ? 4
+                          : widget.compact
+                          ? 8
+                          : 10,
+                      vertical: widget.compact ? 4 : 6,
+                    ),
+                    builder: (colors) => Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          hasEnabled ? Icons.push_pin : Icons.push_pin_outlined,
+                          size: widget.iconOnly
+                              ? 18
+                              : widget.compact
+                              ? 15
+                              : 16,
+                          color: colors.accent,
                         ),
-                      ),
+                        if (!widget.iconOnly) ...[
+                          const SizedBox(width: 4),
+                          ConstrainedBox(
+                            constraints: BoxConstraints(
+                              maxWidth: widget.maxLabelWidth ?? double.infinity,
+                            ),
+                            child: Text(
+                              context.l10n.fixedTags_label,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                fontSize: widget.compact ? 11 : 12,
+                                fontWeight: hasEnabled
+                                    ? FontWeight.w600
+                                    : FontWeight.w500,
+                                color: colors.foreground,
+                              ),
+                            ),
+                          ),
+                        ],
+                        if (hasEnabled || widget.showZeroCount) ...[
+                          SizedBox(width: widget.iconOnly ? 4 : 5),
+                          PromptControlCountBadge(
+                            count: enabledCount,
+                            foregroundColor: colors.foreground,
+                            active: hasEnabled,
+                          ),
+                        ] else if (hasEntries) ...[
+                          const SizedBox(width: 3),
+                          Icon(
+                            Icons.visibility_off,
+                            size: 14,
+                            color: colors.foreground,
+                          ),
+                        ],
+                      ],
                     ),
-                  ],
-                  if (hasEnabled || widget.showZeroCount) ...[
-                    SizedBox(width: widget.iconOnly ? 4 : 5),
-                    PromptControlCountBadge(
-                      count: enabledCount,
-                      foregroundColor: colors.foreground,
-                      active: hasEnabled,
-                    ),
-                  ] else if (hasEntries) ...[
-                    const SizedBox(width: 3),
-                    Icon(
-                      Icons.visibility_off,
-                      size: 14,
-                      color: colors.foreground,
-                    ),
-                  ],
-                ],
-              ),
-            ),
-          ),
+                  ),
+                ),
         ),
       ),
     );
@@ -571,6 +576,18 @@ class _FixedTagsButtonState extends ConsumerState<FixedTagsButton> {
       ],
     );
   }
+
+  void _open() {
+    final sidebarExpanded = ref.read(
+      layoutStateNotifierProvider.select(
+        (state) => state.fixedTagsSidebarExpanded,
+      ),
+    );
+    if (!sidebarExpanded) _showFixedTagsDialog(context);
+  }
+
+  void _toggleSidebar() =>
+      ref.read(layoutStateNotifierProvider.notifier).toggleFixedTagsSidebar();
 
   void _showFixedTagsDialog(BuildContext context) {
     FixedTagsDialog.show(context);

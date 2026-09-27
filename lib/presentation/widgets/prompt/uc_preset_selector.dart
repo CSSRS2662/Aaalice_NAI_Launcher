@@ -27,12 +27,16 @@ class UcPresetSelector extends ConsumerStatefulWidget {
     this.iconOnly = false,
     this.showStatusCount = false,
     this.maxLabelWidth,
+    this.segment = false,
   });
 
   final bool compact;
   final bool iconOnly;
   final bool showStatusCount;
   final double? maxLabelWidth;
+
+  /// 作为 [PromptRoleSegmentGroup] 的一个分段显示：只用图标表达开关状态。
+  final bool segment;
 
   @override
   ConsumerState<UcPresetSelector> createState() => _UcPresetSelectorState();
@@ -77,57 +81,67 @@ class _UcPresetSelectorState extends ConsumerState<UcPresetSelector> {
           currentEntry,
         ),
       ),
-      child: PromptControlButton(
-        key: _buttonKey,
-        color: theme.promptSemanticColors.negativeQuality,
-        active: isEnabled,
-        onPressed: () => _showMenu(context, presetState, customEntries),
-        padding: EdgeInsets.symmetric(
-          horizontal: widget.iconOnly
-              ? 4
-              : widget.compact
-              ? 8
-              : 10,
-          vertical: widget.compact ? 4 : 6,
-        ),
-        builder: (colors) => Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(
-              isEnabled ? Icons.block : Icons.block_outlined,
-              size: widget.iconOnly ? 18 : 16,
-              color: colors.accent,
-            ),
-            if (!widget.iconOnly) ...[
-              const SizedBox(width: 4),
-              ConstrainedBox(
-                constraints: BoxConstraints(
-                  maxWidth: widget.maxLabelWidth ?? double.infinity,
-                ),
-                child: Text(
-                  _getDisplayLabel(context, presetState, currentEntry),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    fontSize: 12,
-                    fontWeight: isEnabled ? FontWeight.w600 : FontWeight.w500,
-                    color: colors.foreground,
+      child: widget.segment
+          ? PromptRoleSegment(
+              key: _buttonKey,
+              icon: isEnabled ? Icons.block : Icons.block_outlined,
+              active: isEnabled,
+              semanticLabel: context.l10n.ucPreset_label,
+              onPressed: () => _showMenu(context, presetState, customEntries),
+            )
+          : PromptControlButton(
+              key: _buttonKey,
+              color: theme.promptSemanticColors.negativeQuality,
+              active: isEnabled,
+              onPressed: () => _showMenu(context, presetState, customEntries),
+              padding: EdgeInsets.symmetric(
+                horizontal: widget.iconOnly
+                    ? 4
+                    : widget.compact
+                    ? 8
+                    : 10,
+                vertical: widget.compact ? 4 : 6,
+              ),
+              builder: (colors) => Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    isEnabled ? Icons.block : Icons.block_outlined,
+                    size: widget.iconOnly ? 18 : 16,
+                    color: colors.accent,
                   ),
-                ),
+                  if (!widget.iconOnly) ...[
+                    const SizedBox(width: 4),
+                    ConstrainedBox(
+                      constraints: BoxConstraints(
+                        maxWidth: widget.maxLabelWidth ?? double.infinity,
+                      ),
+                      child: Text(
+                        _getDisplayLabel(context, presetState, currentEntry),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: isEnabled
+                              ? FontWeight.w600
+                              : FontWeight.w500,
+                          color: colors.foreground,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 2),
+                    Icon(Icons.arrow_drop_down, size: 14, color: colors.accent),
+                  ] else if (widget.showStatusCount) ...[
+                    const SizedBox(width: 4),
+                    PromptControlCountBadge(
+                      count: isEnabled ? 1 : 0,
+                      foregroundColor: colors.foreground,
+                      active: isEnabled,
+                    ),
+                  ],
+                ],
               ),
-              const SizedBox(width: 2),
-              Icon(Icons.arrow_drop_down, size: 14, color: colors.accent),
-            ] else if (widget.showStatusCount) ...[
-              const SizedBox(width: 4),
-              PromptControlCountBadge(
-                count: isEnabled ? 1 : 0,
-                foregroundColor: colors.foreground,
-                active: isEnabled,
-              ),
-            ],
-          ],
-        ),
-      ),
+            ),
     );
   }
 

@@ -35,7 +35,8 @@ class CharacterPromptButton extends ConsumerWidget {
     this.compact = false,
     this.iconOnly = false,
     this.showZeroCount = false,
-  });
+    this.segment = false,
+  }) : assert(!segment || onManage != null, 'segment mode opens the manager');
 
   /// When supplied, the button opens an existing-character manager instead of
   /// acting as another add shortcut. The manager owns its own add action.
@@ -44,6 +45,10 @@ class CharacterPromptButton extends ConsumerWidget {
   final bool iconOnly;
   final bool showZeroCount;
 
+  /// 作为 [PromptRoleSegmentGroup] 的一个分段显示：图标加角色数量，
+  /// 点按打开 [onManage]。
+  final bool segment;
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final config = ref.watch(characterPromptNotifierProvider);
@@ -51,6 +56,23 @@ class CharacterPromptButton extends ConsumerWidget {
     final hasCharacters = characterCount > 0;
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
+
+    if (segment) {
+      return _CharacterTooltipWrapper(
+        config: config,
+        child: PromptRoleSegment(
+          icon: characterCount > 1
+              ? Icons.group_rounded
+              : hasCharacters
+              ? Icons.person_rounded
+              : Icons.person_outline_rounded,
+          active: hasCharacters,
+          count: characterCount,
+          semanticLabel: AppLocalizations.of(context)!.character_buttonLabel,
+          onPressed: onManage!,
+        ),
+      );
+    }
 
     final buttonContent = Container(
       constraints: BoxConstraints(minHeight: compact ? 36 : 48),

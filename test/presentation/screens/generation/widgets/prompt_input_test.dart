@@ -28,6 +28,7 @@ import 'package:nai_launcher/presentation/widgets/common/weight_adjust_toolbar.d
 import 'package:nai_launcher/presentation/widgets/character/character_prompt_button.dart';
 import 'package:nai_launcher/presentation/widgets/character/inline_character_editor.dart';
 import 'package:nai_launcher/presentation/widgets/prompt/fixed_tags_button.dart';
+import 'package:nai_launcher/presentation/widgets/prompt/prompt_control_button.dart';
 import 'package:nai_launcher/presentation/widgets/prompt/quality_tags_selector.dart';
 import 'package:nai_launcher/presentation/widgets/prompt/uc_preset_selector.dart';
 import 'package:nai_launcher/presentation/widgets/prompt/unified/unified_prompt_config.dart';
@@ -608,6 +609,30 @@ void main() {
       find.byKey(const ValueKey('generation_prompt_mobile_quality_action')),
       findsOneWidget,
     );
+    // 角色、固定词与质量词合成一个按钮组：共用一块色面，不再各自叠加
+    // 着色背景与计数胶囊。
+    final roleGroup = find.byKey(const ValueKey('prompt-role-segment-group'));
+    expect(roleGroup, findsOneWidget);
+    expect(
+      find.descendant(of: roleGroup, matching: find.byType(PromptRoleSegment)),
+      findsNWidgets(3),
+    );
+    expect(
+      find.descendant(
+        of: roleGroup,
+        matching: find.byType(PromptControlCountBadge),
+      ),
+      findsNothing,
+    );
+    for (final key in const [
+      'generation_prompt_mobile_character_action',
+      'generation_prompt_mobile_fixed_tags_action',
+      'generation_prompt_mobile_quality_action',
+    ]) {
+      final action = find.byKey(ValueKey(key));
+      expect(tester.getSize(action).height, greaterThanOrEqualTo(44));
+      expect(tester.getSize(action).width, greaterThanOrEqualTo(44));
+    }
 
     var editors = find.descendant(
       of: groups,
