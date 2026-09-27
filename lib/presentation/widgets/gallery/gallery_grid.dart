@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:visibility_detector/visibility_detector.dart';
 
+import '../../../core/cache/local_image_aspect_ratio_cache.dart';
 import '../../../core/utils/localization_extension.dart';
 import '../../../data/models/gallery/local_image_record.dart';
+import '../../screens/online_gallery/online_gallery_masonry_layout.dart';
 import 'draggable_image_card.dart';
 import 'local_image_card_3d.dart';
 import 'local_image_context_menu.dart';
@@ -84,11 +86,17 @@ class _GalleryGridState extends State<GalleryGrid> {
   double _lastScrollOffset = 0;
   double _viewportHeight = 0;
 
+  /// 瀑布流几何只在图片、列数或宽度变化时重算，可见性刷新不触发重排。
+  OnlineGalleryMasonryLayoutSnapshot? _layout;
+  Object? _layoutKey;
+  int _ratioGeneration = 0;
+
   @override
   void initState() {
     super.initState();
     _scrollController = ScrollController();
     _scrollController.addListener(_onScroll);
+    _resolveAspectRatios();
   }
 
   @override
@@ -102,6 +110,46 @@ class _GalleryGridState extends State<GalleryGrid> {
       _visibleIndices.clear();
       _preloadIndices.clear();
     }
+    if (!identical(oldWidget.images, widget.images)) _resolveAspectRatios();
+  }
+
+  /// 没有元数据尺寸的图片先按方形排版，读到文件头尺寸后统一重排一次。
+  void _resolveAspectRatios() {
+    final cache = LocalImageAspectRatioCache.instance;
+    final images = widget.images;
+    if (images.every((record) => cache.ratioOf(record) != null)) return;
+    cache.resolve(images).then((_) {
+      if (!mounted || !identical(widget.images, images)) return;
+      setState(() => _ratioGeneration++);
+    });
+  }
+
+  OnlineGalleryMasonryLayoutSnapshot _layoutFor({
+    required int columns,
+    required double itemWidth,
+  }) {
+    final key = (
+      identityHashCode(widget.images),
+      widget.images.length,
+      columns,
+      itemWidth,
+      widget.spacing,
+      _ratioGeneration,
+    );
+    final cached = _layout;
+    if (cached != null && _layoutKey == key) return cached;
+    final cache = LocalImageAspectRatioCache.instance;
+    _layoutKey = key;
+    return _layout = OnlineGalleryMasonryLayoutSnapshot(
+      aspectRatios: [
+        for (final record in widget.images) cache.ratioOf(record) ?? 1.0,
+      ],
+      placeholderCount: 0,
+      columnCount: columns,
+      itemWidth: itemWidth,
+      mainAxisSpacing: widget.spacing,
+      crossAxisSpacing: widget.spacing,
+    );
   }
 
   @override
@@ -147,9 +195,6 @@ class _GalleryGridState extends State<GalleryGrid> {
       );
     }
 
-    const itemWidth = ResponsiveLayout.fixedCardWidth;
-    const itemHeight = ResponsiveLayout.fixedCardHeight;
-
     return LayoutBuilder(
       builder: (context, constraints) {
         _viewportHeight = constraints.maxHeight;
@@ -166,19 +211,15 @@ class _GalleryGridState extends State<GalleryGrid> {
         final columns = widget.columns.clamp(1, maximumColumns);
         final actualItemWidth =
             (availableWidth - widget.spacing * (columns - 1)) / columns;
-        final actualItemHeight = actualItemWidth * itemHeight / itemWidth;
+        // 瀑布流：每张图按自身宽高比完整显示，放进当前最短的一列。
+        final layout = _layoutFor(columns: columns, itemWidth: actualItemWidth);
 
         return GridView.builder(
           key: const PageStorageKey<String>('gallery-grid-scroll-view'),
           controller: _scrollController,
           primary: false,
           padding: widget.padding,
-          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: columns,
-            mainAxisSpacing: widget.spacing,
-            crossAxisSpacing: widget.spacing,
-            childAspectRatio: actualItemWidth / actualItemHeight,
-          ),
+          gridDelegate: OnlineGalleryMasonryGridDelegate(snapshot: layout),
           itemCount: widget.images.length,
           // 限制缓存范围，减少内存占用和重建开销
           scrollCacheExtent: ScrollCacheExtent.pixels(
@@ -215,7 +256,7 @@ class _GalleryGridState extends State<GalleryGrid> {
                   key: ValueKey(record.path),
                   record: record,
                   width: actualItemWidth,
-                  height: actualItemHeight,
+                  height: layout.placementFor(index).mainAxisExtent,
                   isSelected: isSelected,
                   isVisible: isVisible,
                   priority: priority,

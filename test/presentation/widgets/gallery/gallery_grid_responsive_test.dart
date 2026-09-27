@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:nai_launcher/data/models/gallery/local_image_record.dart';
+import 'package:nai_launcher/data/models/gallery/nai_image_metadata.dart';
 import 'package:nai_launcher/l10n/app_localizations.dart';
+import 'package:nai_launcher/presentation/screens/online_gallery/online_gallery_masonry_layout.dart';
 import 'package:nai_launcher/presentation/widgets/gallery/gallery_grid.dart';
 import 'package:nai_launcher/presentation/widgets/gallery/local_image_card_3d.dart';
 import 'package:visibility_detector/visibility_detector.dart';
@@ -41,8 +43,8 @@ void main() {
 
         final delegate =
             tester.widget<GridView>(find.byType(GridView)).gridDelegate
-                as SliverGridDelegateWithFixedCrossAxisCount;
-        expect(delegate.crossAxisCount, columns);
+                as OnlineGalleryMasonryGridDelegate;
+        expect(delegate.snapshot.columnCount, columns);
 
         final firstCard = tester.widget<LocalImageCard3D>(
           find.byType(LocalImageCard3D).first,
@@ -54,6 +56,69 @@ void main() {
       },
     );
   }
+
+  testWidgets('瀑布流按元数据宽高比完整显示每张图，放进更短的一列', (tester) async {
+    await tester.binding.setSurfaceSize(const Size(390, 900));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+
+    LocalImageRecord record(String name, int width, int height) =>
+        LocalImageRecord(
+          path: 'G:/gallery/$name.png',
+          size: width * height,
+          modifiedAt: DateTime(2026, 8, 1),
+          metadata: NaiImageMetadata(width: width, height: height),
+        );
+
+    await tester.pumpWidget(
+      ProviderScope(
+        child: MaterialApp(
+          locale: const Locale('en'),
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: Scaffold(
+            body: GalleryGrid(
+              images: [
+                record('portrait', 832, 1216),
+                record('landscape', 1216, 832),
+                record('square', 1024, 1024),
+              ],
+              columns: 2,
+              spacing: 12,
+              padding: const EdgeInsets.all(12),
+              enableDrag: false,
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.pump();
+
+    final cards = {
+      for (final card in tester.widgetList<LocalImageCard3D>(
+        find.byType(LocalImageCard3D),
+      ))
+        card.record.path.split('/').last: card,
+    };
+    Rect rectOf(String name) =>
+        tester.getRect(find.byWidget(cards['$name.png']!));
+
+    for (final (name, ratio) in [
+      ('portrait', 832 / 1216),
+      ('landscape', 1216 / 832),
+      ('square', 1.0),
+    ]) {
+      final card = cards['$name.png']!;
+      expect(card.width, closeTo((390 - 24 - 12) / 2, 0.001));
+      expect(card.width / card.height!, closeTo(ratio, 0.001), reason: name);
+    }
+    expect(
+      rectOf('portrait').left,
+      isNot(closeTo(rectOf('landscape').left, 1)),
+    );
+    expect(rectOf('square').left, closeTo(rectOf('landscape').left, 0.5));
+    expect(rectOf('square').top, greaterThan(rectOf('landscape').bottom));
+    expect(tester.takeException(), isNull);
+  });
 
   testWidgets('selection and scroll offset survive a responsive resize', (
     tester,

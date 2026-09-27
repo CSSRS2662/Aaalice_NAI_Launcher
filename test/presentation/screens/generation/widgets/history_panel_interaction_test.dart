@@ -490,6 +490,51 @@ void main() {
     expect(secondCard.completionPreview, same(secondFrame));
   });
 
+  testWidgets('嵌入手机页签时历史为两列瀑布流，图片按自身比例完整显示', (tester) async {
+    final container = _createContainer([
+      _image('portrait', width: 832, height: 1216),
+      _image('landscape', width: 1216, height: 832),
+      _image('square', width: 1024, height: 1024),
+    ]);
+    addTearDown(container.dispose);
+
+    await tester.pumpWidget(_historyApp(container, width: 360, embedded: true));
+    await tester.pump();
+
+    final rects = {
+      for (final id in ['portrait', 'landscape', 'square'])
+        id: tester.getRect(find.byKey(ValueKey(id))),
+    };
+    final columns = rects.values.map((rect) => rect.left.round()).toSet();
+    expect(columns, hasLength(2));
+    for (final rect in rects.values) {
+      expect(rect.width, closeTo(rects['portrait']!.width, 0.5));
+    }
+    expect(
+      rects['portrait']!.width / rects['portrait']!.height,
+      closeTo(832 / 1216, 0.01),
+    );
+    expect(
+      rects['landscape']!.width / rects['landscape']!.height,
+      closeTo(1216 / 832, 0.01),
+    );
+    // 第三张放进更短的一列（横图那一列）。
+    expect(rects['square']!.left, closeTo(rects['landscape']!.left, 0.5));
+    expect(rects['square']!.top, greaterThan(rects['landscape']!.bottom));
+
+    // 桌面侧栏保持单列大图；第三张可能落在视口的预加载区域。
+    await tester.pumpWidget(_historyApp(container, width: 320));
+    await tester.pump();
+    expect({
+      for (final id in ['portrait', 'landscape', 'square'])
+        tester
+            .getRect(find.byKey(ValueKey(id), skipOffstage: false))
+            .left
+            .round(),
+    }, hasLength(1));
+    expect(tester.takeException(), isNull);
+  });
+
   group('card actions', () {
     testWidgets('hover pins copy and delete left of favorite instead of the '
         'full action bar', (tester) async {
