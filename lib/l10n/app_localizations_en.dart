@@ -15531,7 +15531,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String mobileWorkbench_selectModel(Object model) {
-    return 'Model $model, open parameters';
+    return 'Model $model, tap to switch';
   }
 
   @override

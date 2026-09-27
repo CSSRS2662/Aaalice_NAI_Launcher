@@ -18,7 +18,9 @@ enum ParameterPanelContent {
   /// 生成参数与参考输入（经典布局侧栏）。
   all,
 
-  /// 仅生成参数：模型、尺寸、采样、输出、种子与高级选项。
+  /// 仅生成参数：尺寸、采样、输出、种子与高级选项。
+  ///
+  /// 移动端模型只在顶栏的模型菜单切换，这里不再重复提供。
   generation,
 
   /// 仅参考输入：反推、图生图、风格迁移与精准参考。
@@ -57,7 +59,10 @@ class ParameterPanel extends ConsumerWidget {
     return ListView(
       padding: const EdgeInsets.all(12),
       children: [
-        if (showGeneration) ..._generationSections(),
+        if (showGeneration)
+          ..._generationSections(
+            showModel: content == ParameterPanelContent.all,
+          ),
         if (showReferences) ...[
           // 反推面板
           const ReversePromptPanel(),
@@ -103,12 +108,14 @@ class ParameterPanel extends ConsumerWidget {
     );
   }
 
-  List<Widget> _generationSections() {
+  List<Widget> _generationSections({required bool showModel}) {
     return [
-      // 模型选择
-      const ModelSection(),
+      if (showModel) ...[
+        // 模型选择
+        const ModelSection(),
 
-      const SizedBox(height: 16),
+        const SizedBox(height: 16),
+      ],
 
       // 尺寸设置
       const SizeSection(),

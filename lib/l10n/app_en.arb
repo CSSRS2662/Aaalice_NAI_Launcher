@@ -7123,7 +7123,7 @@
   "mobileWorkbench_tabReferences": "Refs",
   "mobileWorkbench_tabHistory": "History",
   "mobileWorkbench_newResult": "New result",
-  "mobileWorkbench_selectModel": "Model {model}, open parameters",
+  "mobileWorkbench_selectModel": "Model {model}, tap to switch",
   "@mobileWorkbench_selectModel": {
     "placeholders": {
       "model": {}

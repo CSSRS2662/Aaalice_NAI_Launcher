@@ -15115,7 +15115,7 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String mobileWorkbench_selectModel(Object model) {
-    return 'モデル $model、パラメータを開く';
+    return 'モデル $model、タップして切り替え';
   }
 
   @override

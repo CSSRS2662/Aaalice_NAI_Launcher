@@ -27013,7 +27013,7 @@ abstract class AppLocalizations {
   /// No description provided for @mobileWorkbench_selectModel.
   ///
   /// In en, this message translates to:
-  /// **'Model {model}, open parameters'**
+  /// **'Model {model}, tap to switch'**
   String mobileWorkbench_selectModel(Object model);
 
   /// No description provided for @mobileWorkbench_queue.

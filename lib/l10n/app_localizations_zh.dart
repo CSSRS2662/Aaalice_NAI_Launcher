@@ -14849,7 +14849,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String mobileWorkbench_selectModel(Object model) {
-    return '模型 $model，前往参数';
+    return '模型 $model，点按切换';
   }
 
   @override
@@ -29810,7 +29810,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String mobileWorkbench_selectModel(Object model) {
-    return '模型 $model，前往參數';
+    return '模型 $model，點按切換';
   }
 
   @override

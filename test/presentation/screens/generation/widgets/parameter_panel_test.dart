@@ -229,6 +229,49 @@ void main() {
       expect(tester.takeException(), isNull);
     });
 
+    testWidgets('模型选择只在经典侧栏出现，移动端参数页交给顶栏菜单', (tester) async {
+      Widget buildSubject(ParameterPanelContent content) => ProviderScope(
+        overrides: [
+          localStorageServiceProvider.overrideWith(
+            (ref) => _TestLocalStorageService(),
+          ),
+          vibeLibraryStorageServiceProvider.overrideWithValue(
+            _TestVibeLibraryStorageService(),
+          ),
+          kritaBridgeNotifierProvider.overrideWith(
+            (ref) => _TestKritaBridgeNotifier(),
+          ),
+        ],
+        child: MaterialApp(
+          locale: const Locale('zh'),
+          supportedLocales: AppLocalizations.supportedLocales,
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          home: Scaffold(
+            body: SizedBox(
+              width: 360,
+              height: 1200,
+              child: ParameterPanel(content: content),
+            ),
+          ),
+        ),
+      );
+
+      List<Widget> sections() =>
+          (tester.widget<ListView>(find.byType(ListView).first).childrenDelegate
+                  as SliverChildListDelegate)
+              .children;
+
+      await tester.pumpWidget(buildSubject(ParameterPanelContent.all));
+      await tester.pumpAndSettle();
+      expect(sections().whereType<ModelSection>(), hasLength(1));
+
+      await tester.pumpWidget(buildSubject(ParameterPanelContent.generation));
+      await tester.pumpAndSettle();
+      expect(sections().whereType<ModelSection>(), isEmpty);
+      expect(sections().whereType<SizeSection>(), hasLength(1));
+      expect(tester.takeException(), isNull);
+    });
+
     testWidgets('经典侧栏显示角色编辑，移动参数面板不重复挂载', (tester) async {
       Widget buildSubject({required bool showCharacterEditor}) {
         return ProviderScope(

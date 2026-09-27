@@ -5,7 +5,6 @@ import 'mobile_generation_controller.dart';
 import 'mobile_generation_view_data.dart';
 import 'mobile_workbench/mobile_generate_bar.dart';
 import 'mobile_workbench/mobile_generation_header.dart';
-import 'mobile_workbench/mobile_workbench_state.dart';
 
 /// 生成页外框：顶栏、工作台与全局生成底栏。
 ///
@@ -27,11 +26,7 @@ class MobileGenerationChrome extends StatelessWidget {
     return ThemedScaffold(
       appBar: controller.agentFullScreen
           ? null
-          : MobileGenerationHeader(
-              onSelectModel: () =>
-                  controller.selectTab(MobileWorkbenchTab.params),
-              onOpenAgent: controller.openAgentChat,
-            ),
+          : MobileGenerationHeader(onOpenAgent: controller.openAgentChat),
       body: body,
       bottomNavigationBar: data.keyboardVisible || controller.agentFullScreen
           ? null

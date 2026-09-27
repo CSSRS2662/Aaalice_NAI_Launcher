@@ -7146,7 +7146,7 @@
   "mobileWorkbench_tabReferences": "参照",
   "mobileWorkbench_tabHistory": "履歴",
   "mobileWorkbench_newResult": "新しい結果",
-  "mobileWorkbench_selectModel": "モデル {model}、パラメータを開く",
+  "mobileWorkbench_selectModel": "モデル {model}、タップして切り替え",
   "@mobileWorkbench_selectModel": {
     "placeholders": {
       "model": {}
