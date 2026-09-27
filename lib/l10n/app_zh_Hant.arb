@@ -2529,13 +2529,10 @@
   "localGallery_moveSelected": "移動",
   "localGallery_packSelected": "打包",
   "localGallery_editMetadata": "編輯標籤",
-  "localGallery_switchToGridView": "切換到網格檢視",
-  "localGallery_switchToDateGroupedView": "切換到日期分組檢視",
   "localGallery_openFilterPanel": "開啟篩選面板",
   "localGallery_hideCategoryPanel": "隱藏分類面板",
   "localGallery_showCategoryPanel": "顯示分類面板",
   "localGallery_enterSelectionMode": "進入選擇模式",
-  "localGallery_refreshTooltip": "重新整理畫廊\n\n自動檢測新增/修改的圖片並更新索引",
   "localGallery_tagIntersection": "標籤交集",
   "localGallery_createCategoryTitle": "新建分類",
   "localGallery_createCategoryHint": "請輸入分類名稱",
@@ -2685,6 +2682,9 @@
   "localGallery_skipped": "跳過",
   "localGallery_remaining": "剩餘",
   "localGallery_clearFilters": "清除篩選",
+  "localGallery_scopeLabel": "顯示範圍",
+  "localGallery_scopeAll": "全部",
+  "localGallery_groupByDate": "按日期分組",
   "slideshow_of": "/",
   "slideshow_play": "播放",
   "slideshow_pause": "暫停",
@@ -5026,7 +5026,6 @@
   "promptAssistant_defaultCharacterReplaceRuleContent": "你是角色替換助手。將輸入提示詞中的原角色身份、髮型、服裝和外觀替換為目標角色，同時保留動作、構圖、背景、風格、鏡頭和質量標籤。只輸出替換後的一行提示詞。",
   "promptAssistant_defaultCustomRuleName": "預設自定義規則",
   "promptAssistant_defaultCustomRuleContent": "你是提示詞改寫助手。根據當前提示詞、使用者需求和可選參考圖修改提示詞。只輸出最終可直接使用的一行提示詞，不要解釋。",
-  "localGallery_dateFilterButton": "日期過濾",
   "cacheStats_title": "快取統計",
   "cacheStats_autoRefreshUpdated": "自動重新整理 · 上次更新: {time}",
   "@cacheStats_autoRefreshUpdated": {
@@ -7472,7 +7471,7 @@
   "mobileWorkbench_tabReferences": "參考",
   "mobileWorkbench_tabHistory": "歷史",
   "mobileWorkbench_newResult": "有新結果",
-  "mobileWorkbench_selectModel": "模型 {model}，前往參數",
+  "mobileWorkbench_selectModel": "模型 {model}，點按切換",
   "@mobileWorkbench_selectModel": {
     "placeholders": {
       "model": {}

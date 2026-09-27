@@ -5429,12 +5429,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get localGallery_editMetadata => '编辑标签';
 
   @override
-  String get localGallery_switchToGridView => '切换到网格视图';
-
-  @override
-  String get localGallery_switchToDateGroupedView => '切换到日期分组视图';
-
-  @override
   String get localGallery_openFilterPanel => '打开筛选面板';
 
   @override
@@ -5445,9 +5439,6 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get localGallery_enterSelectionMode => '进入选择模式';
-
-  @override
-  String get localGallery_refreshTooltip => '刷新画廊\n\n自动检测新增/修改的图片并更新索引';
 
   @override
   String get localGallery_tagIntersection => '标签交集';
@@ -5697,6 +5688,15 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get localGallery_clearFilters => '清除筛选';
+
+  @override
+  String get localGallery_scopeLabel => '显示范围';
+
+  @override
+  String get localGallery_scopeAll => '全部';
+
+  @override
+  String get localGallery_groupByDate => '按日期分组';
 
   @override
   String get slideshow_of => '/';
@@ -10334,9 +10334,6 @@ class AppLocalizationsZh extends AppLocalizations {
   @override
   String get promptAssistant_defaultCustomRuleContent =>
       '你是提示词改写助手。根据当前提示词、用户需求和可选参考图修改提示词。只输出最终可直接使用的一行提示词，不要解释。';
-
-  @override
-  String get localGallery_dateFilterButton => '日期过滤';
 
   @override
   String get cacheStats_title => '缓存统计';
@@ -20389,12 +20386,6 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get localGallery_editMetadata => '編輯標籤';
 
   @override
-  String get localGallery_switchToGridView => '切換到網格檢視';
-
-  @override
-  String get localGallery_switchToDateGroupedView => '切換到日期分組檢視';
-
-  @override
   String get localGallery_openFilterPanel => '開啟篩選面板';
 
   @override
@@ -20405,9 +20396,6 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get localGallery_enterSelectionMode => '進入選擇模式';
-
-  @override
-  String get localGallery_refreshTooltip => '重新整理畫廊\n\n自動檢測新增/修改的圖片並更新索引';
 
   @override
   String get localGallery_tagIntersection => '標籤交集';
@@ -20657,6 +20645,15 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get localGallery_clearFilters => '清除篩選';
+
+  @override
+  String get localGallery_scopeLabel => '顯示範圍';
+
+  @override
+  String get localGallery_scopeAll => '全部';
+
+  @override
+  String get localGallery_groupByDate => '按日期分組';
 
   @override
   String get slideshow_of => '/';
@@ -25294,9 +25291,6 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   @override
   String get promptAssistant_defaultCustomRuleContent =>
       '你是提示詞改寫助手。根據當前提示詞、使用者需求和可選參考圖修改提示詞。只輸出最終可直接使用的一行提示詞，不要解釋。';
-
-  @override
-  String get localGallery_dateFilterButton => '日期過濾';
 
   @override
   String get cacheStats_title => '快取統計';

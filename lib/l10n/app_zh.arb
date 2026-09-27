@@ -2511,13 +2511,10 @@
   "localGallery_moveSelected": "移动",
   "localGallery_packSelected": "打包",
   "localGallery_editMetadata": "编辑标签",
-  "localGallery_switchToGridView": "切换到网格视图",
-  "localGallery_switchToDateGroupedView": "切换到日期分组视图",
   "localGallery_openFilterPanel": "打开筛选面板",
   "localGallery_hideCategoryPanel": "隐藏分类面板",
   "localGallery_showCategoryPanel": "显示分类面板",
   "localGallery_enterSelectionMode": "进入选择模式",
-  "localGallery_refreshTooltip": "刷新画廊\n\n自动检测新增/修改的图片并更新索引",
   "localGallery_tagIntersection": "标签交集",
   "localGallery_createCategoryTitle": "新建分类",
   "localGallery_createCategoryHint": "请输入分类名称",
@@ -2667,6 +2664,9 @@
   "localGallery_skipped": "跳过",
   "localGallery_remaining": "剩余",
   "localGallery_clearFilters": "清除筛选",
+  "localGallery_scopeLabel": "显示范围",
+  "localGallery_scopeAll": "全部",
+  "localGallery_groupByDate": "按日期分组",
 
   "slideshow_of": "/",
   "slideshow_play": "播放",
@@ -4934,7 +4934,6 @@
   "promptAssistant_defaultCustomRuleName": "默认自定义规则",
   "promptAssistant_defaultCustomRuleContent": "你是提示词改写助手。根据当前提示词、用户需求和可选参考图修改提示词。只输出最终可直接使用的一行提示词，不要解释。",
 
-  "localGallery_dateFilterButton": "日期过滤",
 
   "cacheStats_title": "缓存统计",
   "cacheStats_autoRefreshUpdated": "自动刷新 · 上次更新: {time}",
@@ -7192,7 +7191,7 @@
   "mobileWorkbench_tabReferences": "参考",
   "mobileWorkbench_tabHistory": "历史",
   "mobileWorkbench_newResult": "有新结果",
-  "mobileWorkbench_selectModel": "模型 {model}，前往参数",
+  "mobileWorkbench_selectModel": "模型 {model}，点按切换",
   "@mobileWorkbench_selectModel": {
     "placeholders": {
       "model": {}

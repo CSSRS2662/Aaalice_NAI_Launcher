@@ -10101,18 +10101,6 @@ abstract class AppLocalizations {
   /// **'Edit Tags'**
   String get localGallery_editMetadata;
 
-  /// No description provided for @localGallery_switchToGridView.
-  ///
-  /// In en, this message translates to:
-  /// **'Switch to grid view'**
-  String get localGallery_switchToGridView;
-
-  /// No description provided for @localGallery_switchToDateGroupedView.
-  ///
-  /// In en, this message translates to:
-  /// **'Switch to date grouped view'**
-  String get localGallery_switchToDateGroupedView;
-
   /// No description provided for @localGallery_openFilterPanel.
   ///
   /// In en, this message translates to:
@@ -10136,12 +10124,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Enter selection mode'**
   String get localGallery_enterSelectionMode;
-
-  /// No description provided for @localGallery_refreshTooltip.
-  ///
-  /// In en, this message translates to:
-  /// **'Refresh gallery\n\nAutomatically detects new or changed images and updates the index'**
-  String get localGallery_refreshTooltip;
 
   /// No description provided for @localGallery_tagIntersection.
   ///
@@ -10574,6 +10556,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Clear filters'**
   String get localGallery_clearFilters;
+
+  /// No description provided for @localGallery_scopeLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Show'**
+  String get localGallery_scopeLabel;
+
+  /// No description provided for @localGallery_scopeAll.
+  ///
+  /// In en, this message translates to:
+  /// **'All'**
+  String get localGallery_scopeAll;
+
+  /// No description provided for @localGallery_groupByDate.
+  ///
+  /// In en, this message translates to:
+  /// **'Group by date'**
+  String get localGallery_groupByDate;
 
   /// No description provided for @slideshow_of.
   ///
@@ -18869,12 +18869,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'You are a prompt rewriting assistant. Modify the prompt according to the current prompt, the user request, and optional reference images. Output only the final single-line prompt that can be used directly, without explanation.'**
   String get promptAssistant_defaultCustomRuleContent;
-
-  /// No description provided for @localGallery_dateFilterButton.
-  ///
-  /// In en, this message translates to:
-  /// **'Date Filter'**
-  String get localGallery_dateFilterButton;
 
   /// No description provided for @cacheStats_title.
   ///

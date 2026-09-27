@@ -5675,13 +5675,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get localGallery_editMetadata => 'Edit Tags';
 
   @override
-  String get localGallery_switchToGridView => 'Switch to grid view';
-
-  @override
-  String get localGallery_switchToDateGroupedView =>
-      'Switch to date grouped view';
-
-  @override
   String get localGallery_openFilterPanel => 'Open filter panel';
 
   @override
@@ -5692,10 +5685,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get localGallery_enterSelectionMode => 'Enter selection mode';
-
-  @override
-  String get localGallery_refreshTooltip =>
-      'Refresh gallery\n\nAutomatically detects new or changed images and updates the index';
 
   @override
   String get localGallery_tagIntersection => 'Tag Intersection';
@@ -5954,6 +5943,15 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get localGallery_clearFilters => 'Clear filters';
+
+  @override
+  String get localGallery_scopeLabel => 'Show';
+
+  @override
+  String get localGallery_scopeAll => 'All';
+
+  @override
+  String get localGallery_groupByDate => 'Group by date';
 
   @override
   String get slideshow_of => 'of';
@@ -10773,9 +10771,6 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get promptAssistant_defaultCustomRuleContent =>
       'You are a prompt rewriting assistant. Modify the prompt according to the current prompt, the user request, and optional reference images. Output only the final single-line prompt that can be used directly, without explanation.';
-
-  @override
-  String get localGallery_dateFilterButton => 'Date Filter';
 
   @override
   String get cacheStats_title => 'Cache Statistics';

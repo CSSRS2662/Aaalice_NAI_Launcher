@@ -19,6 +19,8 @@ class GalleryLibraryToolbar extends StatelessWidget {
     this.count,
     this.actions = const [],
     this.primaryAction,
+    this.titleActions = const [],
+    this.filters,
     this.supplementary,
     this.compactBreakpoint = 1050,
   });
@@ -28,6 +30,12 @@ class GalleryLibraryToolbar extends StatelessWidget {
   final Widget search;
   final List<Widget> actions;
   final Widget? primaryAction;
+
+  /// 页面级图标操作：紧凑布局放在标题行右侧，宽屏排在整行末尾。
+  final List<Widget> titleActions;
+
+  /// 快捷筛选：紧凑布局单独占一行，位于搜索之后；宽屏排在搜索框右侧。
+  final Widget? filters;
   final Widget? supplementary;
   final double compactBreakpoint;
 
@@ -61,6 +69,7 @@ class GalleryLibraryToolbar extends StatelessWidget {
             if (count != null) ...[const SizedBox(width: 8), count!],
             const SizedBox(width: GalleryCollectionChrome.toolbarGroupGap),
             Expanded(child: search),
+            if (filters != null) ...[const SizedBox(width: 8), filters!],
             if (actions.isNotEmpty) ...[
               const SizedBox(width: 8),
               ..._spaced(actions, 6),
@@ -68,6 +77,10 @@ class GalleryLibraryToolbar extends StatelessWidget {
             if (primaryAction != null) ...[
               const SizedBox(width: 8),
               primaryAction!,
+            ],
+            if (titleActions.isNotEmpty) ...[
+              const SizedBox(width: 4),
+              ...titleActions,
             ],
           ],
         ),
@@ -90,6 +103,7 @@ class GalleryLibraryToolbar extends StatelessWidget {
           children: [
             Flexible(child: title),
             if (count != null) ...[const SizedBox(width: 8), count!],
+            if (titleActions.isNotEmpty) ...[const Spacer(), ...titleActions],
           ],
         ),
         const SizedBox(height: 8),
@@ -102,6 +116,7 @@ class GalleryLibraryToolbar extends StatelessWidget {
             ],
           ],
         ),
+        if (filters != null) ...[const SizedBox(height: 8), filters!],
         if (actions.isNotEmpty) ...[
           const SizedBox(height: 8),
           HorizontalActionStrip(

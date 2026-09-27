@@ -7,6 +7,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hive/hive.dart';
 import 'package:nai_launcher/data/models/gallery/local_image_record.dart';
+import 'package:nai_launcher/data/services/gallery/gallery_filter_service.dart';
 import 'package:nai_launcher/l10n/app_localizations.dart';
 import 'package:nai_launcher/presentation/providers/local_gallery_provider.dart';
 import 'package:nai_launcher/presentation/providers/selection_mode_provider.dart';
@@ -105,65 +106,217 @@ void main() {
     },
   );
 
-  for (final width in [320.0, 360.0, 600.0, 840.0, 1180.0, 1600.0]) {
-    testWidgets(
-      'mobile toolbar keeps search count and complete actions at ${width.toInt()}px',
-      (tester) async {
-        await tester.binding.setSurfaceSize(Size(width, 500));
-        addTearDown(() => tester.binding.setSurfaceSize(null));
+  const scopeKeys = [
+    'local-gallery-scope-all',
+    'local-gallery-scope-favorites',
+    'local-gallery-date-chip',
+    'local-gallery-collection-chip',
+  ];
+  const actionKeys = [
+    'local-gallery-filter-action',
+    'local-gallery-select-action',
+    'local-gallery-more-action',
+  ];
 
-        await _pumpToolbar(tester, selectionActive: false);
+  for (final scale in [1.0, 3.0]) {
+    for (final width in [320.0, 360.0, 600.0, 840.0, 1180.0, 1600.0]) {
+      testWidgets(
+        'toolbar keeps count, search, scope and actions at ${width.toInt()}px '
+        'and ${scale.toInt()}x text',
+        (tester) async {
+          await tester.binding.setSurfaceSize(Size(width, 900));
+          addTearDown(() => tester.binding.setSurfaceSize(null));
 
-        final compact = width < 1050;
-        expect(
-          find.byKey(
-            ValueKey(
-              compact
-                  ? 'gallery-library-toolbar-compact'
-                  : 'gallery-library-toolbar-desktop',
-            ),
-          ),
-          findsOneWidget,
-        );
-        expect(find.text('5'), findsOneWidget);
-
-        for (final label in ['分类', '筛选', '日期', '多选', '刷新']) {
-          final labelFinder = find.text(label);
-          expect(labelFinder, findsOneWidget);
-          expect(
-            tester.renderObject<RenderParagraph>(labelFinder).didExceedMaxLines,
-            isFalse,
+          await _pumpToolbar(
+            tester,
+            selectionActive: false,
+            textScaleFactor: scale,
           );
-        }
-        expect(tester.takeException(), isNull);
-      },
-    );
+
+          final compact = scale > 1.5 || width < 1050;
+          expect(
+            find.byKey(
+              ValueKey(
+                compact
+                    ? 'gallery-library-toolbar-compact'
+                    : 'gallery-library-toolbar-desktop',
+              ),
+            ),
+            findsOneWidget,
+          );
+          expect(find.text('5'), findsOneWidget);
+          // 低频操作收进“更多”菜单，不再排成一条可横向滚动的按钮带。
+          expect(
+            find.byKey(const ValueKey('gallery-library-toolbar-actions')),
+            findsNothing,
+          );
+          expect(find.text('刷新'), findsNothing);
+          for (final label in ['全部', '收藏', '日期', '分类']) {
+            final labelFinder = find.text(label);
+            expect(labelFinder, findsOneWidget, reason: label);
+            expect(
+              tester
+                  .renderObject<RenderParagraph>(labelFinder)
+                  .didExceedMaxLines,
+              isFalse,
+            );
+          }
+          for (final key in [...scopeKeys, ...actionKeys]) {
+            final finder = find.byKey(ValueKey(key));
+            await tester.ensureVisible(finder);
+            await tester.pumpAndSettle();
+            expect(finder.hitTestable(), findsOneWidget, reason: key);
+            expect(
+              tester.getSize(finder).height,
+              greaterThanOrEqualTo(40),
+              reason: key,
+            );
+          }
+          expect(tester.takeException(), isNull);
+        },
+      );
+    }
   }
 
-  for (final width in [320.0, 360.0, 600.0, 840.0, 1180.0, 1600.0]) {
-    testWidgets(
-      'toolbar preserves every compact action at 3x text and ${width.toInt()}px',
-      (tester) async {
-        await tester.binding.setSurfaceSize(Size(width, 900));
-        addTearDown(() => tester.binding.setSurfaceSize(null));
+  testWidgets('收藏一键切换，全部与收藏互斥显示选中态', (tester) async {
+    await tester.binding.setSurfaceSize(const Size(390, 700));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+    final calls = <String>[];
 
-        await _pumpToolbar(tester, selectionActive: false, textScaleFactor: 3);
-
-        expect(
-          find.byKey(const ValueKey('gallery-library-toolbar-compact')),
-          findsOneWidget,
-        );
-        expect(
-          find.byKey(const ValueKey('gallery-library-toolbar-actions')),
-          findsOneWidget,
-        );
-        for (final label in ['分类', '筛选', '日期', '多选', '刷新']) {
-          expect(find.text(label), findsOneWidget);
-        }
-        expect(tester.takeException(), isNull);
-      },
+    await _pumpToolbar(
+      tester,
+      selectionActive: false,
+      collectionLabel: '人物',
+      onShowAll: () => calls.add('all'),
+      onShowFavorites: () => calls.add('favorites'),
     );
-  }
+    final all = find.byKey(const ValueKey('local-gallery-scope-all'));
+    final favorites = find.byKey(
+      const ValueKey('local-gallery-scope-favorites'),
+    );
+    expect(tester.getSemantics(all), isSemantics(isSelected: true));
+    expect(tester.getSemantics(favorites), isSemantics(isSelected: false));
+    expect(find.text('人物'), findsOneWidget);
+
+    await tester.tap(favorites);
+    expect(calls, ['favorites']);
+
+    // 换一个 ProviderScope，让新的过滤条件生效。
+    await tester.pumpWidget(const SizedBox.shrink());
+    await _pumpToolbar(
+      tester,
+      selectionActive: false,
+      criteria: const FilterCriteria(showFavoritesOnly: true),
+      collectionLabel: '人物',
+      onShowAll: () => calls.add('all'),
+      onShowFavorites: () => calls.add('favorites'),
+    );
+    await tester.pumpAndSettle();
+    expect(tester.getSemantics(favorites), isSemantics(isSelected: true));
+    // 收藏由范围切换表达，分类条件回到未选状态。
+    expect(find.text('人物'), findsNothing);
+    await tester.tap(all);
+    expect(calls, ['favorites', 'all']);
+  });
+
+  testWidgets('日期与分类条件显示当前取值，并可单独清除', (tester) async {
+    await tester.binding.setSurfaceSize(const Size(390, 700));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+    final calls = <String>[];
+
+    final container = await _pumpToolbar(
+      tester,
+      selectionActive: false,
+      criteria: FilterCriteria(
+        dateStart: DateTime(2026, 9, 1),
+        dateEnd: DateTime(2026, 9, 26),
+      ),
+      collectionLabel: '人物',
+      onClearCollection: () => calls.add('clear-collection'),
+    );
+
+    expect(find.text('9/1 ~ 9/26'), findsOneWidget);
+    expect(find.text('人物'), findsOneWidget);
+
+    await tester.ensureVisible(
+      find.byKey(const ValueKey('local-gallery-date-clear')),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('local-gallery-date-clear')));
+    await tester.pump();
+    final criteria = container
+        .read(localGalleryNotifierProvider)
+        .filterCriteria;
+    expect(criteria.dateStart, isNull);
+    expect(criteria.dateEnd, isNull);
+    expect(find.text('日期'), findsOneWidget);
+
+    await tester.ensureVisible(
+      find.byKey(const ValueKey('local-gallery-collection-clear')),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(
+      find.byKey(const ValueKey('local-gallery-collection-clear')),
+    );
+    expect(calls, ['clear-collection']);
+  });
+
+  testWidgets('更多菜单收纳日期分组、跳转、撤销重做与刷新', (tester) async {
+    await tester.binding.setSurfaceSize(const Size(390, 900));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+    final calls = <String>[];
+
+    final container = await _pumpToolbar(
+      tester,
+      selectionActive: false,
+      canUndo: true,
+      onUndo: () => calls.add('undo'),
+      onRefresh: () => calls.add('refresh'),
+      onJumpToDate: () => calls.add('jump'),
+    );
+
+    Future<void> openMenu() async {
+      await tester.tap(find.byKey(const ValueKey('local-gallery-more-action')));
+      await tester.pumpAndSettle();
+    }
+
+    await openMenu();
+    for (final label in ['按日期分组', '跳转到日期', '撤销', '重做', '刷新']) {
+      expect(find.text(label), findsOneWidget, reason: label);
+    }
+    await tester.tap(find.text('刷新'));
+    await tester.pumpAndSettle();
+    await openMenu();
+    await tester.tap(find.text('撤销'));
+    await tester.pumpAndSettle();
+    await openMenu();
+    await tester.tap(find.text('跳转到日期'));
+    await tester.pumpAndSettle();
+    expect(calls, ['refresh', 'undo', 'jump']);
+
+    await openMenu();
+    await tester.tap(find.text('按日期分组'));
+    await tester.pumpAndSettle();
+    expect(container.read(localGalleryNotifierProvider).isGroupedView, isTrue);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('存在模型等高级筛选时筛选按钮切换为选中态', (tester) async {
+    await tester.binding.setSurfaceSize(const Size(390, 700));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+
+    await _pumpToolbar(tester, selectionActive: false);
+    final filter = find.byKey(const ValueKey('local-gallery-filter-action'));
+    expect(tester.widget<IconButton>(filter).isSelected, isFalse);
+
+    await tester.pumpWidget(const SizedBox.shrink());
+    await _pumpToolbar(
+      tester,
+      selectionActive: false,
+      criteria: const FilterCriteria(filterModel: 'nai-diffusion-4-5-full'),
+    );
+    expect(tester.widget<IconButton>(filter).isSelected, isTrue);
+  });
 
   testWidgets('compact action strip shows a forward scroll hint when clipped', (
     tester,
@@ -251,6 +404,15 @@ Future<ProviderContainer> _pumpToolbar(
   VoidCallback? onRemoveFromAlbum,
   double textScaleFactor = 1,
   bool showPageTitle = true,
+  FilterCriteria criteria = const FilterCriteria(),
+  String? collectionLabel,
+  bool canUndo = false,
+  VoidCallback? onUndo,
+  VoidCallback? onRefresh,
+  VoidCallback? onJumpToDate,
+  VoidCallback? onShowAll,
+  VoidCallback? onShowFavorites,
+  VoidCallback? onClearCollection,
 }) async {
   await tester.pumpWidget(
     ProviderScope(
@@ -266,6 +428,7 @@ Future<ProviderContainer> _pumpToolbar(
               totalCount: 5,
               totalPages: 3,
               isInitialized: true,
+              filterCriteria: criteria,
             ),
             filteredPaths: const [
               r'C:\gallery\page-1.png',
@@ -297,6 +460,14 @@ Future<ProviderContainer> _pumpToolbar(
                 enableSearchAutocomplete: false,
                 showPageTitle: showPageTitle,
                 onToggleCategoryPanel: _noop,
+                collectionLabel: collectionLabel,
+                canUndo: canUndo,
+                onUndo: onUndo,
+                onRefresh: onRefresh,
+                onJumpToDate: onJumpToDate,
+                onShowAll: onShowAll,
+                onShowFavorites: onShowFavorites,
+                onClearCollection: onClearCollection,
                 batchActions: [
                   const ImageCardAction(
                     id: ImageCardActionId.classify,
@@ -350,6 +521,22 @@ class _ToolbarGalleryNotifier extends LocalGalleryNotifier {
 
   @override
   Future<List<String>> getFilteredImagePaths() async => filteredPaths;
+
+  @override
+  Future<void> setDateRange(DateTime? start, DateTime? end) async {
+    state = state.copyWith(
+      filterCriteria: FilterCriteria(
+        searchQuery: state.filterCriteria.searchQuery,
+        dateStart: start,
+        dateEnd: end,
+      ),
+    );
+  }
+
+  @override
+  Future<void> setGroupedView(bool value) async {
+    state = state.copyWith(isGroupedView: value);
+  }
 }
 
 class _ActiveSelectionNotifier extends LocalGallerySelectionNotifier {

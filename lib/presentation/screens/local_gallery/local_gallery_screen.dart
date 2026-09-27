@@ -279,6 +279,7 @@ class _LocalGalleryShell extends ConsumerWidget {
   Widget _buildToolbar(BuildContext context, WidgetRef ref) {
     final bulk = viewModel.bulkOperation;
     return LocalGalleryToolbar(
+      collectionLabel: _collectionLabel(ref),
       showPageTitle: true,
       onRefresh: () =>
           ref.read(localGalleryNotifierProvider.notifier).refresh(),
@@ -288,15 +289,33 @@ class _LocalGalleryShell extends ConsumerWidget {
       canRedo: bulk.canRedo,
       onUndo: bulk.canUndo ? actions.undo : null,
       onRedo: bulk.canRedo ? actions.redo : null,
-      groupedGridViewKey: groupedGridViewKey,
       showCategoryPanel: viewModel.showPersistentCategories,
       onToggleCategoryPanel: viewModel.usePersistentCategories
           ? controller.toggleCategoryPanel
           : () => unawaited(controller.showCategoryPanelSheet()),
+      onShowAll: () => unawaited(controller.handleCategorySelected(null)),
+      onShowFavorites: () =>
+          unawaited(controller.handleCategorySelected('favorites')),
+      onClearCollection: () =>
+          unawaited(controller.handleCategorySelected(null)),
+      onJumpToDate: () => unawaited(controller.jumpToDate()),
       onOpenFolder: PlatformCapabilities.current.supportsOpenFolder
           ? controller.openGalleryFolder
           : null,
     );
+  }
+
+  /// 当前选中的分类或相簿名称；收藏由范围切换单独表达，不在这里显示。
+  String? _collectionLabel(WidgetRef ref) {
+    if (viewModel.gallery.filterCriteria.showFavoritesOnly) return null;
+    final albums = ref.watch(galleryAlbumNotifierProvider);
+    final albumId = albums.selectedAlbumId;
+    if (albumId != null && albumId != 'favorites') {
+      for (final album in albums.albums) {
+        if (album.id == albumId) return album.name;
+      }
+    }
+    return viewModel.categories.selectedCategory?.name;
   }
 
   Widget _buildBody(BuildContext context, WidgetRef ref) {

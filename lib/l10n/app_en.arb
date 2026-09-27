@@ -2490,13 +2490,10 @@
   "localGallery_moveSelected": "Move",
   "localGallery_packSelected": "Pack",
   "localGallery_editMetadata": "Edit Tags",
-  "localGallery_switchToGridView": "Switch to grid view",
-  "localGallery_switchToDateGroupedView": "Switch to date grouped view",
   "localGallery_openFilterPanel": "Open filter panel",
   "localGallery_hideCategoryPanel": "Hide category panel",
   "localGallery_showCategoryPanel": "Show category panel",
   "localGallery_enterSelectionMode": "Enter selection mode",
-  "localGallery_refreshTooltip": "Refresh gallery\n\nAutomatically detects new or changed images and updates the index",
   "localGallery_tagIntersection": "Tag Intersection",
   "localGallery_createCategoryTitle": "New Category",
   "localGallery_createCategoryHint": "Enter category name",
@@ -2646,6 +2643,9 @@
   "localGallery_skipped": "Skipped",
   "localGallery_remaining": "Remaining",
   "localGallery_clearFilters": "Clear filters",
+  "localGallery_scopeLabel": "Show",
+  "localGallery_scopeAll": "All",
+  "localGallery_groupByDate": "Group by date",
 
   "slideshow_of": "of",
   "slideshow_play": "Play",
@@ -5136,7 +5136,6 @@
   "promptAssistant_defaultCustomRuleName": "Default Custom Rule",
   "promptAssistant_defaultCustomRuleContent": "You are a prompt rewriting assistant. Modify the prompt according to the current prompt, the user request, and optional reference images. Output only the final single-line prompt that can be used directly, without explanation.",
 
-  "localGallery_dateFilterButton": "Date Filter",
 
   "cacheStats_title": "Cache Statistics",
   "cacheStats_autoRefreshUpdated": "Auto refresh · Last updated: {time}",

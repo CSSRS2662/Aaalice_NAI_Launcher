@@ -5529,12 +5529,6 @@ class AppLocalizationsJa extends AppLocalizations {
   String get localGallery_editMetadata => 'タグを編集';
 
   @override
-  String get localGallery_switchToGridView => 'グリッド ビューに切り替える';
-
-  @override
-  String get localGallery_switchToDateGroupedView => '日付グループ化ビューに切り替える';
-
-  @override
   String get localGallery_openFilterPanel => 'フィルター パネルを開く';
 
   @override
@@ -5545,10 +5539,6 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get localGallery_enterSelectionMode => '選択モードに入ります';
-
-  @override
-  String get localGallery_refreshTooltip =>
-      'ギャラリーを更新\n\n新しい画像または変更された画像を自動的に検出し、インデックスを更新します';
 
   @override
   String get localGallery_tagIntersection => 'タグの交差';
@@ -5801,6 +5791,15 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get localGallery_clearFilters => 'フィルターをクリア';
+
+  @override
+  String get localGallery_scopeLabel => '表示範囲';
+
+  @override
+  String get localGallery_scopeAll => 'すべて';
+
+  @override
+  String get localGallery_groupByDate => '日付でグループ化';
 
   @override
   String get slideshow_of => '件中';
@@ -10510,9 +10509,6 @@ class AppLocalizationsJa extends AppLocalizations {
   @override
   String get promptAssistant_defaultCustomRuleContent =>
       'あなたはプロンプト書き換えアシスタントです。現在のプロンプト、ユーザー要求、およびオプションの参照イメージに従ってプロンプトを変更します。直接使用できる最後の 1 行プロンプトのみを説明なしで出力します。';
-
-  @override
-  String get localGallery_dateFilterButton => '日付フィルター';
 
   @override
   String get cacheStats_title => 'キャッシュ統計';
