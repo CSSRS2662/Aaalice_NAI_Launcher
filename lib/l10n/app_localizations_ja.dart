@@ -718,6 +718,39 @@ class AppLocalizationsJa extends AppLocalizations {
   String get settings_themeModeDark => 'ダーク';
 
   @override
+  String get settings_accentColor => 'アクセントカラー';
+
+  @override
+  String get settings_accentEmber => 'エンバー';
+
+  @override
+  String get settings_accentBlue => 'ブルー';
+
+  @override
+  String get settings_accentIndigo => 'インディゴ';
+
+  @override
+  String get settings_accentViolet => 'バイオレット';
+
+  @override
+  String get settings_accentRose => 'ローズ';
+
+  @override
+  String get settings_accentTeal => 'ティール';
+
+  @override
+  String get settings_accentGreen => 'グリーン';
+
+  @override
+  String get settings_accentGraphite => 'グラファイト';
+
+  @override
+  String get settings_accentCustom => 'カスタム';
+
+  @override
+  String get settings_accentCustomTitle => 'カスタムアクセントカラー';
+
+  @override
   String get settings_selectFont => 'フォントの選択';
 
   @override

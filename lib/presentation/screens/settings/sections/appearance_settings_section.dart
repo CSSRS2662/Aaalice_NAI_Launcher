@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/utils/app_locale.dart';
 import '../../../../core/utils/localization_extension.dart';
+import '../../../providers/accent_color_provider.dart';
 import '../../../providers/font_provider.dart';
 import '../../../providers/font_scale_provider.dart';
 import '../../../providers/generation_layout_mode_provider.dart';
@@ -13,6 +14,7 @@ import '../../../themes/app_theme.dart';
 import '../../../adaptive/adaptive_presenter.dart';
 import '../../../widgets/common/adaptive_dialog_frame.dart';
 import '../../../widgets/common/themed_divider.dart';
+import '../widgets/accent_color_picker.dart';
 import '../widgets/settings_card.dart';
 import '../widgets/settings_page_layout.dart';
 
@@ -32,6 +34,7 @@ class _AppearanceSettingsSectionState
   @override
   Widget build(BuildContext context) {
     final currentTheme = ref.watch(themeNotifierProvider);
+    final accent = ref.watch(accentColorProvider);
     final currentFont = ref.watch(fontNotifierProvider);
     final currentLocale = ref.watch(localeNotifierProvider);
     final fontScale = ref.watch(fontScaleNotifierProvider);
@@ -55,6 +58,22 @@ class _AppearanceSettingsSectionState
                 title: Text(context.l10n.settings_themeMode),
                 subtitle: Text(_themeModeLabel(context, currentTheme)),
                 onTap: () => _showThemeDialog(context, currentTheme),
+              ),
+
+              // 强调色
+              ListTile(
+                key: const ValueKey('settings-accent-color'),
+                leading: const Icon(Icons.palette_outlined),
+                title: Text(context.l10n.settings_accentColor),
+                subtitle: Text(accentColorLabel(context.l10n, accent)),
+              ),
+              Padding(
+                padding: const EdgeInsetsDirectional.fromSTEB(56, 0, 12, 8),
+                child: AccentColorSwatches(
+                  selected: accent,
+                  onSelected: (value) =>
+                      ref.read(accentColorProvider.notifier).select(value),
+                ),
               ),
 
               // 字体选择

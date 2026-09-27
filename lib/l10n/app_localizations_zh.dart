@@ -702,6 +702,39 @@ class AppLocalizationsZh extends AppLocalizations {
   String get settings_themeModeDark => '深色';
 
   @override
+  String get settings_accentColor => '强调色';
+
+  @override
+  String get settings_accentEmber => '余烬橙';
+
+  @override
+  String get settings_accentBlue => '晴空蓝';
+
+  @override
+  String get settings_accentIndigo => '靛青';
+
+  @override
+  String get settings_accentViolet => '紫罗兰';
+
+  @override
+  String get settings_accentRose => '玫瑰红';
+
+  @override
+  String get settings_accentTeal => '青碧';
+
+  @override
+  String get settings_accentGreen => '森林绿';
+
+  @override
+  String get settings_accentGraphite => '石墨';
+
+  @override
+  String get settings_accentCustom => '自定义';
+
+  @override
+  String get settings_accentCustomTitle => '自定义强调色';
+
+  @override
   String get settings_selectFont => '选择字体';
 
   @override
@@ -15627,6 +15660,39 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get settings_themeModeDark => '深色';
+
+  @override
+  String get settings_accentColor => '強調色';
+
+  @override
+  String get settings_accentEmber => '餘燼橙';
+
+  @override
+  String get settings_accentBlue => '晴空藍';
+
+  @override
+  String get settings_accentIndigo => '靛青';
+
+  @override
+  String get settings_accentViolet => '紫羅蘭';
+
+  @override
+  String get settings_accentRose => '玫瑰紅';
+
+  @override
+  String get settings_accentTeal => '青碧';
+
+  @override
+  String get settings_accentGreen => '森林綠';
+
+  @override
+  String get settings_accentGraphite => '石墨';
+
+  @override
+  String get settings_accentCustom => '自訂';
+
+  @override
+  String get settings_accentCustomTitle => '自訂強調色';
 
   @override
   String get settings_selectFont => '選擇字型';

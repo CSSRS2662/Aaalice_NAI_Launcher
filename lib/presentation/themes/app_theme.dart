@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../providers/font_provider.dart';
+import 'pocket_accent.dart';
 import 'presets/pocket_theme.dart';
 
 /// 主题明暗偏好：浅色、深色或跟随系统。
@@ -25,19 +26,30 @@ enum AppThemeMode {
   }
 }
 
-/// 应用主题管理器：只保留一套浅色与深色配色。
+/// 应用主题管理器：只保留一套浅色与深色配色，强调色可由用户选择。
 class AppTheme {
   AppTheme._();
 
-  static final ThemeData _light = PocketTheme.light;
-  static final ThemeData _dark = PocketTheme.dark;
+  /// 最近使用的主题，按使用顺序淘汰，避免反复切换自定义颜色时无限增长。
+  static final Map<(Brightness, PocketAccent), ThemeData> _cache = {};
+  static const int _cacheLimit = 8;
 
   /// 获取指定明暗的主题
   ///
   /// [fontConfig] 为 null 或系统默认时，保留主题原生字体；
-  /// 有值时用用户选择覆盖主题字体。
-  static ThemeData getTheme(Brightness brightness, {FontConfig? fontConfig}) {
-    final baseTheme = brightness == Brightness.light ? _light : _dark;
+  /// 有值时用用户选择覆盖主题字体。[accent] 决定 primary 系角色。
+  static ThemeData getTheme(
+    Brightness brightness, {
+    FontConfig? fontConfig,
+    PocketAccent accent = PocketAccent.fallback,
+  }) {
+    final key = (brightness, accent);
+    final baseTheme =
+        _cache.remove(key) ?? PocketTheme.build(brightness, accent);
+    _cache[key] = baseTheme;
+    while (_cache.length > _cacheLimit) {
+      _cache.remove(_cache.keys.first);
+    }
 
     // 使用主题原生字体
     if (fontConfig == null || fontConfig.fontFamily.isEmpty) {

@@ -41,6 +41,7 @@ class StorageKeys {
   // Settings Keys
   static const String themeType = 'theme_type';
   static const String themeMode = 'theme_mode';
+  static const String accentColor = 'accent_color';
   static const String fontFamily = 'font_family';
   static const String fontScale = 'font_scale';
   static const String locale = 'locale';

@@ -7,17 +7,24 @@ import 'package:nai_launcher/presentation/themes/modules/color/palettes/pocket_p
 import 'package:nai_launcher/presentation/themes/modules/motion/presets/pocket_motion.dart';
 import 'package:nai_launcher/presentation/themes/modules/shape/presets/pocket_shapes.dart';
 import 'package:nai_launcher/presentation/themes/modules/typography/presets/pocket_typography.dart';
+import 'package:nai_launcher/presentation/themes/pocket_accent.dart';
 
 class PocketTheme {
   const PocketTheme._();
 
-  static const composer = ThemeComposer(
-    color: PocketPalette(),
-    typography: PocketTypography(),
-    shape: PocketShapes(),
-    motion: PocketMotion(),
-  );
+  static ThemeComposer composer([PocketAccent accent = PocketAccent.fallback]) =>
+      ThemeComposer(
+        color: PocketPalette(accent: accent),
+        typography: const PocketTypography(),
+        shape: const PocketShapes(),
+        motion: const PocketMotion(),
+      );
 
-  static ThemeData get light => composer.buildTheme(Brightness.light);
-  static ThemeData get dark => composer.buildTheme(Brightness.dark);
+  static ThemeData build(
+    Brightness brightness, [
+    PocketAccent accent = PocketAccent.fallback,
+  ]) => composer(accent).buildTheme(brightness);
+
+  static ThemeData get light => build(Brightness.light);
+  static ThemeData get dark => build(Brightness.dark);
 }

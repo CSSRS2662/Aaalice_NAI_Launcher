@@ -198,6 +198,7 @@ const portableSettingKeys = <String>{
   'dlss_options',
   StorageKeys.themeType,
   StorageKeys.themeMode,
+  StorageKeys.accentColor,
   StorageKeys.fontFamily,
   StorageKeys.fontScale,
   StorageKeys.locale,

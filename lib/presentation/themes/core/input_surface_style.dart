@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
 
+import 'layered_surface_style.dart';
+
 /// Returns the shared fill used by editable text surfaces.
 ///
-/// Derive input depth from the canvas, not the raised container ladder. A dark
-/// overlay on a raised container can still leave fields brighter than the page.
+/// Derive input depth from the darker of the canvas and the section surface,
+/// not the raised container ladder. A dark overlay on a raised container can
+/// still leave fields brighter than the page, and on a white canvas the
+/// sections sit below the page, so fields must sink below them instead.
 /// Black changes luminance without introducing the theme's foreground hue.
 Color inputSurfaceFillColor(ColorScheme colorScheme, {bool prominent = false}) {
   if (colorScheme.brightness == Brightness.dark) {
@@ -14,10 +18,12 @@ Color inputSurfaceFillColor(ColorScheme colorScheme, {bool prominent = false}) {
   }
 
   final opacity = prominent ? 0.025 : 0.04;
-  return Color.alphaBlend(
-    Colors.black.withValues(alpha: opacity),
-    colorScheme.surface,
-  );
+  final section = sectionSurfaceColor(colorScheme);
+  final base =
+      section.computeLuminance() < colorScheme.surface.computeLuminance()
+      ? section
+      : colorScheme.surface;
+  return Color.alphaBlend(Colors.black.withValues(alpha: opacity), base);
 }
 
 /// Builds the shared outline for Material text inputs.

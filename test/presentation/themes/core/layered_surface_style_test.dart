@@ -78,7 +78,7 @@ void main() {
         resolved.surfaceContainerHighest,
       ]) {
         expect(layer, isNot(colors.surface));
-        // 暖中性：三通道差不超过 16/255，只带轻微暖调，不出现明显色相。
+        // 中性：三通道差不超过 16/255，不出现明显色相。
         final channels = [layer.r, layer.g, layer.b];
         final spread =
             channels.reduce((a, b) => a > b ? a : b) -
@@ -97,18 +97,20 @@ void main() {
           expect(ladder[i], greaterThan(ladder[i - 1]));
         }
       } else {
-        // 浅色：分组与浮层浮于画布之上，控件压暗于画布。
+        // 浅色：纯白画布，分组与控件逐级压暗；浮层保持近白，依靠阴影浮起。
+        expect(colors.surface, const Color(0xFFFFFFFF));
+        final ladder = [
+          colors.surface,
+          resolved.surfaceContainerLow,
+          resolved.surfaceContainer,
+          resolved.surfaceContainerHighest,
+        ].map((color) => color.computeLuminance()).toList();
+        for (var i = 1; i < ladder.length; i++) {
+          expect(ladder[i], lessThan(ladder[i - 1]));
+        }
         expect(
-          resolved.surfaceContainerLow.computeLuminance(),
-          greaterThan(colors.surface.computeLuminance()),
-        );
-        expect(
-          resolved.surfaceContainer.computeLuminance(),
-          lessThan(colors.surface.computeLuminance()),
-        );
-        expect(
-          resolved.surfaceContainerHighest.computeLuminance(),
-          lessThan(resolved.surfaceContainer.computeLuminance()),
+          resolved.surfaceContainerHigh.computeLuminance(),
+          greaterThan(resolved.surfaceContainerLow.computeLuminance()),
         );
       }
     }

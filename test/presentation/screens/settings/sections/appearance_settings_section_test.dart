@@ -79,6 +79,81 @@ void main() {
     expect(LocalStorageService().getThemeMode(), 'dark');
   });
 
+  testWidgets('强调色提供预设与自定义颜色，选择后立即保存', (tester) async {
+    await tester.binding.setSurfaceSize(const Size(1000, 1600));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+
+    await tester.pumpWidget(
+      const ProviderScope(
+        child: MaterialApp(
+          locale: Locale('zh'),
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: Scaffold(
+            body: SingleChildScrollView(child: AppearanceSettingsSection()),
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    final entry = find.byKey(const ValueKey('settings-accent-color'));
+    expect(
+      find.descendant(of: entry, matching: find.text('余烬橙')),
+      findsOneWidget,
+    );
+    for (final id in [
+      'ember',
+      'blue',
+      'indigo',
+      'violet',
+      'rose',
+      'teal',
+      'green',
+      'graphite',
+      'custom',
+    ]) {
+      final swatch = find.byKey(ValueKey('settings-accent-$id'));
+      expect(swatch, findsOneWidget);
+      expect(tester.getSize(swatch).width, greaterThanOrEqualTo(44));
+    }
+
+    await tester.tap(find.byKey(const ValueKey('settings-accent-teal')));
+    await tester.pumpAndSettle();
+    expect(
+      find.descendant(of: entry, matching: find.text('青碧')),
+      findsOneWidget,
+    );
+    expect(LocalStorageService().getAccentColor(), 'teal');
+
+    await tester.tap(find.byKey(const ValueKey('settings-accent-custom')));
+    await tester.pumpAndSettle();
+    expect(
+      find.byKey(const ValueKey('settings-accent-custom-dialog')),
+      findsOneWidget,
+    );
+    await tester.enterText(
+      find.descendant(
+        of: find.byKey(const ValueKey('settings-accent-custom-dialog')),
+        matching: find.byType(EditableText),
+      ),
+      '#3366CC',
+    );
+    await tester.testTextInput.receiveAction(TextInputAction.done);
+    await tester.pumpAndSettle();
+    await tester.tap(
+      find.byKey(const ValueKey('settings-accent-custom-apply')),
+    );
+    await tester.pumpAndSettle();
+
+    expect(LocalStorageService().getAccentColor(), 'custom:#3366CC');
+    expect(
+      find.descendant(of: entry, matching: find.text('自定义 #3366CC')),
+      findsOneWidget,
+    );
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets('外观分类不再显示已移除的悬浮球设置', (tester) async {
     await tester.binding.setSurfaceSize(const Size(1000, 1600));
     addTearDown(() => tester.binding.setSurfaceSize(null));

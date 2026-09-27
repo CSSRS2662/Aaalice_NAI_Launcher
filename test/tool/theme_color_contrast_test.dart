@@ -7,6 +7,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:nai_launcher/presentation/providers/font_provider.dart';
 import 'package:nai_launcher/presentation/themes/app_theme.dart';
+import 'package:nai_launcher/presentation/themes/pocket_accent.dart';
 import 'package:nai_launcher/presentation/themes/theme_extension.dart';
 import 'package:nai_launcher/presentation/widgets/common/themed_text_selection_toolbar.dart';
 
@@ -168,9 +169,12 @@ void main() {
     testWidgets('colorScheme 的 onXxx 对 Xxx 必须达 WCAG AA', (tester) async {
       final offenders = <String>[];
 
-      {
+      for (final accent in _accentsUnderTest) {
         for (final brightness in Brightness.values) {
-          final cs = AppTheme.getTheme(brightness).colorScheme;
+          final cs = AppTheme.getTheme(
+            brightness,
+            accent: accent,
+          ).colorScheme;
           final pairs = <String, (Color, Color)>{
             'primary/onPrimary': (cs.primary, cs.onPrimary),
             'primaryContainer/on': (cs.primaryContainer, cs.onPrimaryContainer),
@@ -196,7 +200,7 @@ void main() {
             final ratio = contrastRatio(pair.value.$2, pair.value.$1);
             if (ratio < wcagAA) {
               offenders.add(
-                '  ${brightness.name} ${pair.key}: '
+                '  ${accent.storageValue}/${brightness.name} ${pair.key}: '
                 '${hexOf(pair.value.$1)} 配 ${hexOf(pair.value.$2)} '
                 '= ${ratio.toStringAsFixed(2)}',
               );
@@ -218,9 +222,9 @@ void main() {
     testWidgets('常用交互组件的实际渲染必须达 WCAG AA', (tester) async {
       final offenders = <String>[];
 
-      {
+      for (final accent in _accentsUnderTest) {
         for (final brightness in Brightness.values) {
-          final theme = AppTheme.getTheme(brightness);
+          final theme = AppTheme.getTheme(brightness, accent: accent);
           for (final probe in _componentProbes.entries) {
             await tester.pumpWidget(
               MaterialApp(
@@ -234,7 +238,7 @@ void main() {
             if (measured == null) continue;
             if (measured.ratio < wcagAA) {
               offenders.add(
-                '  ${brightness.name}/${probe.key}: '
+                '  ${accent.storageValue}/${brightness.name}/${probe.key}: '
                 '底=${hexOf(measured.background)} 字=${hexOf(measured.foreground)} '
                 '= ${measured.ratio.toStringAsFixed(2)}',
               );
@@ -400,6 +404,14 @@ void main() {
 const double wcagAA = 4.5;
 
 /// 每个探针只渲染一个组件，便于定位背景与前景。
+/// 全部预设，外加过亮、过暗与中性的自定义颜色。
+final _accentsUnderTest = [
+  ...PocketAccent.presets,
+  PocketAccent.custom(const Color(0xFFFFEB3B)),
+  PocketAccent.custom(const Color(0xFF0D1B3E)),
+  PocketAccent.custom(const Color(0xFF808080)),
+];
+
 final _componentProbes = <String, Widget>{
   'ChoiceChip选中': const ChoiceChip(
     label: Text('1.5x'),

@@ -1433,6 +1433,72 @@ abstract class AppLocalizations {
   /// **'Dark'**
   String get settings_themeModeDark;
 
+  /// No description provided for @settings_accentColor.
+  ///
+  /// In en, this message translates to:
+  /// **'Accent color'**
+  String get settings_accentColor;
+
+  /// No description provided for @settings_accentEmber.
+  ///
+  /// In en, this message translates to:
+  /// **'Ember'**
+  String get settings_accentEmber;
+
+  /// No description provided for @settings_accentBlue.
+  ///
+  /// In en, this message translates to:
+  /// **'Blue'**
+  String get settings_accentBlue;
+
+  /// No description provided for @settings_accentIndigo.
+  ///
+  /// In en, this message translates to:
+  /// **'Indigo'**
+  String get settings_accentIndigo;
+
+  /// No description provided for @settings_accentViolet.
+  ///
+  /// In en, this message translates to:
+  /// **'Violet'**
+  String get settings_accentViolet;
+
+  /// No description provided for @settings_accentRose.
+  ///
+  /// In en, this message translates to:
+  /// **'Rose'**
+  String get settings_accentRose;
+
+  /// No description provided for @settings_accentTeal.
+  ///
+  /// In en, this message translates to:
+  /// **'Teal'**
+  String get settings_accentTeal;
+
+  /// No description provided for @settings_accentGreen.
+  ///
+  /// In en, this message translates to:
+  /// **'Green'**
+  String get settings_accentGreen;
+
+  /// No description provided for @settings_accentGraphite.
+  ///
+  /// In en, this message translates to:
+  /// **'Graphite'**
+  String get settings_accentGraphite;
+
+  /// No description provided for @settings_accentCustom.
+  ///
+  /// In en, this message translates to:
+  /// **'Custom'**
+  String get settings_accentCustom;
+
+  /// No description provided for @settings_accentCustomTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Custom accent color'**
+  String get settings_accentCustomTitle;
+
   /// No description provided for @settings_selectFont.
   ///
   /// In en, this message translates to:

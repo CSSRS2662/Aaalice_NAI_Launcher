@@ -19,6 +19,7 @@ import 'presentation/adaptive/window_size_class.dart';
 import 'presentation/router/app_router_config.dart';
 import 'presentation/router/app_routes.dart';
 import 'presentation/router/shell_panels_overlay.dart';
+import 'presentation/providers/accent_color_provider.dart';
 import 'presentation/providers/theme_provider.dart';
 import 'presentation/providers/font_provider.dart';
 import 'presentation/providers/font_scale_provider.dart';
@@ -274,6 +275,7 @@ class NAILauncherApp extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final themeMode = ref.watch(themeNotifierProvider);
+    final accent = ref.watch(accentColorProvider);
     final fontType = ref.watch(fontNotifierProvider);
     final fontScale = ref.watch(fontScaleNotifierProvider);
     final locale = ref.watch(localeNotifierProvider);
@@ -349,10 +351,12 @@ class NAILauncherApp extends ConsumerWidget {
           theme: AppTheme.getTheme(
             Brightness.light,
             fontConfig: fontType.fontFamily.isEmpty ? null : fontType,
+            accent: accent,
           ),
           darkTheme: AppTheme.getTheme(
             Brightness.dark,
             fontConfig: fontType.fontFamily.isEmpty ? null : fontType,
+            accent: accent,
           ),
           themeMode: themeMode.themeMode,
           // 国际化

@@ -52,6 +52,14 @@ class LocalStorageService {
     await setSetting(StorageKeys.themeMode, mode);
   }
 
+  /// 获取强调色（预设标识或 custom:#RRGGBB），未设置时返回 null
+  String? getAccentColor() => getSetting<String>(StorageKeys.accentColor);
+
+  /// 保存强调色
+  Future<void> setAccentColor(String value) async {
+    await setSetting(StorageKeys.accentColor, value);
+  }
+
   // ==================== Font ====================
 
   /// 获取字体名称
