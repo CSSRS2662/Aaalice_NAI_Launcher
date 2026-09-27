@@ -7,9 +7,9 @@ import '../../themes/theme_extension.dart';
 import '../../widgets/common/keyboard_dismiss_region.dart';
 import '../../widgets/common/owned_scroll_controller.dart';
 import 'mobile_generation_controller.dart';
-import 'mobile_workbench/mobile_workbench_panes.dart';
 import 'mobile_workbench/mobile_workbench_state.dart';
 import 'mobile_workbench/mobile_workbench_tab_bar.dart';
+import 'mobile_workbench/mobile_workbench_view.dart';
 import 'widgets/history_panel.dart';
 import 'widgets/image_preview.dart';
 import 'widgets/parameter_panel.dart';
@@ -28,12 +28,12 @@ int effectiveReferenceCount(ImageParams params) {
           : 0);
 }
 
-/// 移动端生成工作台：页签栏 + 各页签面板。
+/// 移动端生成工作台：页签栏 + 可横滑切换的页签面板。
 ///
 /// 竖屏时图像、提示词、参数、参考、历史共用一个页签栏；宽横屏时图像常驻
 /// 左侧，右侧只保留编辑类页签。提示词编辑器始终挂载，保证分区快照、
 /// 待导入提示词等副作用不依赖用户是否打开过提示词页。
-/// 软键盘弹出时收起页签栏，把高度留给正在编辑的内容。
+/// 软键盘弹出时收起页签栏并停用横滑，把高度留给正在编辑的内容。
 class MobileGenerationWorkspace extends ConsumerWidget {
   const MobileGenerationWorkspace({
     super.key,
@@ -76,60 +76,44 @@ class MobileGenerationWorkspace extends ConsumerWidget {
                   split && workbench.tab == MobileWorkbenchTab.image
                   ? MobileWorkbenchTab.prompt
                   : workbench.tab;
-              final workbenchColumn = Column(
-                children: [
-                  if (!keyboardVisible)
-                    Padding(
-                      key: const ValueKey('mobile-workbench-tab-slot'),
-                      padding: const EdgeInsets.fromLTRB(12, 4, 12, 8),
-                      child: MobileWorkbenchTabBar(
-                        selected: selected,
-                        tabs: split
-                            ? MobileWorkbenchTabBar.editingTabs
-                            : MobileWorkbenchTab.values,
-                        referenceCount: referenceCount,
-                        hasUnseenResult: workbench.hasUnseenResult,
-                        onSelected: controller.selectTab,
-                      ),
-                    ),
-                  Expanded(
-                    key: const ValueKey('mobile-workbench-pane-slot'),
-                    child: MobileWorkbenchPanes(
-                      selected: selected,
-                      eager: const {MobileWorkbenchTab.prompt},
-                      builders: {
-                        MobileWorkbenchTab.image: (_) => split
-                            ? const SizedBox.shrink()
-                            : const ImagePreviewWidget(),
-                        MobileWorkbenchTab.prompt: (_) => _MobilePromptPane(
-                          editor: PromptInputWidget(
-                            key: promptInputKey,
-                            controller: promptInputController,
-                            isMaximized: true,
-                            showMaximizeButton: false,
-                            active: selected == MobileWorkbenchTab.prompt,
-                          ),
-                        ),
-                        MobileWorkbenchTab.params: (_) => const ParameterPanel(
-                          key: ValueKey('generation-mobile-params-pane'),
-                          content: ParameterPanelContent.generation,
-                        ),
-                        MobileWorkbenchTab.references: (_) =>
-                            const ParameterPanel(
-                              key: ValueKey(
-                                'generation-mobile-references-pane',
-                              ),
-                              content: ParameterPanelContent.references,
-                            ),
-                        MobileWorkbenchTab.history: (_) => HistoryPanel(
-                          key: const ValueKey('generation-mobile-history-pane'),
-                          embedded: true,
-                          viewportOffset: historyViewport,
-                        ),
-                      },
+              final workbenchColumn = MobileWorkbenchView(
+                tabs: split
+                    ? MobileWorkbenchTabBar.editingTabs
+                    : MobileWorkbenchTab.values,
+                selected: selected,
+                onSelected: controller.selectTab,
+                showTabBar: !keyboardVisible,
+                swipeEnabled: !keyboardVisible,
+                referenceCount: referenceCount,
+                hasUnseenResult: workbench.hasUnseenResult,
+                eager: const {MobileWorkbenchTab.prompt},
+                builders: {
+                  MobileWorkbenchTab.image: (_) => split
+                      ? const SizedBox.shrink()
+                      : const ImagePreviewWidget(),
+                  MobileWorkbenchTab.prompt: (_) => _MobilePromptPane(
+                    editor: PromptInputWidget(
+                      key: promptInputKey,
+                      controller: promptInputController,
+                      isMaximized: true,
+                      showMaximizeButton: false,
+                      active: selected == MobileWorkbenchTab.prompt,
                     ),
                   ),
-                ],
+                  MobileWorkbenchTab.params: (_) => const ParameterPanel(
+                    key: ValueKey('generation-mobile-params-pane'),
+                    content: ParameterPanelContent.generation,
+                  ),
+                  MobileWorkbenchTab.references: (_) => const ParameterPanel(
+                    key: ValueKey('generation-mobile-references-pane'),
+                    content: ParameterPanelContent.references,
+                  ),
+                  MobileWorkbenchTab.history: (_) => HistoryPanel(
+                    key: const ValueKey('generation-mobile-history-pane'),
+                    embedded: true,
+                    viewportOffset: historyViewport,
+                  ),
+                },
               );
               if (!split) return workbenchColumn;
               return Row(
