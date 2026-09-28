@@ -1,0 +1,46 @@
+{
+  "source": {
+    "name": "amenorira/danbooru-tags-data-zh",
+    "repository": "https://github.com/amenorira/danbooru-tags-data-zh",
+    "commit": "5805e4700f52dbe66567b84a157e29a41b3a5bcc",
+    "license": "MIT",
+    "copyright": "Copyright (c) 2026 amenorira"
+  },
+  "source_files": {
+    "LICENSE": "d9db28b2e55ae4694f7ec9b38c3849cc604366a97470d347e7ef7d4e9e73e940",
+    "tags/general.csv": "bb42a980b95cdbd696db6c1c23dcbe16764b0b8777af5757f92ae1c110c52f3c",
+    "tags/character.csv": "d028bbba40869e9c043e3c266e0f005ec8c1a247233fd3a71f336e4ec3b56208",
+    "tags/copyright.csv": "d7765f169394915546809c90a9ea6c1852bda5330aef59f08901eab227da6377",
+    "tags/meta.csv": "43969ea1dbd1409c737b590254c0145cd87dc3e5b8091e6796d745039055640b"
+  },
+  "catalog_sha256": "9b9693af5f6cfafda2ed8d85488b0a6c3741b0c589da935291b20dff439a2288",
+  "format": "[tag, catalog_category, post_count, zh_label, [cjk_aliases]]",
+  "entries": 62667,
+  "tables": {
+    "general": {
+      "source_rows": 30664,
+      "mapped": 27085,
+      "entries": 26878
+    },
+    "character": {
+      "source_rows": 35382,
+      "mapped": 29659,
+      "entries": 29218
+    },
+    "copyright": {
+      "source_rows": 8413,
+      "mapped": 7171,
+      "entries": 6233
+    },
+    "meta": {
+      "source_rows": 585,
+      "mapped": 372,
+      "entries": 338
+    }
+  },
+  "file": {
+    "name": "ame_lexicon.json.gz",
+    "bytes": 1374060,
+    "sha256": "24426a90082f4793978ad8e6a05a95f2e0ffd3b76b08e73d56196324b036698e"
+  }
+}

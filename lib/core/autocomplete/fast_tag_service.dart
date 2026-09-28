@@ -1,3 +1,4 @@
+import 'ame_zh_lexicon.dart';
 import 'completion_models.dart';
 import 'completion_ranker.dart';
 import 'tag_catalog_repository.dart';
@@ -13,13 +14,16 @@ class FastTagService implements CompletionSource, TranslationResolver {
     required TagCatalogRepository catalog,
     required ZhDictionaryService dictionary,
     TranslationResolver? fallbackTranslations,
+    AmeZhLexicon? lexicon,
   }) : _catalog = catalog,
        _dictionary = dictionary,
-       _fallbackTranslations = fallbackTranslations;
+       _fallbackTranslations = fallbackTranslations,
+       _lexicon = lexicon;
 
   final TagCatalogRepository _catalog;
   final ZhDictionaryService _dictionary;
   final TranslationResolver? _fallbackTranslations;
+  final AmeZhLexicon? _lexicon;
 
   @override
   Future<List<CompletionCandidate>> search(CompletionQuery query) async {
@@ -28,15 +32,18 @@ class FastTagService implements CompletionSource, TranslationResolver {
       _catalog.searchTranslations(query),
     ]);
     final dictionaryResults = await _searchOptionalDictionary(query);
+    final lexiconResults = await _searchLexicon(query);
     return CompletionRanker.mergeAndSort([
       ...bundledBatches.expand((batch) => batch),
       ...dictionaryResults,
+      ...lexiconResults,
     ], query: query);
   }
 
   /// Resolves reviewed corrections before ffdkj and bundled gap-fillers after
   /// it. A later ffdkj update can therefore replace an ordinary fallback but
-  /// cannot reintroduce a confirmed mistranslation.
+  /// cannot reintroduce a confirmed mistranslation. The bundled AME lexicon
+  /// only fills what every other source left empty.
   @override
   Future<Map<String, String>> resolve(
     List<String> canonicalTags, {
@@ -88,6 +95,20 @@ class FastTagService implements CompletionSource, TranslationResolver {
         // Optional corpus labels must not break installed dictionary results.
       }
     }
+    final unresolved = normalized
+        .where((tag) => !resolved.containsKey(tag))
+        .toList(growable: false);
+    if (unresolved.isNotEmpty && _lexicon != null) {
+      try {
+        final labels = await _lexicon.resolve(unresolved, locale: locale);
+        for (final tag in unresolved) {
+          final label = labels[tag]?.trim();
+          if (label != null && label.isNotEmpty) resolved[tag] = label;
+        }
+      } catch (_) {
+        // The bundled lexicon is a last resort and never blocks other labels.
+      }
+    }
     return resolved;
   }
 
@@ -107,6 +128,19 @@ class FastTagService implements CompletionSource, TranslationResolver {
     } catch (_) {
       // ffdkj is user-installed optional data; bundled completion must remain
       // available when that database is absent, outdated, or damaged.
+      return const [];
+    }
+  }
+
+  Future<List<CompletionCandidate>> _searchLexicon(
+    CompletionQuery query,
+  ) async {
+    final lexicon = _lexicon;
+    if (lexicon == null) return const [];
+    try {
+      return await lexicon.search(query);
+    } catch (_) {
+      // Missing or damaged bundled lexicon only removes extra Chinese keys.
       return const [];
     }
   }

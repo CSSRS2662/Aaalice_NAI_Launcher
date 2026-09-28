@@ -1,4 +1,8 @@
+import 'dart:io';
+import 'dart:typed_data';
+
 import 'package:flutter_test/flutter_test.dart';
+import 'package:nai_launcher/core/autocomplete/ame_zh_lexicon.dart';
 import 'package:nai_launcher/core/autocomplete/completion_models.dart';
 import 'package:nai_launcher/core/autocomplete/fast_tag_service.dart';
 import 'package:nai_launcher/core/autocomplete/tag_catalog_repository.dart';
@@ -134,7 +138,63 @@ void main() {
       {'new_tag': '新标签'},
     );
   });
+
+  test('随包 AME 词库补充中文别名反查，译名仍按既有优先级解析', () async {
+    final lexiconService = FastTagService(
+      catalog: catalog,
+      dictionary: _FakeDictionary({'ffdkj_only': '词库翻译'}),
+      lexicon: _lexicon([
+        [
+          'hakurei_reimu',
+          4,
+          80000,
+          '博丽灵梦',
+          <String>['红白'],
+        ],
+        ['masterpiece', 0, 1000, 'AME 杰作', <String>[]],
+        ['ffdkj_only', 0, 10, 'AME 译名', <String>[]],
+      ]),
+    );
+
+    final nickname = await lexiconService.search(_query('红白'));
+    expect(nickname.single.canonicalTag, 'hakurei_reimu');
+    expect(nickname.single.matchedAlias, '红白');
+    expect(nickname.single.translation, isNull);
+    expect((await lexiconService.search(_query('杰'))).first.translation, '杰作');
+    expect(
+      await lexiconService.resolve([
+        'masterpiece',
+        'ffdkj_only',
+        'hakurei_reimu',
+        'unknown',
+      ], locale: 'zh-CN'),
+      {'masterpiece': '杰作', 'ffdkj_only': '词库翻译', 'hakurei_reimu': '博丽灵梦'},
+    );
+  });
+
+  test('随包词库损坏时静默跳过', () async {
+    final brokenService = FastTagService(
+      catalog: catalog,
+      dictionary: _FakeDictionary(const {}),
+      lexicon: AmeZhLexicon(
+        loadBytes: () async => throw const FileSystemException('missing'),
+      ),
+    );
+
+    expect(
+      (await brokenService.search(_query('杰'))).single.canonicalTag,
+      'masterpiece',
+    );
+    expect(await brokenService.resolve(['masterpiece'], locale: 'zh-CN'), {
+      'masterpiece': '杰作',
+    });
+  });
 }
+
+AmeZhLexicon _lexicon(List<List<Object?>> rows) => AmeZhLexicon(
+  loadBytes: () async => Uint8List(0),
+  decode: (_) async => AmeZhLexiconIndex.fromRows(rows),
+);
 
 CompletionQuery _query(String token) => CompletionQuery(
   fullText: token,

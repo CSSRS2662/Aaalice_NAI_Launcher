@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'ame_zh_lexicon.dart';
 import 'fast_tag_service.dart';
 import 'e5_translation_resolver.dart';
 import 'tag_catalog_repository.dart';
@@ -41,9 +42,12 @@ final fastTagServiceProvider = Provider<FastTagService>((ref) {
     catalog: ref.watch(tagCatalogRepositoryProvider),
     dictionary: ref.watch(zhDictionaryServiceProvider.notifier),
     fallbackTranslations: ref.watch(e5TranslationResolverProvider),
+    lexicon: ref.watch(ameZhLexiconProvider),
   );
 });
 
 final e5TranslationResolverProvider = Provider<E5TranslationResolver>(
   (ref) => E5TranslationResolver(),
 );
+
+final ameZhLexiconProvider = Provider<AmeZhLexicon>((ref) => AmeZhLexicon());

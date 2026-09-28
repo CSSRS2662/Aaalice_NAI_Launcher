@@ -175,6 +175,7 @@ flutter:
     - assets/sounds/
     - assets/databases/
     - assets/semantic_search/
+    - assets/zh_lexicon/
     - assets/model3d_editor/
     - assets/model3d_editor/vendor/
     - assets/model3d_editor/vendor/addons/controls/
