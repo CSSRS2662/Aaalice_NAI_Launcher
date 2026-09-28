@@ -27,11 +27,30 @@
     Validates the frozen toolchain and dependency sources without resolving
     packages, stopping Gradle, or starting a build.
 
+.PARAMETER TargetPlatform
+    Builds only the listed ABIs (for example android-arm64) instead of the
+    universal APK. Device iteration builds use this to skip the other ABIs'
+    AOT compilation; the file name gets an ABI suffix.
+
+.PARAMETER InstallToDevice
+    After verification, installs the APK with `adb install -r` on the only
+    connected device (or DeviceSerial) and checks the installed version. It
+    never uninstalls: signature or downgrade failures are reported as errors.
+
+.PARAMETER DeviceSerial
+    adb serial to install on when several devices are connected.
+
+.PARAMETER FallbackDirectory
+    With InstallToDevice, receives a copy of the APK when no device is ready.
+
 .EXAMPLE
     pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/build_android_apk.ps1
 
 .EXAMPLE
     pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/build_android_apk.ps1 -RestartGradleDaemon
+
+.EXAMPLE
+    pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/build_android_apk.ps1 -TargetPlatform android-arm64 -InstallToDevice
 #>
 
 [CmdletBinding()]
@@ -40,7 +59,12 @@ param(
     [switch]$RestartGradleDaemon,
     [switch]$ValidateOnly,
     [ValidateNotNullOrEmpty()]
-    [string]$OutputDirectory = 'dist/android'
+    [string]$OutputDirectory = 'dist/android',
+    [ValidateSet('android-arm', 'android-arm64', 'android-x64')]
+    [string[]]$TargetPlatform = @(),
+    [switch]$InstallToDevice,
+    [string]$DeviceSerial,
+    [string]$FallbackDirectory
 )
 
 Set-StrictMode -Version Latest
@@ -91,7 +115,15 @@ function Get-DependencyFingerprint {
         [string]$FlutterVersion
     )
 
-    $pubspecHash = (Get-FileHash -LiteralPath $PubspecPath -Algorithm SHA256).Hash
+    # The app version does not take part in dependency resolution, so a
+    # version bump alone must not force another Pub resolution.
+    $pubspecText = Get-Content -Raw -Encoding UTF8 -LiteralPath $PubspecPath
+    $dependencyText = [regex]::Replace($pubspecText, '(?m)^version:.*$', '')
+    $pubspecHash = [Convert]::ToHexString(
+        [Security.Cryptography.SHA256]::HashData(
+            [Text.Encoding]::UTF8.GetBytes($dependencyText)
+        )
+    )
     $lockfileHash = (Get-FileHash -LiteralPath $LockfilePath -Algorithm SHA256).Hash
     $bytes = [Text.Encoding]::UTF8.GetBytes(
         "$FlutterVersion`n$pubspecHash`n$lockfileHash"
@@ -346,8 +378,12 @@ try {
         }
     }
 
-    Write-Host 'Building the release APK incrementally with --no-pub...' -ForegroundColor Cyan
-    & $flutterCommand build apk --release --no-pub
+    $buildArguments = @('build', 'apk', '--release', '--no-pub')
+    if ($TargetPlatform.Count -gt 0) {
+        $buildArguments += @('--target-platform', ($TargetPlatform -join ','))
+    }
+    Write-Host "Building the release APK incrementally with --no-pub ($(if ($TargetPlatform.Count -gt 0) { $TargetPlatform -join ',' } else { 'universal' }))..." -ForegroundColor Cyan
+    & $flutterCommand @buildArguments
     if ($LASTEXITCODE -ne 0) {
         throw 'Android release APK build failed.'
     }
@@ -418,10 +454,57 @@ try {
         [IO.Path]::GetFullPath((Join-Path $repoRoot $OutputDirectory))
     }
     New-Item -ItemType Directory -Path $resolvedOutputDirectory -Force | Out-Null
-    $outputPath = Join-Path $resolvedOutputDirectory "Aaalice_Pocket_$versionName.apk"
+    $abiSuffix = if ($TargetPlatform.Count -gt 0) {
+        '_' + (($TargetPlatform | ForEach-Object { $_ -replace '^android-', '' }) -join '-')
+    }
+    else {
+        ''
+    }
+    $outputPath = Join-Path $resolvedOutputDirectory "Aaalice_Pocket_$versionName$abiSuffix.apk"
     Copy-Item -LiteralPath $apkPath -Destination $outputPath -Force
     $artifact = Get-Item -LiteralPath $outputPath
     $sha256 = (Get-FileHash -LiteralPath $outputPath -Algorithm SHA256).Hash.ToLowerInvariant()
+
+    $installedOn = $null
+    $fallbackCopy = $null
+    if ($InstallToDevice) {
+        $adbCommand = Join-Path $androidSdkRoot 'platform-tools/adb.exe'
+        if (-not (Test-Path -LiteralPath $adbCommand -PathType Leaf)) {
+            throw "adb is missing: $adbCommand"
+        }
+        $readyDevices = @(
+            & $adbCommand devices |
+                Select-Object -Skip 1 |
+                Where-Object { $_ -match '^\S+\s+device$' } |
+                ForEach-Object { ($_ -split '\s+')[0] }
+        )
+        $serial = if ($DeviceSerial) { $DeviceSerial }
+            elseif ($readyDevices.Count -eq 1) { $readyDevices[0] }
+            else { $null }
+        if ($serial -and $readyDevices -contains $serial) {
+            Write-Host "Installing on $serial with adb install -r..." -ForegroundColor Cyan
+            $installOutput = & $adbCommand -s $serial install -r $outputPath 2>&1 | Out-String
+            if ($LASTEXITCODE -ne 0 -or $installOutput -notmatch 'Success') {
+                throw "adb install failed; nothing was uninstalled. $($installOutput.Trim())"
+            }
+            $packageDump = & $adbCommand -s $serial shell dumpsys package ([string]$environmentLock.applicationId) | Out-String
+            if ($packageDump -notmatch "versionName=$([regex]::Escape($versionName))(\s|$)" -or
+                $packageDump -notmatch "versionCode=$([regex]::Escape($versionCode))\s") {
+                throw "The device does not report $versionName ($versionCode) after installation."
+            }
+            $installedOn = $serial
+        }
+        elseif ($FallbackDirectory) {
+            $fallbackPath = [IO.Path]::GetFullPath($FallbackDirectory)
+            New-Item -ItemType Directory -Path $fallbackPath -Force | Out-Null
+            $fallbackCopy = Join-Path $fallbackPath (Split-Path -Leaf $outputPath)
+            Copy-Item -LiteralPath $outputPath -Destination $fallbackCopy -Force
+            Write-Warning "No single ready adb device; copied the APK to $fallbackCopy."
+        }
+        else {
+            Write-Warning 'No single ready adb device; the APK was not installed.'
+        }
+    }
 
     [PSCustomObject]@{
         PSTypeName = 'Aaalice.AndroidBuildArtifact'
@@ -431,6 +514,8 @@ try {
         ApplicationId = [string]$environmentLock.applicationId
         SizeBytes = $artifact.Length
         Sha256 = $sha256
+        InstalledOn = $installedOn
+        FallbackCopy = $fallbackCopy
     } | Format-List
 }
 finally {
