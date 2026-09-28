@@ -15,7 +15,9 @@ confidence: unrelated or ambiguous queries may still return poor suggestions.
 
 Display translations use the shared FastTagService resolver: reviewed catalog
 corrections, installed dictionary, and bundled gap-fillers take precedence.
-Missing labels fall back to the existing Chinese strings in the E5 tags asset.
+Missing labels fall back to the existing Chinese strings in the E5 tags asset,
+then to the bundled AME lexicon (`tool/zh_lexicon`, MIT), which also adds Chinese
+reverse-lookup aliases to FastTagService.
 This lightweight, cached lookup also supports English search results without
 starting ONNX inference. It respects the existing translation visibility and
 locale gates; it does not generate translations or replace dictionary updates.
@@ -23,9 +25,23 @@ locale gates; it does not generate translations or replace dictionary updates.
 ## Resources
 
 `assets/semantic_search/manifest.json` locks the model revision, the existing
-catalog/dictionary, and each artifact's size and SHA-256. The four large files
-are generated local assets and ignored by Git. They total approximately 222 MB
-uncompressed; APK compression and installed size have not yet been measured.
+catalog/dictionary, the AME source commit, and each artifact's size and SHA-256.
+The five large files (`model.onnx`, `tokenizer.json`, `vectors.i8`, `scales.f32`,
+`tags.json`) are generated local assets ignored by Git, about 183 MB in total.
+License notices ship beside them: `LICENSE.e5.txt`, `LICENSE.ffdkj.txt` (labels
+inside the baseline documents) and `LICENSE.amenorira.txt` (extra views).
+
+Since 2026-09-28 the pack is multi-view: 54,879 tags own 117,511 rows. Row 1 of
+every tag is the reviewed baseline document; tags covered by
+amenorira/danbooru-tags-data-zh add its Chinese name, Chinese aliases and one-line
+note as separate rows, and a query scores a tag by its best row. Rows are int8
+with one float32 scale each (45 MB instead of 84 MB for f32; ranking unchanged
+within ±0.2 pp). The offline document-swap evaluation (2026-09-28, 649 re-planned
+queries) moved description/negation Top-20 from 42.1% to 73.8% and name-query
+Top-5 from 78.7% to 88.9%; the older Codex set moved from 37.6% to 49.1%.
+Negation/opposite pairs did not improve and remain a model or reranking task.
+DanbooruSearchOnline data (GPL-3.0) was only a local diagnostic and is never
+bundled.
 
 The model is `intfloat/multilingual-e5-small`, revision
 `614241f622f53c4eeff9890bdc4f31cfecc418b3`. Its source artifact is
@@ -33,15 +49,17 @@ The model is `intfloat/multilingual-e5-small`, revision
 standard ONNX CPU operators with two intra-op threads, not QNN/NPU. Its filename
 does not establish ARM compatibility. Loading and inference have been exercised
 on the API 35 x86_64 Android emulator; ARM64 phone validation remains pending.
-The 384-dimensional matrix contains the frozen canonical English
-tag plus existing Chinese translation, with E5 passage prefix, mean pooling
-and L2 normalization. No query fixtures are included in the production pack.
+Every 384-dimensional row uses the E5 passage prefix, mean pooling and L2
+normalization. No query fixtures are included in the production pack.
 
 Files are copied into versioned app-support storage and verified before model
-loading. Android copies large assets through the existing streaming asset
-channel; an isolate owns tokenizer, model, vectors, pooling and full-corpus
-similarity. Loading is lazy on the first eligible query, and results have a
-32-query memory cache. No model, vector pack or query cache is registered with
+loading; earlier version directories are deleted after a new pack is verified.
+Android copies large assets through the existing streaming asset channel; an
+isolate owns tokenizer, model, vectors, pooling and full-corpus similarity.
+`E5VectorIndex` expands the int8 rows once (about 180 MB of float32 in the
+worker) so each query uses Float32x4 dot products: about 14 ms for all rows on
+a Ryzen 5 5600H, versus 42 ms for the former scalar single-view loop. Loading is
+lazy on the first eligible query, and results have a 32-query memory cache. No model, vector pack or query cache is registered with
 the application's cloud-sync data types. Failed initialization retains lexical
 completion and allows a retry after a 30-second cooldown.
 
@@ -49,13 +67,17 @@ completion and allows a retry after a 30-second cooldown.
 
 Obtain the pinned model/tokenizer and an existing ffdkj dictionary matching the
 manifest. `prepare_e5_pack.py` validates them, reuses a matching local benchmark
-matrix if present and otherwise requires explicit `--build-vectors`. It never
-downloads or translates implicitly, and rejects output differing from the lock.
+matrix if present and otherwise requires explicit `--build-vectors`. The AME
+source is downloaded only with `--fetch` and verified against
+`tool/zh_lexicon/source_lock.json`. It never translates, and rejects output
+differing from the lock unless `--write-manifest` is given after review.
 
 ```powershell
-tool/.tmp/semantic-search/venv/Scripts/python.exe tool/semantic_search/prepare_e5_pack.py
+tool/.tmp/semantic-search/venv/Scripts/python.exe tool/semantic_search/prepare_e5_pack.py --fetch
 # Only if no verified candidate cache exists (CPU work):
 tool/.tmp/semantic-search/venv/Scripts/python.exe tool/semantic_search/prepare_e5_pack.py --build-vectors
+# After reviewing intentionally changed inputs:
+tool/.tmp/semantic-search/venv/Scripts/python.exe tool/semantic_search/prepare_e5_pack.py --write-manifest
 ```
 
 The reference environment uses Python 3.12, NumPy 2.4.6, ONNX Runtime 1.30.0 and

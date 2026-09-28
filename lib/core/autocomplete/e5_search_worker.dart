@@ -7,6 +7,7 @@ import 'dart:typed_data';
 import 'package:onnxruntime_v2/onnxruntime_v2.dart';
 
 import 'e5_tokenizer.dart';
+import 'e5_vector_index.dart';
 
 /// Owns model, tokenizer and vector memory away from the Flutter UI isolate.
 void e5SearchWorker((SendPort, String) arguments) async {
@@ -19,16 +20,12 @@ void e5SearchWorker((SendPort, String) arguments) async {
     final dimension = manifest['dimensions'] as int;
     final tags =
         jsonDecode(File('$directory/tags.json').readAsStringSync()) as List;
-    final bytes = File('$directory/vectors.f32').readAsBytesSync();
-    final vectors = Float32List.view(
-      bytes.buffer,
-      bytes.offsetInBytes,
-      bytes.length ~/ 4,
-    );
-    if (dimension != 384 ||
-        tags.length != manifest['count'] ||
-        vectors.length != tags.length * dimension) {
+    if (dimension != 384 || tags.length != manifest['count']) {
       throw const FormatException('E5 vector pack dimensions do not match');
+    }
+    final index = _loadVectorIndex(directory, dimension, tags);
+    if (index.viewCount != manifest['views']) {
+      throw const FormatException('E5 view count does not match the manifest');
     }
     final tokenizer = E5Tokenizer(
       File('$directory/tokenizer.json').readAsStringSync(),
@@ -99,21 +96,10 @@ void e5SearchWorker((SendPort, String) arguments) async {
         for (var d = 0; d < dimension; d++) {
           embedding[d] /= norm;
         }
-        final best = <(int, double)>[];
-        final limit = (request[2] as int).clamp(1, 50);
-        for (var row = 0; row < tags.length; row++) {
-          var score = 0.0;
-          final offset = row * dimension;
-          for (var d = 0; d < dimension; d++) {
-            score += vectors[offset + d] * embedding[d];
-          }
-          if (best.length == limit && score <= best.last.$2) continue;
-          final position = best.indexWhere((item) => score > item.$2);
-          best.insert(position < 0 ? best.length : position, (row, score));
-          if (best.length > limit) best.removeLast();
-        }
+        final best = index.search(embedding, (request[2] as int).clamp(1, 50));
         resultPort.send([
-          for (final hit in best) [...tags[hit.$1] as List, hit.$2],
+          for (final (tag, score) in best)
+            [...(tags[tag] as List).take(3), score],
         ]);
       } catch (error) {
         resultPort.send(error.toString());
@@ -125,4 +111,27 @@ void e5SearchWorker((SendPort, String) arguments) async {
     inbox.close();
     await session?.release();
   }
+}
+
+/// Keeps the raw int8 bytes local to this call so they can be collected as
+/// soon as the rows are expanded into the index.
+E5VectorIndex _loadVectorIndex(String directory, int dimension, List tags) {
+  final scaleBytes = ByteData.sublistView(
+    File('$directory/scales.f32').readAsBytesSync(),
+  );
+  if (scaleBytes.lengthInBytes % 4 != 0) {
+    throw const FormatException('E5 scale file is truncated');
+  }
+  final scales = Float32List(scaleBytes.lengthInBytes ~/ 4);
+  for (var row = 0; row < scales.length; row++) {
+    scales[row] = scaleBytes.getFloat32(row * 4, Endian.little);
+  }
+  return E5VectorIndex.fromQuantized(
+    dimension: dimension,
+    values: Int8List.sublistView(
+      File('$directory/vectors.i8').readAsBytesSync(),
+    ),
+    scales: scales,
+    viewCounts: [for (final row in tags) (row as List)[3] as int],
+  );
 }

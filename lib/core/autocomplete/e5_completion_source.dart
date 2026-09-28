@@ -4,6 +4,7 @@ import 'dart:io';
 import 'dart:isolate';
 
 import 'package:crypto/crypto.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:path_provider/path_provider.dart';
@@ -135,6 +136,7 @@ class E5CompletionSource implements CompletionSource {
     await File(
       '${directory.path}/manifest.json',
     ).writeAsString(rawManifest, flush: true);
+    await removeStaleVersions(directory.parent, keep: version);
     if (_disposed) throw StateError('E5 source disposed');
     final ready = ReceivePort();
     try {
@@ -154,6 +156,30 @@ class E5CompletionSource implements CompletionSource {
       rethrow;
     } finally {
       ready.close();
+    }
+  }
+
+  /// Earlier verified packs are copies of bundled assets; keeping them would
+  /// leave hundreds of megabytes behind after every pack update.
+  @visibleForTesting
+  static Future<void> removeStaleVersions(
+    Directory root, {
+    required String keep,
+  }) async {
+    final version = RegExp(r'^[0-9a-f]{64}$');
+    await for (final entity in root.list(followLinks: false)) {
+      final name = entity.uri.pathSegments.lastWhere(
+        (segment) => segment.isNotEmpty,
+        orElse: () => '',
+      );
+      if (entity is! Directory || !version.hasMatch(name) || name == keep) {
+        continue;
+      }
+      try {
+        await entity.delete(recursive: true);
+      } on FileSystemException {
+        // A locked leftover is retried on the next initialization.
+      }
     }
   }
 
