@@ -218,7 +218,7 @@ NAI Launcher 不在项目自有服务器上托管你的账号或作品。只有�
 
 ## 🙏 致谢
 
-感谢 [NovelAI](https://novelai.net/)、[法典图鉴](https://novelai.quicktagcloud.com/)、[AgIzT/NovelAI-Tag](https://github.com/AgIzT/NovelAI-Tag)、[Flutter](https://flutter.dev/)、[Riverpod](https://riverpod.dev/) 以及所有贡献者和测试用户。
+感谢 [NovelAI](https://novelai.net/)、[法典图鉴](https://novelai.quicktagcloud.com/)、[AgIzT/NovelAI-Tag](https://github.com/AgIzT/NovelAI-Tag)、[ffdkj 中英标签翻译表](https://github.com/ffdkj/ffdkj-Danbooru_Tag-Chinese-English-Translation-Table)、[amenorira/danbooru-tags-data-zh](https://github.com/amenorira/danbooru-tags-data-zh)、[Flutter](https://flutter.dev/)、[Riverpod](https://riverpod.dev/) 以及所有贡献者和测试用户。
 
 ## 📄 许可证
 

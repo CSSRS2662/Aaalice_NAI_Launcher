@@ -19,14 +19,14 @@
 | 社区入口 | 导航与“更多”面板不显示 GitHub/Discord | `CommunityLinks` 常量保留，上游其他代码仍在引用 |
 | 网络 | 共享连接工厂；Android 不使用应用级代理，交给系统/VPN | 保留工厂；上游的请求形态（浏览器请求头、JS 兼容 JSON）叠加在工厂创建的 Dio 上 |
 | 设置 | Android 隐藏“网络”“快捷键”分类 | 保留，按能力矩阵判断 |
-| 补全 | 中文否定与多关键词扩展；E5 语义补全 | `e5CompletionSourceProvider` 放在 `e5_completion_source.dart`；只在上游的 `autocompleteServicesProvider` 中补一行 `semanticSource` |
+| 补全 | 中文否定与多关键词扩展；E5 语义补全（多视图 int8 包：基线文档 + AME 译名/别名/注释，标签取最高分，`E5VectorIndex`）；随包 AME 中文词库 `AmeZhLexicon` 提供中文别名反查并作为翻译的最后一级兜底 | `e5CompletionSourceProvider` 放在 `e5_completion_source.dart`；只在上游的 `autocompleteServicesProvider` 中补一行 `semanticSource`；上游修改 `FastTagService` 时保留 `lexicon` 参数与其在搜索、解析末尾的位置 |
 | Prompt | 分组编辑、权重滑条、移动端工作台、长按权重工具条；移动端“角色 / 固定词 / 质量词”合为 `PromptRoleSegmentGroup`，各按钮新增 `segment` 呈现 | 保留；上游修改这些按钮的桌面外观时照常合并，`segment` 分支保持不变 |
 | 分组持久化 | `PromptGroupRecordStore` 按结果图内容哈希记录分区，不写进 PNG | 与上游固定词记录一致；解析时在 `ImageMetadataService` 挂载，旧版写进 PNG 的 `aaalice_prompt_groups` 仍可读取且优先 |
 | 图片菜单 | “保存 → 复用参数/复用种子 → 收藏”开头，无 Krita/Discord 项 | 与上游新增的复制、删除等操作合并，危险操作排在最后；存盘复用上游 `GeneratedImageFileLink` |
 | 词库头像 | 圆形头像、应用内图库选图 | 保留 |
 | 主题 | 只保留 Pocket 一套主题的浅色与深色，删除 16 套预设及其配色、字体、形状、动效预设；设置改为“浅色 / 深色 / 跟随系统”，新键 `theme_mode` 参与云同步；中性纯白 / 炭黑底色，强调色可选预设或自定义（`accent_color`，参与云同步）；输入框底色取画布与分组中更深的一层 | 上游对主题预设与模块预设的修改一律丢弃；上游测试引用 `GrungePalette` 等旧配色时改用 `PocketPalette`；`AppTheme.getTheme` 只接收明暗、字体与强调色 |
 | 移动端生成页 | 工作台结构：图像、提示词、参数、参考、历史页签，页签等分不滚动、可左右滑动切换；全局生成底栏与 V5 体力条；模型只在顶栏菜单切换，`ParameterPanelContent.generation` 不含模型；移除参数/历史抽屉、折叠提示词条与上下滑手势 | 上游对 `mobile_generation_*` 的修改按工作台结构重新落位，不恢复抽屉与手势；桌面布局照常合并 |
-| 图库与历史 | 本地画廊工具栏分标题、搜索、范围三行，“全部 / 收藏”一键切换，低频操作收进“更多”菜单；`GalleryLibraryToolbar` 新增 `titleActions`、`filters` 插槽；本地画廊与生成历史缩略图改为按宽高比的瀑布流，复用在线画廊的 `OnlineGalleryMasonryLayoutSnapshot` | 上游对 `local_gallery_toolbar.dart`、`gallery_grid.dart`、`history_panel.dart` 的修改按新结构落位；上游修改 `online_gallery_masonry_layout.dart` 时同步检查画廊与历史排版 |
+| 图库与历史 | 本地画廊、精准参考库、Vibe 库工具栏分标题、搜索、范围三行，“全部 / 收藏”一键切换，低频操作收进“更多”菜单；`GalleryLibraryToolbar` 新增 `titleActions`、`filters` 插槽与 `GalleryLibrarySearchAction`；范围控件集中在 `gallery_scope_controls.dart`；本地画廊、生成历史、精准参考库、Vibe 库及其选择器缩略图改为按宽高比的瀑布流（`LibraryMasonryGrid`，复用在线画廊的 `OnlineGalleryMasonryLayoutSnapshot`） | 上游对 `local_gallery_toolbar.dart`、`gallery_grid.dart`、`history_panel.dart` 的修改按新结构落位；上游修改 `online_gallery_masonry_layout.dart` 时同步检查画廊与历史排版 |
 | 构建 | `scripts/build_android_apk.ps1` 按锁定文件核对工具链 | 保留；CI 中的包名检查使用新包名 |
 
 ## 最近一次合并（2026-09-26）

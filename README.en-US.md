@@ -218,7 +218,7 @@ NAI Launcher does not host your account or artwork on a project-operated server.
 
 ## 🙏 Acknowledgments
 
-Thanks to [NovelAI](https://novelai.net/), [Codex Gallery](https://novelai.quicktagcloud.com/), [AgIzT/NovelAI-Tag](https://github.com/AgIzT/NovelAI-Tag), [Flutter](https://flutter.dev/), [Riverpod](https://riverpod.dev/), and all contributors and testers.
+Thanks to [NovelAI](https://novelai.net/), [Codex Gallery](https://novelai.quicktagcloud.com/), [AgIzT/NovelAI-Tag](https://github.com/AgIzT/NovelAI-Tag), [ffdkj Danbooru tag translation table](https://github.com/ffdkj/ffdkj-Danbooru_Tag-Chinese-English-Translation-Table), [amenorira/danbooru-tags-data-zh](https://github.com/amenorira/danbooru-tags-data-zh), [Flutter](https://flutter.dev/), [Riverpod](https://riverpod.dev/), and all contributors and testers.
 
 ## 📄 License
 
