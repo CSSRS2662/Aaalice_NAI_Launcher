@@ -14,7 +14,9 @@ import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 import 'package:super_drag_and_drop/super_drag_and_drop.dart';
 
+import '../../../core/cache/image_file_aspect_ratio_cache.dart';
 import '../../../core/enums/precise_ref_type.dart';
+import '../../../core/extensions/precise_ref_type_extensions.dart';
 import '../../../core/agent/resources/agent_chat_resource_reference.dart';
 import '../../../core/platform/platform_capabilities.dart';
 import '../../../core/services/file_export_service.dart';
@@ -24,7 +26,6 @@ import '../../../data/models/image/image_params.dart';
 import '../../../data/models/precise_ref/precise_ref_library_entry.dart';
 import '../../../data/services/precise_ref_library_archive_service.dart';
 import '../../../data/services/precise_ref_library_storage_service.dart';
-import '../../adaptive/adaptive_presenter.dart';
 import '../../providers/image_generation_provider.dart';
 import '../../providers/precise_ref_library_provider.dart';
 import '../../providers/precise_ref_library_selection_provider.dart';
@@ -39,6 +40,8 @@ import '../../widgets/common/precise_reference_type_dialog.dart';
 import '../../widgets/bulk_action_bar.dart';
 import '../../widgets/gallery/gallery_sidebar.dart';
 import '../../widgets/gallery/gallery_library_toolbar.dart';
+import '../../widgets/gallery/gallery_scope_controls.dart';
+import '../../widgets/gallery/library_masonry_grid.dart';
 import '../../agent_chat/widgets/agent_resource_drop_region.dart';
 import 'widgets/precise_ref_card.dart';
 import 'widgets/precise_ref_entry_edit_dialog.dart';
@@ -69,6 +72,9 @@ class _PreciseRefLibraryScreenState
   bool _showCategoryPanel = true;
   int _currentPage = 0;
   int _pageSize = 50;
+
+  /// 当前页仍在读取文件头尺寸的原图集合，避免重复请求。
+  Object? _ratioRequest;
 
   @override
   void initState() {
@@ -633,15 +639,7 @@ class _PreciseRefLibraryScreenState
                   ? _buildErrorView(state.error!)
                   : state.filteredEntries.isEmpty
                   ? _buildEmptyView(state)
-                  : LayoutBuilder(
-                      builder: (context, constraints) => _buildGrid(
-                        state,
-                        computePreciseRefGridLayout(
-                          constraints.maxWidth,
-                          MediaQuery.textScalerOf(context).scale(14) / 14,
-                        ),
-                      ),
-                    ),
+                  : _buildGrid(state),
               footer: !state.isLoading && state.filteredEntries.isNotEmpty
                   ? LayoutBuilder(
                       builder: (context, constraints) =>
@@ -710,24 +708,6 @@ class _PreciseRefLibraryScreenState
         .setSidebarFilter(favoritesOnly: favoritesOnly, type: type);
   }
 
-  Future<void> _showCategoryPanelSheet(PreciseRefLibraryState state) {
-    return AdaptivePresenter.showPanel<void>(
-      context: context,
-      title: context.l10n.tagLibrary_categories,
-      initialChildSize: 0.72,
-      builder: (panelContext, scrollController) => PreciseRefLibrarySidebar(
-        state: state,
-        modal: true,
-        onFilterChanged: ({required bool favoritesOnly, PreciseRefType? type}) {
-          _selectSidebarFilter(favoritesOnly: favoritesOnly, type: type);
-          Navigator.of(panelContext).pop();
-        },
-        onEntryTypeDrop: _setEntryType,
-        onFavoriteDrop: _favoriteEntry,
-      ),
-    );
-  }
-
   Widget _buildErrorView(String error) {
     final l10n = context.l10n;
     final theme = Theme.of(context);
@@ -767,119 +747,202 @@ class _PreciseRefLibraryScreenState
   }) {
     final l10n = context.l10n;
     if (selection.isActive) return _buildBulkBar(state, selection);
-    final title = GalleryCollectionPageTitle(
-      key: const Key('precise-ref-library-page-title'),
-      icon: Icons.center_focus_strong,
-      title: l10n.preciseRefLib_title,
-    );
-    final search = GalleryLibrarySearchField(
-      key: const Key('precise-ref-library-search-surface'),
-      controller: _searchController,
-      hintText: l10n.preciseRefLib_searchHint,
-      onChanged: _onSearchChanged,
-    );
-    final sort = GalleryLibrarySortMenu<PreciseRefLibrarySortOrder>(
-      key: const Key('precise-ref-library-sort-menu'),
-      label: l10n.preciseRefLib_sortBy,
-      value: state.sortOrder,
-      descending: state.sortDescending,
-      onSelected: (order) {
-        setState(() => _currentPage = 0);
-        ref
-            .read(preciseRefLibraryNotifierProvider.notifier)
-            .setSortOrder(order);
-      },
-      options: [
-        GalleryLibrarySortOption(
-          value: PreciseRefLibrarySortOrder.createdAt,
-          label: l10n.preciseRefLib_sortCreatedAt,
-        ),
-        GalleryLibrarySortOption(
-          value: PreciseRefLibrarySortOrder.lastUsed,
-          label: l10n.preciseRefLib_sortLastUsed,
-        ),
-        GalleryLibrarySortOption(
-          value: PreciseRefLibrarySortOrder.usedCount,
-          label: l10n.preciseRefLib_sortUsedCount,
-        ),
-        GalleryLibrarySortOption(
-          value: PreciseRefLibrarySortOrder.name,
-          label: l10n.preciseRefLib_sortName,
-        ),
-      ],
-    );
-    final importButton = GalleryLibraryAction(
-      key: const Key('precise-ref-library-import-button'),
-      onPressed: _isPickingFile ? null : _importImages,
-      icon: Icons.add_photo_alternate_outlined,
-      label: l10n.preciseRefLib_import,
-      tooltip: l10n.preciseRefLib_import,
-      isLoading: _isPickingFile,
-    );
-    final categories = GalleryLibraryAction(
-      key: const Key('precise-ref-library-categories-button'),
-      icon: _showCategoryPanel && persistentCategories
-          ? Icons.view_sidebar
-          : Icons.view_sidebar_outlined,
-      label: l10n.common_categories,
-      tooltip: persistentCategories && _showCategoryPanel
-          ? l10n.localGallery_hideCategoryPanel
-          : l10n.localGallery_showCategoryPanel,
-      onPressed: persistentCategories
-          ? () => setState(() => _showCategoryPanel = !_showCategoryPanel)
-          : () => _showCategoryPanelSheet(state),
-    );
-
+    final notifier = ref.read(preciseRefLibraryNotifierProvider.notifier);
     return GalleryLibraryToolbar(
       key: const Key('precise-ref-library-unified-toolbar'),
-      title: showPageTitle ? title : const SizedBox.shrink(),
+      title: showPageTitle
+          ? GalleryCollectionPageTitle(
+              key: const Key('precise-ref-library-page-title'),
+              icon: Icons.center_focus_strong,
+              title: l10n.preciseRefLib_title,
+            )
+          : const SizedBox.shrink(),
       count: GalleryLibraryCountBadge(
         label: state.hasFilters
             ? '${state.filteredEntries.length}/${state.totalCount}'
             : '${state.totalCount}',
       ),
-      search: search,
-      actions: [
-        sort,
-        categories,
-        GalleryLibraryAction(
-          key: const Key('precise-ref-library-multi-select-button'),
-          icon: Icons.checklist,
-          label: l10n.common_multiSelect,
+      search: GalleryLibrarySearchField(
+        key: const Key('precise-ref-library-search-surface'),
+        controller: _searchController,
+        hintText: l10n.preciseRefLib_searchHint,
+        onChanged: _onSearchChanged,
+      ),
+      primaryAction: GalleryLibrarySearchAction(
+        key: const Key('precise-ref-library-import-button'),
+        icon: Icons.add_photo_alternate_outlined,
+        label: l10n.preciseRefLib_import,
+        tooltip: l10n.preciseRefLib_import,
+        isLoading: _isPickingFile,
+        onPressed: _importImages,
+      ),
+      titleActions: [
+        IconButton(
+          key: const Key('precise-ref-library-select-action'),
           tooltip: l10n.preciseRefLib_enterSelectionMode,
           onPressed: () => ref
               .read(preciseRefLibrarySelectionNotifierProvider.notifier)
               .enter(),
+          icon: const Icon(Icons.checklist_rounded),
         ),
-        importButton,
-        GalleryLibraryAction(
-          key: const Key('precise-ref-library-export-button'),
-          icon: Icons.file_upload_outlined,
-          label: l10n.common_export,
-          isLoading: _isExporting,
+        _buildMoreMenu(state, persistentCategories: persistentCategories),
+      ],
+      filters: GalleryScopeRow(
+        key: const Key('precise-ref-library-scope-bar'),
+        children: [
+          GalleryScopeToggle(
+            favorites: state.favoritesOnly,
+            onShowAll: () => _setFavoritesOnly(false),
+            onShowFavorites: () => _setFavoritesOnly(true),
+            allKey: const Key('precise-ref-scope-all'),
+            favoritesKey: const Key('precise-ref-scope-favorites'),
+          ),
+          GalleryFilterMenuChip<PreciseRefType?>(
+            chipKey: const Key('precise-ref-type-chip'),
+            clearKey: const Key('precise-ref-type-clear'),
+            icon: Icons.category_outlined,
+            placeholder: l10n.preciseRef_referenceType,
+            value: state.typeFilter,
+            options: [
+              for (final type in PreciseRefType.values)
+                GalleryFilterOption<PreciseRefType?>(
+                  key: Key('precise-ref-type-option-${type.name}'),
+                  value: type,
+                  icon: type.icon,
+                  label: type.getDisplayName(
+                    character: l10n.preciseRef_typeCharacter,
+                    style: l10n.preciseRef_typeStyle,
+                    characterAndStyle: l10n.preciseRef_typeCharacterAndStyle,
+                  ),
+                ),
+            ],
+            onSelected: (type) {
+              setState(() => _currentPage = 0);
+              notifier.setTypeFilter(type);
+            },
+          ),
+          GalleryFilterMenuChip<PreciseRefLibrarySortOrder>(
+            chipKey: const Key('precise-ref-library-sort-chip'),
+            icon: Icons.sort_rounded,
+            placeholder: l10n.preciseRefLib_sortBy,
+            value: state.sortOrder,
+            selectedIcon: state.sortDescending
+                ? Icons.arrow_downward_rounded
+                : Icons.arrow_upward_rounded,
+            options: [
+              GalleryFilterOption(
+                value: PreciseRefLibrarySortOrder.createdAt,
+                label: l10n.preciseRefLib_sortCreatedAt,
+              ),
+              GalleryFilterOption(
+                value: PreciseRefLibrarySortOrder.lastUsed,
+                label: l10n.preciseRefLib_sortLastUsed,
+              ),
+              GalleryFilterOption(
+                value: PreciseRefLibrarySortOrder.usedCount,
+                label: l10n.preciseRefLib_sortUsedCount,
+              ),
+              GalleryFilterOption(
+                value: PreciseRefLibrarySortOrder.name,
+                label: l10n.preciseRefLib_sortName,
+              ),
+            ],
+            onSelected: (order) {
+              setState(() => _currentPage = 0);
+              notifier.setSortOrder(order);
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _setFavoritesOnly(bool value) {
+    setState(() => _currentPage = 0);
+    ref
+        .read(preciseRefLibraryNotifierProvider.notifier)
+        .setFavoritesOnly(value);
+  }
+
+  void _clearFilters() {
+    _searchController.clear();
+    setState(() => _currentPage = 0);
+    ref.read(preciseRefLibraryNotifierProvider.notifier).clearFilters();
+  }
+
+  /// 低频操作：导出、打开目录、刷新、分类栏开关与清除筛选。
+  Widget _buildMoreMenu(
+    PreciseRefLibraryState state, {
+    required bool persistentCategories,
+  }) {
+    final l10n = context.l10n;
+    final colors = Theme.of(context).colorScheme;
+    return MenuAnchor(
+      menuChildren: [
+        MenuItemButton(
+          key: const Key('precise-ref-library-more-export'),
+          leadingIcon: const Icon(Icons.file_upload_outlined),
           onPressed: state.entries.isEmpty || _isExporting
               ? null
               : _chooseAndExportEntries,
+          child: Text(l10n.common_export),
         ),
         if (PlatformCapabilities.current.supportsOpenFolder)
-          GalleryLibraryAction(
-            key: const Key('precise-ref-library-folder-button'),
-            icon: Icons.folder_open_outlined,
-            label: l10n.common_folder,
+          MenuItemButton(
+            key: const Key('precise-ref-library-more-open-folder'),
+            leadingIcon: const Icon(Icons.folder_open_outlined),
             onPressed: _openLibraryFolder,
+            child: Text(l10n.shortcut_action_open_folder),
           ),
-        GalleryLibraryAction(
-          key: const Key('precise-ref-library-refresh-button'),
-          icon: Icons.refresh,
-          label: l10n.common_refresh,
-          isLoading: state.isLoading,
+        MenuItemButton(
+          key: const Key('precise-ref-library-more-refresh'),
+          leadingIcon: const Icon(Icons.refresh_rounded),
           onPressed: state.isLoading
               ? null
               : () => ref
                     .read(preciseRefLibraryNotifierProvider.notifier)
                     .reload(showLoading: true),
+          child: Text(l10n.common_refresh),
         ),
+        if (persistentCategories)
+          MenuItemButton(
+            key: const Key('precise-ref-library-more-category-panel'),
+            leadingIcon: Icon(
+              _showCategoryPanel
+                  ? Icons.view_sidebar
+                  : Icons.view_sidebar_outlined,
+            ),
+            onPressed: () =>
+                setState(() => _showCategoryPanel = !_showCategoryPanel),
+            child: Text(
+              _showCategoryPanel
+                  ? l10n.localGallery_hideCategoryPanel
+                  : l10n.localGallery_showCategoryPanel,
+            ),
+          ),
+        if (state.hasFilters) ...[
+          const Divider(height: 1),
+          MenuItemButton(
+            key: const Key('precise-ref-library-more-clear-filters'),
+            leadingIcon: Icon(
+              Icons.filter_alt_off_rounded,
+              color: colors.error,
+            ),
+            onPressed: _clearFilters,
+            child: Text(
+              l10n.localGallery_clearFilters,
+              style: TextStyle(color: colors.error),
+            ),
+          ),
+        ],
       ],
+      builder: (context, controller, _) => IconButton(
+        key: const Key('precise-ref-library-more-action'),
+        tooltip: l10n.common_moreActions,
+        onPressed: () =>
+            controller.isOpen ? controller.close() : controller.open(),
+        icon: const Icon(Icons.more_vert_rounded),
+      ),
     );
   }
 
@@ -972,25 +1035,22 @@ class _PreciseRefLibraryScreenState
     ];
   }
 
-  Widget _buildGrid(PreciseRefLibraryState state, PreciseRefGridLayout layout) {
+  Widget _buildGrid(PreciseRefLibraryState state) {
     final entries = _currentPageEntries(state);
     final selection = ref.watch(preciseRefLibrarySelectionNotifierProvider);
+    final ratios = ImageFileAspectRatioCache.instance;
+    _resolveAspectRatios(entries);
     return CardSelectionScope(
       selection: selection,
       commands: ref.read(preciseRefLibrarySelectionNotifierProvider.notifier),
       orderedIds: entries.map((e) => e.id).toList(),
       child: CardSelectionShortcuts(
-        child: GridView.builder(
-          key: const PageStorageKey('precise_ref_library_grid'),
-          padding: EdgeInsets.all(layout.padding),
-          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: layout.columns,
-            mainAxisSpacing: 12,
-            crossAxisSpacing: 12,
-            mainAxisExtent: layout.mainAxisExtent,
-          ),
+        child: LibraryMasonryGrid(
+          gridKey: const PageStorageKey('precise_ref_library_grid'),
           itemCount: entries.length,
-          itemBuilder: (context, index) {
+          aspectRatioOf: (index) =>
+              ratios.ratioOf(entries[index].imagePath) ?? 1.0,
+          itemBuilder: (context, index, _) {
             final entry = entries[index];
             final card = PreciseRefCard(
               entry: entry,
@@ -1028,6 +1088,22 @@ class _PreciseRefLibraryScreenState
         ),
       ),
     );
+  }
+
+  /// 没有尺寸的原图先按方形排版，读到文件头尺寸后统一重排一次。
+  void _resolveAspectRatios(List<PreciseRefLibraryEntry> entries) {
+    final cache = ImageFileAspectRatioCache.instance;
+    final missing = [
+      for (final entry in entries)
+        if (cache.ratioOf(entry.imagePath) == null) entry.imagePath,
+    ];
+    if (missing.isEmpty) return;
+    final request = Object.hashAll(missing);
+    if (_ratioRequest == request) return;
+    _ratioRequest = request;
+    cache.resolve(missing).then((_) {
+      if (mounted) setState(() => _ratioRequest = null);
+    });
   }
 
   List<PreciseRefLibraryEntry> _currentPageEntries(
@@ -1125,13 +1201,7 @@ class _PreciseRefLibraryScreenState
               const SizedBox(height: 16),
               OutlinedButton.icon(
                 key: const Key('precise-ref-library-clear-filters'),
-                onPressed: () {
-                  _searchController.clear();
-                  setState(() => _currentPage = 0);
-                  ref
-                      .read(preciseRefLibraryNotifierProvider.notifier)
-                      .clearFilters();
-                },
+                onPressed: _clearFilters,
                 icon: const Icon(Icons.filter_alt_off, size: 18),
                 label: Text(l10n.localGallery_clearFilters),
               ),
@@ -1218,42 +1288,4 @@ class _PreciseRefLibraryScreenState
       ),
     );
   }
-}
-
-@immutable
-class PreciseRefGridLayout {
-  const PreciseRefGridLayout({
-    required this.columns,
-    required this.mainAxisExtent,
-    required this.padding,
-  });
-
-  final int columns;
-  final double mainAxisExtent;
-  final double padding;
-}
-
-PreciseRefGridLayout computePreciseRefGridLayout(
-  double availableWidth,
-  double textScale,
-) {
-  final padding = availableWidth < 600 ? 12.0 : 16.0;
-  final scale = textScale.clamp(1.0, 3.0);
-  final minCardWidth = 176 + (scale - 1) * 44;
-  final usableWidth = (availableWidth - padding * 2).clamp(
-    0.0,
-    double.infinity,
-  );
-  final columns = ((usableWidth + 12) / (minCardWidth + 12)).floor().clamp(
-    1,
-    8,
-  );
-  final cardWidth = columns == 0
-      ? usableWidth
-      : (usableWidth - (columns - 1) * 12) / columns;
-  return PreciseRefGridLayout(
-    columns: columns,
-    mainAxisExtent: cardWidth * 1.22 + (scale - 1) * 24,
-    padding: padding,
-  );
 }

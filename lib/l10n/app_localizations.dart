@@ -17364,12 +17364,6 @@ abstract class AppLocalizations {
   /// **'Vibe Detail'**
   String get shortcut_context_vibe_detail;
 
-  /// No description provided for @vibeSelectorFilterFavorites.
-  ///
-  /// In en, this message translates to:
-  /// **'Favorites'**
-  String get vibeSelectorFilterFavorites;
-
   /// No description provided for @vibeSelectorFilterSourceAll.
   ///
   /// In en, this message translates to:
@@ -21023,12 +21017,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Name'**
   String get preciseRefLib_nameLabel;
-
-  /// No description provided for @preciseRefLib_typeFilterAll.
-  ///
-  /// In en, this message translates to:
-  /// **'All'**
-  String get preciseRefLib_typeFilterAll;
 
   /// No description provided for @img2img_fromPreciseRefLibrary.
   ///

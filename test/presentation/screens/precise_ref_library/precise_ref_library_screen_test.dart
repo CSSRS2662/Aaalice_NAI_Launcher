@@ -164,7 +164,7 @@ void main() {
     await tester.pumpAndSettle();
 
     await tester.tap(
-      find.byKey(const Key('precise-ref-library-multi-select-button')),
+      find.byKey(const Key('precise-ref-library-select-action')),
     );
     await tester.pump();
     expect(find.text('已选择 0 项'), findsOneWidget);
@@ -208,9 +208,9 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    await tester.tap(
-      find.byKey(const Key('precise-ref-library-export-button')),
-    );
+    await tester.tap(find.byKey(const Key('precise-ref-library-more-action')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('precise-ref-library-more-export')));
     await tester.pumpAndSettle();
 
     expect(find.text('导出精准参考配置包'), findsOneWidget);

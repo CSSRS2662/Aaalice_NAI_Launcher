@@ -9506,9 +9506,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get shortcut_context_vibe_detail => 'Vibe 详情';
 
   @override
-  String get vibeSelectorFilterFavorites => '收藏';
-
-  @override
   String get vibeSelectorFilterSourceAll => '全部类型';
 
   @override
@@ -11555,9 +11552,6 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get preciseRefLib_nameLabel => '名称';
-
-  @override
-  String get preciseRefLib_typeFilterAll => '全部';
 
   @override
   String get img2img_fromPreciseRefLibrary => '从精准参考库导入';
@@ -24463,9 +24457,6 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get shortcut_context_vibe_detail => 'Vibe 詳情';
 
   @override
-  String get vibeSelectorFilterFavorites => '收藏';
-
-  @override
   String get vibeSelectorFilterSourceAll => '全部型別';
 
   @override
@@ -26512,9 +26503,6 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get preciseRefLib_nameLabel => '名稱';
-
-  @override
-  String get preciseRefLib_typeFilterAll => '全部';
 
   @override
   String get img2img_fromPreciseRefLibrary => '從精準參考庫匯入';

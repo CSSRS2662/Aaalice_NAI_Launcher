@@ -1,4 +1,3 @@
-import 'package:nai_launcher/presentation/widgets/common/horizontal_action_strip.dart';
 import 'dart:async';
 import 'dart:typed_data';
 
@@ -6,13 +5,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:nai_launcher/core/utils/localization_extension.dart';
 
+import '../../../../core/cache/image_file_aspect_ratio_cache.dart';
 import '../../../../core/enums/precise_ref_type.dart';
 import '../../../../core/extensions/precise_ref_type_extensions.dart';
 import '../../../../data/models/precise_ref/precise_ref_library_entry.dart';
 import '../../../../data/services/precise_ref_library_storage_service.dart';
 import '../../../adaptive/adaptive_presenter.dart';
 import '../../../providers/precise_ref_library_provider.dart';
-import 'precise_ref_type_filter_chips.dart';
+import '../../../widgets/gallery/gallery_scope_controls.dart';
+import '../../../widgets/gallery/library_masonry_grid.dart';
 
 enum PreciseRefSelectorPurpose { add, export }
 
@@ -69,10 +70,13 @@ class _PreciseRefSelectorDialogState
   final Set<String> _selectedIds = {};
   String _query = '';
   PreciseRefType? _typeFilter;
+  bool _favoritesOnly = false;
   Timer? _searchDebounceTimer;
   List<PreciseRefLibraryEntry>? _cachedSourceEntries;
   String? _cachedQuery;
   PreciseRefType? _cachedTypeFilter;
+  bool? _cachedFavoritesOnly;
+  Object? _ratioRequest;
   List<PreciseRefLibraryEntry> _cachedVisibleEntries = const [];
   bool _initializedExportSelection = false;
 
@@ -109,7 +113,8 @@ class _PreciseRefSelectorDialogState
   ) {
     if (identical(_cachedSourceEntries, source) &&
         _cachedQuery == _query &&
-        _cachedTypeFilter == _typeFilter) {
+        _cachedTypeFilter == _typeFilter &&
+        _cachedFavoritesOnly == _favoritesOnly) {
       return _cachedVisibleEntries;
     }
 
@@ -118,11 +123,31 @@ class _PreciseRefSelectorDialogState
     if (typeFilter != null) {
       entries = entries.where((entry) => entry.type == typeFilter).toList();
     }
+    if (_favoritesOnly) {
+      entries = entries.where((entry) => entry.isFavorite).toList();
+    }
     _cachedSourceEntries = source;
     _cachedQuery = _query;
     _cachedTypeFilter = typeFilter;
+    _cachedFavoritesOnly = _favoritesOnly;
     _cachedVisibleEntries = entries.sortedByCreatedAt();
     return _cachedVisibleEntries;
+  }
+
+  /// 没有尺寸的原图先按方形排版，读到文件头尺寸后统一重排一次。
+  void _resolveAspectRatios(List<PreciseRefLibraryEntry> entries) {
+    final cache = ImageFileAspectRatioCache.instance;
+    final missing = [
+      for (final entry in entries)
+        if (cache.ratioOf(entry.imagePath) == null) entry.imagePath,
+    ];
+    if (missing.isEmpty) return;
+    final request = Object.hashAll(missing);
+    if (_ratioRequest == request) return;
+    _ratioRequest = request;
+    cache.resolve(missing).then((_) {
+      if (mounted) setState(() => _ratioRequest = null);
+    });
   }
 
   @override
@@ -141,16 +166,15 @@ class _PreciseRefSelectorDialogState
     return LayoutBuilder(
       key: const Key('precise-ref-selector-dialog'),
       builder: (context, constraints) {
-        final crossAxisCount = constraints.maxWidth < 340
-            ? 2
-            : constraints.maxWidth < 500
-            ? 3
-            : constraints.maxWidth < 680
-            ? 4
-            : 5;
+        final columns = libraryMasonryColumns(
+          constraints.maxWidth - 32,
+          spacing: 8,
+        );
         final shrinkWrapContent =
             MediaQuery.sizeOf(context).width >= 600 &&
-            entries.length <= crossAxisCount * 2;
+            entries.length <= columns * 2;
+        _resolveAspectRatios(entries);
+        final ratios = ImageFileAspectRatioCache.instance;
         final actions = Wrap(
           alignment: WrapAlignment.end,
           spacing: 8,
@@ -211,16 +235,52 @@ class _PreciseRefSelectorDialogState
                           onChanged: _onSearchChanged,
                         ),
                         const SizedBox(height: 8),
-                        HorizontalActionStrip(
-                          scrollKey: const Key(
-                            'precise-ref-selector-type-scroll',
-                          ),
-
-                          child: PreciseRefTypeFilterChips(
-                            value: _typeFilter,
-                            onChanged: (type) =>
-                                setState(() => _typeFilter = type),
-                          ),
+                        GalleryScopeRow(
+                          key: const Key('precise-ref-selector-type-scroll'),
+                          children: [
+                            GalleryScopeToggle(
+                              favorites: _favoritesOnly,
+                              onShowAll: () =>
+                                  setState(() => _favoritesOnly = false),
+                              onShowFavorites: () =>
+                                  setState(() => _favoritesOnly = true),
+                              allKey: const Key(
+                                'precise-ref-selector-scope-all',
+                              ),
+                              favoritesKey: const Key(
+                                'precise-ref-selector-scope-favorites',
+                              ),
+                            ),
+                            GalleryFilterMenuChip<PreciseRefType?>(
+                              chipKey: const Key(
+                                'precise-ref-selector-type-chip',
+                              ),
+                              clearKey: const Key(
+                                'precise-ref-selector-type-clear',
+                              ),
+                              icon: Icons.category_outlined,
+                              placeholder: l10n.preciseRef_referenceType,
+                              value: _typeFilter,
+                              options: [
+                                for (final type in PreciseRefType.values)
+                                  GalleryFilterOption<PreciseRefType?>(
+                                    key: Key(
+                                      'precise-ref-selector-type-option-${type.name}',
+                                    ),
+                                    value: type,
+                                    icon: type.icon,
+                                    label: type.getDisplayName(
+                                      character: l10n.preciseRef_typeCharacter,
+                                      style: l10n.preciseRef_typeStyle,
+                                      characterAndStyle:
+                                          l10n.preciseRef_typeCharacterAndStyle,
+                                    ),
+                                  ),
+                              ],
+                              onSelected: (type) =>
+                                  setState(() => _typeFilter = type),
+                            ),
+                          ],
                         ),
                         if (widget.purpose ==
                             PreciseRefSelectorPurpose.export) ...[
@@ -290,15 +350,12 @@ class _PreciseRefSelectorDialogState
                   else
                     SliverPadding(
                       padding: const EdgeInsets.symmetric(horizontal: 16),
-                      sliver: SliverGrid.builder(
-                        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: crossAxisCount,
-                          mainAxisSpacing: 8,
-                          crossAxisSpacing: 8,
-                          childAspectRatio: 0.85,
-                        ),
+                      sliver: LibraryMasonrySliverGrid(
+                        scaleWithText: false,
                         itemCount: entries.length,
-                        itemBuilder: (context, index) {
+                        aspectRatioOf: (index) =>
+                            ratios.ratioOf(entries[index].imagePath) ?? 1.0,
+                        itemBuilder: (context, index, _) {
                           final entry = entries[index];
                           return _SelectorItem(
                             entry: entry,
@@ -425,80 +482,84 @@ class _SelectorItemState extends ConsumerState<_SelectorItem> {
       borderRadius: BorderRadius.circular(8),
       child: Container(
         decoration: BoxDecoration(
-          color: widget.selected
-              ? theme.colorScheme.primaryContainer
-              : theme.colorScheme.surfaceContainerLow,
+          color: theme.colorScheme.surfaceContainerHighest,
           borderRadius: BorderRadius.circular(8),
           border: widget.selected
-              ? Border.all(color: theme.colorScheme.primary, width: 1)
+              ? Border.all(color: theme.colorScheme.primary, width: 2)
               : null,
         ),
         clipBehavior: Clip.antiAlias,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
+        child: Stack(
+          fit: StackFit.expand,
           children: [
-            Expanded(
-              child: Stack(
-                fit: StackFit.expand,
-                children: [
-                  if (_thumbnail != null)
-                    Image.memory(
-                      _thumbnail!,
-                      fit: BoxFit.cover,
-                      gaplessPlayback: true,
-                    )
-                  else
-                    Container(
-                      color: theme.colorScheme.surfaceContainerHighest,
-                      child: Icon(
-                        Icons.image_outlined,
-                        size: 24,
-                        color: theme.colorScheme.onSurfaceVariant.withValues(
-                          alpha: 0.4,
+            if (_thumbnail != null)
+              Image.memory(
+                _thumbnail!,
+                fit: BoxFit.cover,
+                gaplessPlayback: true,
+              )
+            else
+              Icon(
+                Icons.image_outlined,
+                size: 24,
+                color: theme.colorScheme.onSurfaceVariant.withValues(
+                  alpha: 0.4,
+                ),
+              ),
+            Positioned(
+              left: 0,
+              right: 0,
+              bottom: 0,
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      Colors.transparent,
+                      Colors.black.withValues(alpha: 0.78),
+                    ],
+                  ),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(6, 18, 6, 5),
+                  child: Row(
+                    children: [
+                      Icon(entry.type.icon, size: 12, color: Colors.white70),
+                      const SizedBox(width: 3),
+                      Expanded(
+                        child: Text(
+                          entry.name,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: theme.textTheme.labelSmall?.copyWith(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w600,
+                          ),
                         ),
                       ),
-                    ),
-                  if (widget.selected)
-                    Positioned(
-                      top: 4,
-                      right: 4,
-                      child: Container(
-                        decoration: BoxDecoration(
-                          color: theme.colorScheme.primary,
-                          shape: BoxShape.circle,
-                        ),
-                        padding: const EdgeInsets.all(2),
-                        child: Icon(
-                          Icons.check,
-                          size: 12,
-                          color: theme.colorScheme.onPrimary,
-                        ),
-                      ),
-                    ),
-                ],
+                    ],
+                  ),
+                ),
               ),
             ),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
-              child: Row(
-                children: [
-                  Icon(
-                    entry.type.icon,
-                    size: 11,
+            if (widget.selected)
+              Positioned(
+                top: 4,
+                right: 4,
+                child: Container(
+                  decoration: BoxDecoration(
                     color: theme.colorScheme.primary,
+                    shape: BoxShape.circle,
                   ),
-                  const SizedBox(width: 3),
-                  Expanded(
-                    child: Text(
-                      entry.name,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: theme.textTheme.labelSmall,
-                    ),
+                  padding: const EdgeInsets.all(2),
+                  child: Icon(
+                    Icons.check,
+                    size: 12,
+                    color: theme.colorScheme.onPrimary,
                   ),
-                ],
+                ),
               ),
-            ),
           ],
         ),
       ),

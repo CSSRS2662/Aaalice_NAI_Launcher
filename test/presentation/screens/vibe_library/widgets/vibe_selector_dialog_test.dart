@@ -4,7 +4,9 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:nai_launcher/data/models/vibe/vibe_library_entry.dart';
 import 'package:nai_launcher/data/models/vibe/vibe_reference.dart';
 import 'package:nai_launcher/l10n/app_localizations.dart';
+import 'package:nai_launcher/presentation/adaptive/interaction_policy.dart';
 import 'package:nai_launcher/presentation/providers/vibe_library_provider.dart';
+import 'package:nai_launcher/presentation/screens/online_gallery/online_gallery_masonry_layout.dart';
 import 'package:nai_launcher/presentation/screens/vibe_library/widgets/vibe_selector_dialog.dart';
 
 void main() {
@@ -25,6 +27,10 @@ void main() {
           locale: const Locale('zh'),
           localizationsDelegates: AppLocalizations.localizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
+          builder: (context, child) => InteractionPolicyScope(
+            initialPolicy: InteractionPolicy.touchFirst,
+            child: child!,
+          ),
           home: Scaffold(
             body: Builder(
               builder: (context) => TextButton(
@@ -44,12 +50,21 @@ void main() {
     expect(find.text('收藏'), findsOneWidget);
     expect(find.text('全部类型'), findsOneWidget);
     expect(find.text('创建时间'), findsOneWidget);
-    for (final control in [
-      find.byType(FilterChip),
-      find.widgetWithText(Chip, '全部类型'),
-      find.widgetWithText(Chip, '创建时间'),
+    for (final key in [
+      'vibe-selector-source-chip',
+      'vibe-selector-sort-chip',
     ]) {
-      expect(tester.getSize(control).height, greaterThanOrEqualTo(48));
+      expect(tester.getSize(find.byKey(Key(key))).height, 48, reason: key);
+    }
+    for (final key in [
+      'vibe-selector-scope-all',
+      'vibe-selector-scope-favorites',
+    ]) {
+      expect(
+        tester.getSize(find.byKey(Key(key))).height,
+        greaterThanOrEqualTo(44),
+        reason: key,
+      );
     }
     expect(tester.takeException(), isNull);
   });
@@ -63,9 +78,9 @@ void main() {
       );
 
       final grid = tester.widget<SliverGrid>(find.byType(SliverGrid));
-      final delegate =
-          grid.gridDelegate as SliverGridDelegateWithFixedCrossAxisCount;
-      expect(delegate.crossAxisCount, width == 320 ? 1 : 2);
+      final delegate = grid.gridDelegate as OnlineGalleryMasonryGridDelegate;
+      // 与其他图库一致：手机宽度保持两列瀑布流。
+      expect(delegate.snapshot.columnCount, 2);
       expect(find.text('选择 Vibe'), findsOneWidget);
       expect(find.byIcon(Icons.close), findsOneWidget);
       expect(tester.takeException(), isNull);
@@ -166,7 +181,7 @@ void main() {
 
     FocusManager.instance.primaryFocus?.unfocus();
     await tester.pump();
-    final sortButton = find.byType(PopupMenuButton<VibeLibrarySortOrder>);
+    final sortButton = find.byKey(const Key('vibe-selector-sort-chip'));
     await tester.ensureVisible(sortButton);
     await tester.tap(sortButton);
     await tester.pumpAndSettle();

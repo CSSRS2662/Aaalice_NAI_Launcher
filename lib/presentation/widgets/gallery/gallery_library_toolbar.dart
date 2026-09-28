@@ -280,6 +280,56 @@ class GalleryLibraryAction extends StatelessWidget {
   }
 }
 
+/// 紧挨搜索框的主操作（如导入）：高度、圆角与搜索框一致，保留文字标签。
+class GalleryLibrarySearchAction extends StatelessWidget {
+  const GalleryLibrarySearchAction({
+    super.key,
+    required this.icon,
+    required this.label,
+    this.tooltip,
+    this.onPressed,
+    this.isLoading = false,
+  });
+
+  final IconData icon;
+  final String label;
+  final String? tooltip;
+  final VoidCallback? onPressed;
+  final bool isLoading;
+
+  @override
+  Widget build(BuildContext context) {
+    final compact = _GalleryLibraryToolbarScope.maybeCompactOf(context);
+    final textScale = MediaQuery.textScalerOf(context).scale(14) / 14;
+    final touch = context.interactionPolicy.shouldExposeTouchAlternatives;
+    final expanded = compact || touch;
+    final height = expanded
+        ? 48.0 + (textScale - 1).clamp(0.0, 2.0) * 8.0
+        : 36.0;
+    final button = FilledButton.tonalIcon(
+      onPressed: isLoading ? null : onPressed,
+      icon: isLoading
+          ? SizedBox.square(
+              dimension: 18,
+              child: CircularProgressIndicator(
+                strokeWidth: 2,
+                value: MediaQuery.disableAnimationsOf(context) ? 0.75 : null,
+              ),
+            )
+          : Icon(icon, size: 18),
+      label: Text(label, maxLines: 1),
+      style: FilledButton.styleFrom(
+        minimumSize: Size(0, height),
+        padding: const EdgeInsets.symmetric(horizontal: 14),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(expanded ? 16 : 18),
+        ),
+      ),
+    );
+    return tooltip == null ? button : Tooltip(message: tooltip, child: button);
+  }
+}
+
 class GalleryLibraryPrimaryAction extends StatelessWidget {
   const GalleryLibraryPrimaryAction({
     super.key,

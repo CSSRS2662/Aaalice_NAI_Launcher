@@ -4565,7 +4565,6 @@
   "clearFilters": "清除筛选",
 
   "shortcut_context_vibe_detail": "Vibe 详情",
-  "vibeSelectorFilterFavorites": "收藏",
   "vibeSelectorFilterSourceAll": "全部类型",
   "vibeSelectorSortCreated": "创建时间",
   "vibeSelectorSortLastUsed": "最近使用",
@@ -5547,7 +5546,6 @@
   "preciseRefLib_selectorTitle": "从精准参考库选择",
   "preciseRefLib_selectorConfirm": "添加所选 ({count})",
   "preciseRefLib_nameLabel": "名称",
-  "preciseRefLib_typeFilterAll": "全部",
   "img2img_fromPreciseRefLibrary": "从精准参考库导入",
   "localGallery_saveToPreciseRefLibrary": "保存到精准参考库",
   "drop_saveToPreciseRefLibrary": "存入精准参考库",

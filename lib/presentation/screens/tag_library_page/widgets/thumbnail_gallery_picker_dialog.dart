@@ -12,6 +12,7 @@ import '../../../../data/services/gallery/local_gallery_service.dart';
 import '../../../adaptive/adaptive_presenter.dart';
 import '../../../providers/local_gallery_provider.dart';
 import '../../../widgets/common/image_viewport_surface.dart';
+import '../../../widgets/gallery/gallery_scope_controls.dart';
 
 typedef ThumbnailGalleryPageLoader =
     Future<LocalGalleryQueryPage> Function({
@@ -207,26 +208,19 @@ class _ThumbnailGalleryPickerDialogState
       children: [
         Padding(
           padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-          child: SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: SegmentedButton<bool>(
-              key: const ValueKey('thumbnail-gallery-source-tabs'),
-              segments: [
-                ButtonSegment(
-                  value: false,
-                  icon: const Icon(Icons.history_rounded),
-                  label: Text(context.l10n.generation_historyRecord),
+          child: GalleryScopeRow(
+            key: const ValueKey('thumbnail-gallery-source-tabs'),
+            children: [
+              GalleryScopeToggle(
+                favorites: _favoritesOnly,
+                onShowAll: () => _setFavoritesOnly(false),
+                onShowFavorites: () => _setFavoritesOnly(true),
+                allKey: const ValueKey('thumbnail-gallery-scope-all'),
+                favoritesKey: const ValueKey(
+                  'thumbnail-gallery-scope-favorites',
                 ),
-                ButtonSegment(
-                  value: true,
-                  icon: const Icon(Icons.favorite_outline_rounded),
-                  label: Text(context.l10n.common_favorite),
-                ),
-              ],
-              selected: {_favoritesOnly},
-              onSelectionChanged: (selection) =>
-                  _setFavoritesOnly(selection.first),
-            ),
+              ),
+            ],
           ),
         ),
         Expanded(child: _buildContent()),

@@ -8,6 +8,7 @@ import '../../../widgets/common/image_viewport_surface.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../../core/utils/image_header_dimensions.dart';
 import '../../../../core/utils/localization_extension.dart';
 import '../../../../data/models/vibe/vibe_library_entry.dart';
 import '../../../../data/services/vibe_library_storage_service.dart';
@@ -20,10 +21,27 @@ import '../../../widgets/common/image_hover_preview_controller.dart';
 import '../../../widgets/common/library_card_badges.dart';
 import 'vibe_hover_preview.dart';
 
-/// Vibe 图像卡片统一采用 4:5 纵向比例，为缩略图和底部参数保留稳定空间。
+/// 组合包和尺寸未知的 Vibe 卡片采用 4:5 纵向比例，为缩略图和底部参数保留稳定空间。
 const double vibeCardAspectRatio = 4 / 5;
 
 double computeVibeCardHeight(double width) => width / vibeCardAspectRatio;
+
+final _vibeEntryRatios = <String, double>{};
+
+/// 瀑布流中的卡片宽高比：单个 Vibe 取内存缩略图的原始比例；组合包的层叠
+/// 造型和尚未加载缩略图的条目保持 [vibeCardAspectRatio]。
+double vibeEntryAspectRatio(VibeLibraryEntry entry) {
+  if (entry.isBundle) return vibeCardAspectRatio;
+  final bytes = entry.thumbnail?.isNotEmpty == true
+      ? entry.thumbnail!
+      : entry.vibeThumbnail;
+  if (bytes == null || bytes.isEmpty) return vibeCardAspectRatio;
+  if (_vibeEntryRatios.length > 4096) _vibeEntryRatios.clear();
+  return _vibeEntryRatios.putIfAbsent('${entry.id}:${bytes.length}', () {
+    final size = ImageHeaderDimensions.parse(bytes);
+    return size == null ? vibeCardAspectRatio : size.width / size.height;
+  });
+}
 
 /// 统一 Vibe 卡片组件
 ///

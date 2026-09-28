@@ -92,8 +92,8 @@ Future<_ProbeStorage> _pumpVibeGrid(
         supportedLocales: AppLocalizations.supportedLocales,
         home: Scaffold(
           body: shell == null
-              ? const VibeLibraryContentView(columns: 4, itemWidth: 280)
-              : shell(const VibeLibraryContentView(columns: 4, itemWidth: 280)),
+              ? const VibeLibraryContentView(itemWidth: 280)
+              : shell(const VibeLibraryContentView(itemWidth: 280)),
         ),
       ),
     ),

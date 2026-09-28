@@ -1,4 +1,3 @@
-import 'package:nai_launcher/presentation/widgets/common/horizontal_action_strip.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:nai_launcher/presentation/themes/core/input_surface_style.dart';
@@ -13,6 +12,8 @@ import '../../../adaptive/adaptive_presenter.dart';
 import '../../../widgets/common/horizontal_segmented_control.dart';
 import '../../../widgets/common/decoded_memory_image.dart';
 import '../../../widgets/common/translated_tag_text.dart';
+import '../../../widgets/gallery/gallery_scope_controls.dart';
+import '../../../widgets/gallery/library_masonry_grid.dart';
 import 'vibe_card.dart';
 
 const int _topTagEntrySampleLimit = 40;
@@ -574,193 +575,99 @@ class _VibeSelectorDialogState extends ConsumerState<VibeSelectorDialog> {
 
   // 筛选工具条 (Step 2)
   Widget _buildFilterToolbar(ThemeData theme) {
-    final favoriteFilter = FilterChip(
-      selected: _favoritesOnly,
-      onSelected: (_) => _toggleFavoriteFilter(),
-      label: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(
-            _favoritesOnly ? Icons.favorite : Icons.favorite_border,
-            size: 16,
-            color: _favoritesOnly ? Colors.red : null,
-          ),
-          const SizedBox(width: 4),
-          Text(context.l10n.vibeSelectorFilterFavorites),
-        ],
-      ),
-      padding: EdgeInsets.zero,
-    );
-    final sourceFilter = _buildSourceTypeFilter(theme);
-    final tagFilters = _topTags.map((tag) {
-      final isSelected = _selectedTags.contains(tag);
-      return Padding(
-        padding: const EdgeInsets.only(right: 6),
-        child: FilterChip(
-          selected: isSelected,
-          onSelected: (_) => _toggleTag(tag),
-          label: TranslatedTagText(tag),
-          padding: EdgeInsets.zero,
+    final l10n = context.l10n;
+    final filters = GalleryScopeRow(
+      key: const Key('vibe-selector-filters'),
+      children: [
+        GalleryScopeToggle(
+          favorites: _favoritesOnly,
+          onShowAll: () {
+            if (_favoritesOnly) _toggleFavoriteFilter();
+          },
+          onShowFavorites: () {
+            if (!_favoritesOnly) _toggleFavoriteFilter();
+          },
+          allKey: const Key('vibe-selector-scope-all'),
+          favoritesKey: const Key('vibe-selector-scope-favorites'),
         ),
-      );
-    }).toList();
-    final sortButton = _buildSortButton(theme);
+        GalleryFilterMenuChip<VibeSourceType?>(
+          chipKey: const Key('vibe-selector-source-chip'),
+          clearKey: const Key('vibe-selector-source-clear'),
+          icon: Icons.category_outlined,
+          placeholder: l10n.vibeSelectorFilterSourceAll,
+          value: _selectedSourceType,
+          options: [
+            for (final type in VibeSourceType.values)
+              GalleryFilterOption<VibeSourceType?>(
+                value: type,
+                icon: switch (type) {
+                  VibeSourceType.png => Icons.image_outlined,
+                  VibeSourceType.naiv4vibe => Icons.auto_awesome_outlined,
+                  VibeSourceType.naiv4vibebundle => Icons.inventory_2_outlined,
+                  VibeSourceType.rawImage => Icons.photo_outlined,
+                },
+                label: context.vibeSourceTypeLabel(type),
+              ),
+          ],
+          onSelected: _setSourceType,
+        ),
+        GalleryFilterMenuChip<VibeLibrarySortOrder>(
+          chipKey: const Key('vibe-selector-sort-chip'),
+          icon: Icons.sort_rounded,
+          placeholder: l10n.vibeSelectorSortCreated,
+          value: _sortOrder,
+          selectedIcon: _sortDescending
+              ? Icons.arrow_downward_rounded
+              : Icons.arrow_upward_rounded,
+          options: [
+            GalleryFilterOption(
+              value: VibeLibrarySortOrder.createdAt,
+              label: l10n.vibeSelectorSortCreated,
+            ),
+            GalleryFilterOption(
+              value: VibeLibrarySortOrder.lastUsed,
+              label: l10n.vibeSelectorSortLastUsed,
+            ),
+            GalleryFilterOption(
+              value: VibeLibrarySortOrder.usedCount,
+              label: l10n.vibeSelectorSortUsedCount,
+            ),
+            GalleryFilterOption(
+              value: VibeLibrarySortOrder.name,
+              label: l10n.vibeSelectorSortName,
+            ),
+          ],
+          onSelected: _setSortOrder,
+        ),
+        for (final tag in _topTags)
+          GalleryFilterChipButton(
+            key: ValueKey('vibe-selector-tag-$tag'),
+            icon: Icons.sell_outlined,
+            label: tag,
+            labelWidget: TranslatedTagText(tag),
+            active: _selectedTags.contains(tag),
+            onPressed: () => _toggleTag(tag),
+          ),
+      ],
+    );
     final itemCount = Text(
-      context.l10n.vibeSelectorItemsCount(_filteredEntries.length),
+      l10n.vibeSelectorItemsCount(_filteredEntries.length),
       style: theme.textTheme.bodySmall?.copyWith(
         color: theme.colorScheme.outline,
       ),
     );
 
-    return ConstrainedBox(
-      constraints: const BoxConstraints(minHeight: 40),
-      child: LayoutBuilder(
-        builder: (context, constraints) {
-          if (constraints.maxWidth < 600) {
-            return HorizontalActionStrip(
-              child: Row(
-                children: [
-                  favoriteFilter,
-                  const SizedBox(width: 8),
-                  sourceFilter,
-                  const SizedBox(width: 8),
-                  sortButton,
-                  if (tagFilters.isNotEmpty) const SizedBox(width: 8),
-                  ...tagFilters,
-                ],
-              ),
-            );
-          }
-
-          return Row(
-            children: [
-              favoriteFilter,
-              const SizedBox(width: 8),
-              sourceFilter,
-              const SizedBox(width: 8),
-              Expanded(
-                child: HorizontalActionStrip(child: Row(children: tagFilters)),
-              ),
-              sortButton,
-              const SizedBox(width: 8),
-              itemCount,
-            ],
-          );
-        },
-      ),
-    );
-  }
-
-  Widget _buildSourceTypeFilter(ThemeData theme) {
-    final colorMap = {
-      VibeSourceType.png: Colors.teal,
-      VibeSourceType.naiv4vibe: Colors.blue,
-      VibeSourceType.naiv4vibebundle: Colors.orange,
-      VibeSourceType.rawImage: Colors.purple,
-    };
-
-    return PopupMenuButton<VibeSourceType?>(
-      offset: const Offset(0, 36),
-      onSelected: _setSourceType,
-      itemBuilder: (context) => [
-        PopupMenuItem(
-          value: null,
-          child: Row(
-            children: [
-              const SizedBox(width: 8),
-              Text(context.l10n.vibeSelectorFilterSourceAll),
-              if (_selectedSourceType == null) ...[
-                const Spacer(),
-                Icon(Icons.check, size: 18, color: theme.colorScheme.primary),
-              ],
-            ],
-          ),
-        ),
-        const PopupMenuDivider(),
-        ...VibeSourceType.values.map((type) {
-          final color = colorMap[type] ?? theme.colorScheme.primary;
-          return PopupMenuItem(
-            value: type,
-            child: Row(
-              children: [
-                Container(
-                  width: 10,
-                  height: 10,
-                  decoration: BoxDecoration(
-                    color: color,
-                    shape: BoxShape.circle,
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Text(context.vibeSourceTypeLabel(type)),
-                if (_selectedSourceType == type) ...[
-                  const Spacer(),
-                  Icon(Icons.check, size: 18, color: theme.colorScheme.primary),
-                ],
-              ],
-            ),
-          );
-        }),
-      ],
-      child: Chip(
-        avatar: _selectedSourceType != null
-            ? Container(
-                width: 8,
-                height: 8,
-                decoration: BoxDecoration(
-                  color: colorMap[_selectedSourceType],
-                  shape: BoxShape.circle,
-                ),
-              )
-            : null,
-        label: Text(
-          _selectedSourceType != null
-              ? context.vibeSourceTypeLabel(_selectedSourceType!)
-              : context.l10n.vibeSelectorFilterSourceAll,
-        ),
-        padding: EdgeInsets.zero,
-      ),
-    );
-  }
-
-  Widget _buildSortButton(ThemeData theme) {
-    final sortLabelMap = {
-      VibeLibrarySortOrder.createdAt: context.l10n.vibeSelectorSortCreated,
-      VibeLibrarySortOrder.lastUsed: context.l10n.vibeSelectorSortLastUsed,
-      VibeLibrarySortOrder.usedCount: context.l10n.vibeSelectorSortUsedCount,
-      VibeLibrarySortOrder.name: context.l10n.vibeSelectorSortName,
-    };
-
-    return PopupMenuButton<VibeLibrarySortOrder>(
-      offset: const Offset(0, 36),
-      onSelected: _setSortOrder,
-      itemBuilder: (context) => VibeLibrarySortOrder.values.map((order) {
-        final isSelected = _sortOrder == order;
-        return PopupMenuItem(
-          value: order,
-          child: Row(
-            children: [
-              Text(sortLabelMap[order]!),
-              if (isSelected) ...[
-                const Spacer(),
-                Icon(
-                  _sortDescending ? Icons.arrow_downward : Icons.arrow_upward,
-                  size: 16,
-                  color: theme.colorScheme.primary,
-                ),
-              ],
-            ],
-          ),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        if (constraints.maxWidth < 600) return filters;
+        return Row(
+          children: [
+            Expanded(child: filters),
+            const SizedBox(width: 8),
+            itemCount,
+          ],
         );
-      }).toList(),
-      child: Chip(
-        avatar: Icon(
-          _sortDescending ? Icons.arrow_downward : Icons.arrow_upward,
-          size: 14,
-        ),
-        label: Text(sortLabelMap[_sortOrder]!),
-        padding: EdgeInsets.zero,
-      ),
+      },
     );
   }
 
@@ -772,14 +679,6 @@ class _VibeSelectorDialogState extends ConsumerState<VibeSelectorDialog> {
 
     return LayoutBuilder(
       builder: (context, constraints) {
-        final availableWidth = constraints.maxWidth;
-        // 减小卡片宽度，增加列数：每列最小 140px，计算可容纳的列数
-        const double itemWidth = 140;
-        const double spacing = 12;
-        final crossAxisCount =
-            ((availableWidth + spacing) / (itemWidth + spacing)).floor();
-        final columnCount = crossAxisCount.clamp(1, 6);
-
         return CustomScrollView(
           controller: widget._scrollController,
           keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
@@ -806,7 +705,7 @@ class _VibeSelectorDialogState extends ConsumerState<VibeSelectorDialog> {
             const SliverToBoxAdapter(child: SizedBox(height: 12)),
 
             // 网格内容 - 按 entry 类型分组
-            ..._buildSliverGrids(columnCount),
+            ..._buildSliverGrids(),
           ],
         );
       },
@@ -855,45 +754,23 @@ class _VibeSelectorDialogState extends ConsumerState<VibeSelectorDialog> {
     );
   }
 
-  List<Widget> _buildSliverGrids(int columnCount) {
-    final slivers = <Widget>[];
-    final entries = _filteredEntries;
-
-    // 所有条目（包括 Bundle）放在同一个网格中
-    slivers.add(_buildSliverGrid(entries, columnCount));
-
-    return slivers;
+  List<Widget> _buildSliverGrids() {
+    // 所有条目（包括 Bundle）放在同一个瀑布流中
+    return [_buildSliverGrid(_filteredEntries)];
   }
 
-  Widget _buildSliverGrid(List<VibeLibraryEntry> entries, int columnCount) {
-    return SliverGrid.builder(
-      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: columnCount,
-        childAspectRatio: vibeCardAspectRatio,
-        crossAxisSpacing: 10,
-        mainAxisSpacing: 10,
-      ),
+  Widget _buildSliverGrid(List<VibeLibraryEntry> entries) {
+    return LibraryMasonrySliverGrid(
+      scaleWithText: false,
+      spacing: 10,
       itemCount: entries.length,
-      itemBuilder: (context, index) {
+      aspectRatioOf: (index) => vibeEntryAspectRatio(entries[index]),
+      itemBuilder: (context, index, size) {
         final entry = entries[index];
         final isSelected = _selectedIds.contains(entry.id);
-
-        return LayoutBuilder(
-          builder: (context, constraints) {
-            if (entry.isBundle) {
-              return _buildBundleCardCompact(
-                entry,
-                isSelected,
-                constraints.biggest,
-              );
-            }
-            return _buildCompactVibeCard(
-              entry,
-              isSelected,
-              constraints.biggest,
-            );
-          },
-        );
+        return entry.isBundle
+            ? _buildBundleCardCompact(entry, isSelected, size)
+            : _buildCompactVibeCard(entry, isSelected, size);
       },
     );
   }

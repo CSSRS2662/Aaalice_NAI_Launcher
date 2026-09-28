@@ -4767,7 +4767,6 @@
   "clearFilters": "Clear Filters",
 
   "shortcut_context_vibe_detail": "Vibe Detail",
-  "vibeSelectorFilterFavorites": "Favorites",
   "vibeSelectorFilterSourceAll": "All Types",
   "vibeSelectorSortCreated": "Created",
   "vibeSelectorSortLastUsed": "Last Used",
@@ -5789,7 +5788,6 @@
     }
   },
   "preciseRefLib_nameLabel": "Name",
-  "preciseRefLib_typeFilterAll": "All",
   "img2img_fromPreciseRefLibrary": "From Precise Ref Library",
   "localGallery_saveToPreciseRefLibrary": "Save to Precise Ref Library",
   "drop_saveToPreciseRefLibrary": "Save to Precise Ref Library",

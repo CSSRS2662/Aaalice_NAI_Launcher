@@ -1,5 +1,6 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:nai_launcher/data/models/vibe/vibe_import_progress.dart';
@@ -22,16 +23,17 @@ import 'package:nai_launcher/presentation/widgets/common/pro_context_menu.dart';
 import 'package:nai_launcher/presentation/widgets/common/pagination_bar.dart';
 import 'package:nai_launcher/presentation/widgets/gallery/gallery_sidebar.dart';
 import 'package:nai_launcher/presentation/widgets/gallery/gallery_library_toolbar.dart';
+import 'package:nai_launcher/presentation/widgets/gallery/gallery_scope_controls.dart';
+import 'package:nai_launcher/presentation/widgets/gallery/library_masonry_grid.dart';
 
 void main() {
-  test('vibe grid uses fewer larger cards at 3x text scale', () {
-    final normal = computeVibeLibraryGridLayout(1160, 1);
-    final scaled = computeVibeLibraryGridLayout(1160, 3);
-    final phone = computeVibeLibraryGridLayout(288, 1);
+  test('vibe grid shares the two-column phone masonry rule', () {
+    final normal = libraryMasonryColumns(1160, spacing: 16);
+    final scaled = libraryMasonryColumns(1160, spacing: 16, textScale: 3);
 
-    expect(scaled.columns, lessThan(normal.columns));
-    expect(scaled.itemWidth, greaterThan(normal.itemWidth));
-    expect(phone.columns, 1);
+    expect(scaled, lessThan(normal));
+    expect(libraryMasonryColumns(288, spacing: 16), 2);
+    expect(libraryMasonryColumns(288, spacing: 16, textScale: 3), 1);
   });
 
   for (final width in [320.0, 600.0, 840.0, 1180.0, 1600.0]) {
@@ -51,18 +53,33 @@ void main() {
         expect(find.byType(GalleryLibraryToolbar), findsOneWidget);
         expect(find.byType(GalleryLibrarySearchField), findsOneWidget);
         expect(
-          find.byType(GalleryLibrarySortMenu<VibeLibrarySortOrder>),
+          find.byType(GalleryFilterMenuChip<VibeLibrarySortOrder>),
           findsOneWidget,
         );
-        for (final label in ['分类', '多选', '导入', '导出', '刷新']) {
+        for (final label in ['全部', '分类', '导入']) {
           expect(
             find.descendant(
               of: find.byType(GalleryLibraryToolbar),
               matching: find.text(label),
             ),
             findsOneWidget,
+            reason: label,
           );
         }
+        // 导出、刷新等低频操作收进“更多”菜单。
+        expect(find.text('导出'), findsNothing);
+        await tester.tap(find.byKey(const Key('vibe-library-more-action')));
+        await tester.pumpAndSettle();
+        expect(
+          find.byKey(const Key('vibe-library-more-export')),
+          findsOneWidget,
+        );
+        expect(
+          find.byKey(const Key('vibe-library-more-refresh')),
+          findsOneWidget,
+        );
+        await tester.sendKeyEvent(LogicalKeyboardKey.escape);
+        await tester.pumpAndSettle();
         final cardSize = tester.getSize(find.byType(VibeCard).first);
         expect(
           cardSize.width / cardSize.height,
@@ -144,9 +161,13 @@ void main() {
       categoryState: VibeLibraryCategoryState(categories: [category]),
     );
 
+    Finder inSidebar(Finder finder) => find.descendant(
+      of: find.byType(GallerySidebarSurface),
+      matching: finder,
+    );
     expect(find.byKey(const ValueKey('vibe-library-all')), findsOneWidget);
     expect(find.text('全部 Vibe'), findsOneWidget);
-    expect(find.text('收藏'), findsOneWidget);
+    expect(inSidebar(find.text('收藏')), findsOneWidget);
     expect(find.text('肖像'), findsOneWidget);
     expect(find.text('文件夹'), findsNothing);
     expect(find.byType(GallerySidebarNavigationItem), findsOneWidget);
@@ -167,7 +188,7 @@ void main() {
 
     double navigationIconX(String label) {
       final row = find.ancestor(
-        of: find.text(label),
+        of: inSidebar(find.text(label)),
         matching: find.byType(InkWell),
       );
       return tester

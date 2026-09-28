@@ -9882,9 +9882,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get shortcut_context_vibe_detail => 'Vibe Detail';
 
   @override
-  String get vibeSelectorFilterFavorites => 'Favorites';
-
-  @override
   String get vibeSelectorFilterSourceAll => 'All Types';
 
   @override
@@ -12053,9 +12050,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get preciseRefLib_nameLabel => 'Name';
-
-  @override
-  String get preciseRefLib_typeFilterAll => 'All';
 
   @override
   String get img2img_fromPreciseRefLibrary => 'From Precise Ref Library';

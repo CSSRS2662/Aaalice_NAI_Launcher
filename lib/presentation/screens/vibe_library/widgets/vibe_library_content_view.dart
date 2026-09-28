@@ -27,6 +27,7 @@ import '../../../router/app_routes.dart';
 import '../../../widgets/common/app_toast.dart';
 import '../../../widgets/common/frame_staggered_builder.dart';
 import '../../../widgets/common/themed_confirm_dialog.dart';
+import '../../../widgets/gallery/library_masonry_grid.dart';
 import '../../../agent_chat/widgets/agent_resource_drop_region.dart';
 import 'vibe_card.dart';
 import 'category/vibe_category_destination_panel.dart';
@@ -47,16 +48,13 @@ Map<String, String> buildVibeCategoryLabels(
 
 /// Vibe 库内容视图
 ///
-/// 显示 Vibe 条目的网格视图，支持选择模式、右键菜单和操作
+/// 以瀑布流显示 Vibe 条目（列数由共享库网格按宽度决定），支持选择模式、
+/// 右键菜单和操作。
 class VibeLibraryContentView extends ConsumerStatefulWidget {
-  final int columns;
+  /// 预估卡片宽度，只用于滚动缓存范围。
   final double itemWidth;
 
-  const VibeLibraryContentView({
-    super.key,
-    required this.columns,
-    required this.itemWidth,
-  });
+  const VibeLibraryContentView({super.key, required this.itemWidth});
 
   @override
   ConsumerState<VibeLibraryContentView> createState() =>
@@ -139,21 +137,17 @@ class _VibeLibraryContentViewState
       );
     }
 
-    return GridView.builder(
-      key: const PageStorageKey<String>(_vibeLibraryGridKey),
+    return LibraryMasonryGrid(
+      gridKey: const PageStorageKey<String>(_vibeLibraryGridKey),
       padding: const EdgeInsets.all(16),
+      spacing: vibeLibraryGridSpacing,
       scrollCacheExtent: ScrollCacheExtent.pixels(
         computeVibeGridCacheExtent(widget.itemWidth),
       ),
       addAutomaticKeepAlives: false,
-      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: widget.columns,
-        mainAxisSpacing: vibeLibraryGridSpacing,
-        crossAxisSpacing: vibeLibraryGridSpacing,
-        childAspectRatio: vibeCardAspectRatio,
-      ),
       itemCount: entries.length,
-      itemBuilder: (context, index) {
+      aspectRatioOf: (index) => vibeEntryAspectRatio(entries[index]),
+      itemBuilder: (context, index, size) {
         final entry = entries[index];
         final isSelected = selectionState.selectedIds.contains(entry.id);
 
@@ -176,8 +170,8 @@ class _VibeLibraryContentViewState
             ),
             child: VibeCard(
               entry: entry,
-              width: widget.itemWidth,
-              height: computeVibeCardHeight(widget.itemWidth),
+              width: size.width,
+              height: size.height,
               isSelected: isSelected,
               selectionMode: selectionState.isActive,
               showFavoriteIndicator: true,
