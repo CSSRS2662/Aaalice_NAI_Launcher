@@ -77,7 +77,8 @@ class AndroidAssetCopyChannel(
             "assets/databases/tag_catalog.db",
             "assets/semantic_search/model.onnx",
             "assets/semantic_search/tokenizer.json",
-            "assets/semantic_search/vectors.f32",
+            "assets/semantic_search/vectors.i8",
+            "assets/semantic_search/scales.f32",
             "assets/semantic_search/tags.json",
         )
     }

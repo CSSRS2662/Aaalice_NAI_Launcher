@@ -54,8 +54,11 @@ normalization. No query fixtures are included in the production pack.
 
 Files are copied into versioned app-support storage and verified before model
 loading; earlier version directories are deleted after a new pack is verified.
-Android copies large assets through the existing streaming asset channel; an
-isolate owns tokenizer, model, vectors, pooling and full-corpus similarity.
+Android copies large assets through the existing streaming asset channel, whose
+Kotlin whitelist (`AndroidAssetCopyChannel.kt`) must name exactly the manifest's
+files; `test/core/autocomplete/e5_completion_source_test.dart` enforces this,
+because a rejected file disables semantic search on phones only. An isolate owns
+tokenizer, model, vectors, pooling and full-corpus similarity.
 `E5VectorIndex` expands the int8 rows once (about 180 MB of float32 in the
 worker) so each query uses Float32x4 dot products: about 14 ms for all rows on
 a Ryzen 5 5600H, versus 42 ms for the former scalar single-view loop. Loading is
