@@ -186,6 +186,47 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
+  testWidgets('窄格子改为头像在上、名称居中的竖向卡片并保留更多菜单', (tester) async {
+    final entry = TagLibraryEntry(
+      id: 'narrow-entry',
+      name: '三列时的词条名称',
+      content: '1girl',
+      createdAt: DateTime(2026),
+      updatedAt: DateTime(2026),
+    );
+    await tester.pumpWidget(
+      MaterialApp(
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        home: Scaffold(
+          body: Center(
+            child: SizedBox(
+              width: entryCardVerticalBreakpoint - 55,
+              height: 124,
+              child: EntryCard(
+                entry: entry,
+                onTap: () {},
+                onDelete: () {},
+                onToggleFavorite: () {},
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+
+    final avatar = tester.getRect(find.byType(EntryAvatar));
+    final name = tester.getRect(find.text(entry.displayName));
+    expect(avatar.width, 52);
+    expect(avatar.bottom, lessThanOrEqualTo(name.top));
+    expect(
+      tester.widget<Text>(find.text(entry.displayName)).textAlign,
+      TextAlign.center,
+    );
+    expect(find.byIcon(Icons.more_vert_rounded).hitTestable(), findsOne);
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets('触屏更多菜单可以点击移动到分类', (tester) async {
     var classifyCount = 0;
     final entry = TagLibraryEntry(

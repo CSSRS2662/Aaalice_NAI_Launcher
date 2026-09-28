@@ -105,6 +105,9 @@ class StorageKeys {
   static const String fixedTagsSidebarViewMode = 'fixed_tags_sidebar_view_mode';
   static const String fixedTagsNegativeHeight = 'fixed_tags_negative_height';
 
+  /// 固定词管理网格列数（本机偏好，不参与云同步）
+  static const String fixedTagsGridColumns = 'fixed_tags_grid_columns';
+
   // Generation Workbench Panel Expansion State Keys (生图工作台面板展开状态)
   static const String advancedOptionsExpanded = 'advanced_options_expanded';
   static const String generationParamsMenuExpanded =
@@ -272,6 +275,9 @@ class StorageKeys {
   static const String tagLibraryEntriesData = 'tag_library_entries_data';
   static const String tagLibraryCategoriesData = 'tag_library_categories_data';
   static const String tagLibraryViewMode = 'tag_library_view_mode';
+
+  /// 词库网格列数（本机偏好，不参与云同步）
+  static const String tagLibraryGridColumns = 'tag_library_grid_columns';
   static const String tagLibraryPickerCategoryId =
       'tag_library_picker_category_id';
 

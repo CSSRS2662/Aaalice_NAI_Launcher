@@ -21,7 +21,7 @@ enum TagLibraryViewMode {
   /// 卡片视图
   card,
 
-  /// 列表视图
+  /// 旧版列表视图；现与卡片网格合并为单列，仅为读取已同步的旧设置保留。
   list,
 
   /// 分组视图
@@ -201,8 +201,7 @@ class TagLibraryPageNotifier extends _$TagLibraryPageNotifier {
       // 加载视图模式
       final viewModeIndex = _storage.getTagLibraryViewMode();
       final viewMode = switch (viewModeIndex) {
-        0 => TagLibraryViewMode.card,
-        1 => TagLibraryViewMode.list,
+        0 || 1 => TagLibraryViewMode.card,
         2 => TagLibraryViewMode.grouped,
         _ => TagLibraryViewMode.grouped,
       };

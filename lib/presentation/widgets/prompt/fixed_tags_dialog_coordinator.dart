@@ -11,6 +11,7 @@ import '../../providers/tag_library_page_provider.dart';
 import '../../router/app_routes.dart';
 import '../common/app_toast.dart';
 import '../common/themed_confirm_dialog.dart';
+import 'fixed_tag_details_sheet.dart';
 import 'fixed_tag_edit_dialog.dart';
 import 'fixed_tag_library_picker_dialog.dart';
 import 'fixed_tags_dialog_models.dart';
@@ -23,7 +24,8 @@ class FixedTagsDialogCoordinator {
 
   FixedTagsDialogCommands commands(BuildContext context) {
     final notifier = ref.read(fixedTagsNotifierProvider.notifier);
-    return FixedTagsDialogCommands(
+    late final FixedTagsDialogCommands commands;
+    return commands = FixedTagsDialogCommands(
       close: () => Navigator.of(context).pop(),
       openLibraryPage: () {
         Navigator.of(context).pop();
@@ -48,20 +50,25 @@ class FixedTagsDialogCoordinator {
         }
       },
       toggleEntry: (entry) => notifier.toggleEnabled(entry.id),
+      showDetails: (entry) => showFixedTagDetails(
+        context: context,
+        entry: entry,
+        commands: commands,
+      ),
+      togglePosition: (entry) => notifier.togglePosition(entry.id),
       reorder: notifier.reorderWithinPromptType,
       editEntry: (entry, initialPromptType) =>
           _editEntry(context, entry, initialPromptType),
       deleteEntry: (entry) => _deleteEntry(context, entry),
       clearAll: () => _clearAll(context),
       pickFromLibrary: (promptType) => _showLibraryPicker(context, promptType),
-      showLinkManager: (entry) =>
-          showFixedTagLinkManager(context: context, ref: ref, entry: entry),
-      createLink: (positiveEntryId, negativeEntryId) {
-        notifier.createLink(
-          positiveEntryId: positiveEntryId,
-          negativeEntryId: negativeEntryId,
-        );
-      },
+      // The grid has no drag anchors, so every layout lists link candidates.
+      showLinkManager: (entry) => showFixedTagLinkManager(
+        context: context,
+        ref: ref,
+        entry: entry,
+        showAllCandidates: true,
+      ),
     );
   }
 

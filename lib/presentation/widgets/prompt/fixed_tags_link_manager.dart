@@ -14,13 +14,15 @@ void showFixedTagLinkManager({
   required BuildContext context,
   required WidgetRef ref,
   required FixedTagEntry entry,
+  bool? showAllCandidates,
 }) {
   final isCompact = AdaptiveWindowMetrics.of(context).isCompact;
+  final listCandidates = showAllCandidates ?? isCompact;
   final state = ref.read(fixedTagsNotifierProvider);
   final linkedEntries = entry.promptType == FixedTagPromptType.positive
       ? state.linkedNegativesOf(entry.id)
       : state.linkedPositivesOf(entry.id);
-  if (!isCompact && linkedEntries.isEmpty) {
+  if (!listCandidates && linkedEntries.isEmpty) {
     AppToast.info(context, context.l10n.fixedTags_linkInstruction);
     return;
   }
@@ -45,7 +47,7 @@ void showFixedTagLinkManager({
         horizontalMargin: isCompact ? 12 : 24,
         child: _FixedTagLinkManagerBody(
           entry: entry,
-          showAllCandidates: isCompact,
+          showAllCandidates: listCandidates,
           scrollController: scrollController,
         ),
       ),

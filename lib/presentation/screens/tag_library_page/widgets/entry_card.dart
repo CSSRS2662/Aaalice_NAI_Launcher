@@ -14,6 +14,14 @@ import 'entry_avatar.dart';
 
 enum _EntryAction { select, edit, favorite, classify, copy, delete }
 
+/// Cells narrower than this stack the avatar above the name, which keeps two
+/// lines of title readable at three columns on a phone.
+const double entryCardVerticalBreakpoint = 176;
+
+/// Fixed name line height so grid extents do not depend on the CJK fallback
+/// font's metrics.
+const double entryCardNameLineHeight = 1.3;
+
 /// 紧凑头像卡片，名称与更多操作始终可见。
 class EntryCard extends StatefulWidget {
   final TagLibraryEntry entry;
@@ -21,7 +29,6 @@ class EntryCard extends StatefulWidget {
   final VoidCallback onDelete;
   final VoidCallback onToggleFavorite;
   final VoidCallback? onEdit;
-  final VoidCallback? onSend;
   final VoidCallback? onClassify;
 
   /// 所属分类名称
@@ -44,7 +51,6 @@ class EntryCard extends StatefulWidget {
     required this.onDelete,
     required this.onToggleFavorite,
     this.onEdit,
-    this.onSend,
     this.onClassify,
     this.categoryName,
     this.isSelectionMode = false,
@@ -79,36 +85,11 @@ class _EntryCardState extends State<EntryCard> {
                 HapticFeedback.mediumImpact();
                 widget.onToggleSelection?.call();
               },
-        child: Padding(
-          padding: const EdgeInsets.only(left: 10, top: 8, bottom: 8),
-          child: Row(
-            children: [
-              EntryAvatar(entry: entry),
-              const SizedBox(width: 8),
-              Expanded(
-                child: Text(
-                  entry.displayName,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                  style: theme.textTheme.bodyMedium?.copyWith(
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ),
-              if (widget.isSelectionMode)
-                SizedBox(
-                  width: 48,
-                  child: Checkbox(
-                    value: widget.isSelected,
-                    onChanged: widget.onToggleSelection == null
-                        ? null
-                        : (_) => widget.onToggleSelection!(),
-                  ),
-                )
-              else
-                _buildTouchActions(theme, entry),
-            ],
-          ),
+        child: LayoutBuilder(
+          builder: (context, constraints) =>
+              constraints.maxWidth < entryCardVerticalBreakpoint
+              ? _buildVertical(theme, entry)
+              : _buildHorizontal(theme, entry),
         ),
       ),
     );
@@ -116,6 +97,70 @@ class _EntryCardState extends State<EntryCard> {
       entry: entry,
       enabled: !widget.isSelectionMode,
       child: cardVisual,
+    );
+  }
+
+  Widget _buildHorizontal(ThemeData theme, TagLibraryEntry entry) {
+    return Padding(
+      padding: const EdgeInsets.only(left: 10, top: 8, bottom: 8),
+      child: Row(
+        children: [
+          EntryAvatar(entry: entry),
+          const SizedBox(width: 8),
+          Expanded(child: _buildName(theme, entry, TextAlign.start)),
+          _buildTrailing(theme, entry),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildVertical(ThemeData theme, TagLibraryEntry entry) {
+    return Stack(
+      fit: StackFit.expand,
+      children: [
+        Padding(
+          padding: const EdgeInsets.fromLTRB(8, 12, 8, 10),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              EntryAvatar(entry: entry, size: 52),
+              const SizedBox(height: 8),
+              Flexible(child: _buildName(theme, entry, TextAlign.center)),
+            ],
+          ),
+        ),
+        PositionedDirectional(
+          top: 0,
+          end: 0,
+          child: _buildTrailing(theme, entry),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildName(ThemeData theme, TagLibraryEntry entry, TextAlign align) {
+    return Text(
+      entry.displayName,
+      maxLines: 2,
+      overflow: TextOverflow.ellipsis,
+      textAlign: align,
+      style: theme.textTheme.bodyMedium?.copyWith(
+        fontWeight: FontWeight.w600,
+        height: entryCardNameLineHeight,
+      ),
+    );
+  }
+
+  Widget _buildTrailing(ThemeData theme, TagLibraryEntry entry) {
+    if (!widget.isSelectionMode) return _buildTouchActions(theme, entry);
+    return SizedBox(
+      width: 48,
+      child: Checkbox(
+        value: widget.isSelected,
+        onChanged: widget.onToggleSelection == null
+            ? null
+            : (_) => widget.onToggleSelection!(),
+      ),
     );
   }
 

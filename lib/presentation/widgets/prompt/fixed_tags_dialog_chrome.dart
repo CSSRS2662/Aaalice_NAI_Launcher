@@ -1,13 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/utils/localization_extension.dart';
 import '../../adaptive/interaction_policy.dart';
 import '../../../data/models/fixed_tag/fixed_tag_prompt_type.dart';
+import '../../providers/grid_columns_provider.dart';
+import '../common/grid_column_count.dart';
 import '../common/themed_switch.dart';
 import 'fixed_tags_dialog_models.dart';
 import 'fixed_tags_dialog_controller.dart';
 
-enum FixedTagHeaderAction { undo, redo, toggleAll, clearAll }
+enum FixedTagHeaderAction { undo, redo, toggleAll, reorder, clearAll }
 
 class FixedTagsDialogHeader extends StatelessWidget {
   const FixedTagsDialogHeader({
@@ -151,6 +154,16 @@ class FixedTagsDialogHeader extends StatelessWidget {
             ),
             const SizedBox(width: 8),
           ],
+          const _ColumnsButton(),
+          IconButton(
+            key: const ValueKey('fixed-tags-reorder-toggle'),
+            tooltip: controller.reordering
+                ? context.l10n.fixedTags_reorderDone
+                : context.l10n.fixedTags_reorder,
+            isSelected: controller.reordering,
+            onPressed: () => controller.setReordering(!controller.reordering),
+            icon: const Icon(Icons.swap_vert_rounded),
+          ),
           _EnabledOnlyToggle(controller: controller),
           IconButton(
             tooltip: MaterialLocalizations.of(context).closeButtonTooltip,
@@ -188,6 +201,13 @@ class _CompactHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    // The phone shows one tab at a time, so "enable all" follows that tab.
+    final promptType = controller.mobilePromptType;
+    final tabEntries = promptType == FixedTagPromptType.positive
+        ? data.state.positiveEntries
+        : data.state.negativeEntries;
+    final tabAllEnabled =
+        tabEntries.isNotEmpty && tabEntries.every((entry) => entry.enabled);
     return Container(
       key: const ValueKey('fixed-tags-dialog-header'),
       padding: const EdgeInsets.fromLTRB(12, 10, 6, 10),
@@ -239,6 +259,7 @@ class _CompactHeader extends StatelessWidget {
           ),
           _EnabledOnlyToggle(controller: controller),
           PopupMenuButton<FixedTagHeaderAction>(
+            key: const ValueKey('fixed-tags-header-menu'),
             tooltip: MaterialLocalizations.of(context).moreButtonTooltip,
             onSelected: (action) {
               switch (action) {
@@ -247,7 +268,9 @@ class _CompactHeader extends StatelessWidget {
                 case FixedTagHeaderAction.redo:
                   commands.redo();
                 case FixedTagHeaderAction.toggleAll:
-                  commands.setAllEnabled(enabledCount != totalCount);
+                  commands.setPromptTypeEnabled(promptType, !tabAllEnabled);
+                case FixedTagHeaderAction.reorder:
+                  controller.setReordering(!controller.reordering);
                 case FixedTagHeaderAction.clearAll:
                   commands.clearAll();
               }
@@ -263,13 +286,24 @@ class _CompactHeader extends StatelessWidget {
                 enabled: data.state.canRedo,
                 child: Text(context.l10n.fixedTags_redoTooltip),
               ),
-              if (totalCount > 0)
+              if (tabEntries.isNotEmpty)
                 PopupMenuItem(
+                  key: const ValueKey('fixed-tags-menu-toggle-all'),
                   value: FixedTagHeaderAction.toggleAll,
                   child: Text(
-                    enabledCount == totalCount
+                    tabAllEnabled
                         ? context.l10n.fixedTags_disableAll
                         : context.l10n.fixedTags_enableAll,
+                  ),
+                ),
+              if (tabEntries.length > 1)
+                PopupMenuItem(
+                  key: const ValueKey('fixed-tags-menu-reorder'),
+                  value: FixedTagHeaderAction.reorder,
+                  child: Text(
+                    controller.reordering
+                        ? context.l10n.fixedTags_reorderDone
+                        : context.l10n.fixedTags_reorder,
                   ),
                 ),
               if (totalCount > 0)
@@ -289,6 +323,20 @@ class _CompactHeader extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+class _ColumnsButton extends ConsumerWidget {
+  const _ColumnsButton();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final provider = gridColumnsProvider(GridColumnsSurface.fixedTags);
+    return GridColumnCountButton(
+      key: const ValueKey('fixed-tags-columns-button'),
+      columns: ref.watch(provider),
+      onPressed: () => ref.read(provider.notifier).cycle(),
     );
   }
 }

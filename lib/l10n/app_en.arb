@@ -111,7 +111,6 @@
   "common_folder": "Folder",
   "common_filter": "Filter",
   "common_grid": "Grid",
-  "common_list": "List",
   "common_grouped": "Grouped",
   "common_date": "Date",
   "common_pack": "Pack",
@@ -3113,7 +3112,6 @@
       "target": {}
     }
   },
-  "fixedTags_dragToLink": "Drag to create link",
   "fixedTags_linkedToNames": "Linked: {names}",
   "@fixedTags_linkedToNames": {
     "placeholders": {
@@ -3135,6 +3133,12 @@
   "fixedTags_addFromLibrary": "Add from Library",
   "fixedTags_searchLibraryEntries": "Search library entries...",
   "fixedTags_noMatchingResults": "No matching results",
+  "fixedTags_reorder": "Reorder",
+  "fixedTags_reorderHint": "Drag the handles to reorder",
+  "fixedTags_reorderDone": "Done",
+  "fixedTags_gridHintTouch": "Tap to toggle · long-press for details and actions",
+  "fixedTags_gridHintPointer": "Click to toggle · right-click for details and actions",
+  "fixedTags_addMenu": "Add fixed tag",
 
   "reversePrompt_title": "Reverse Prompt",
   "reversePrompt_imageCount": "{count} image(s)",
@@ -3561,7 +3565,6 @@
 
   "tagLibrary_addedToFixed": "Added to Fixed Tags",
   "tagLibrary_entryMoved": "Entry moved to target category",
-  "tagLibrary_addFavorite": "Add to Favorites",
   "tagLibrary_thumbnail": "Thumbnail",
   "tagLibrary_selectImage": "Select Image",
   "tagLibrary_thumbnailHint": "Supports PNG, JPG, WEBP, GIF, BMP, TIFF, and more",
@@ -6440,6 +6443,22 @@
   "randomManager_noCategoryResults": "No matching categories, groups, or tags",
   "common_share": "Share",
   "common_moreActions": "More actions",
+  "common_columnCount": "{count} columns",
+  "@common_columnCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "common_columnCountTooltip": "{count} per row · tap to switch",
+  "@common_columnCountTooltip": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "nav_more": "More",
   "nav_explore": "Gallery",
   "image_savedToSystemGallery": "Saved to your photo gallery",

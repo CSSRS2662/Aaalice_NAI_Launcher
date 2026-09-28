@@ -34,7 +34,7 @@ import 'package:nai_launcher/presentation/widgets/common/themed_input.dart';
 import 'package:nai_launcher/presentation/widgets/common/thumbnail_display.dart';
 import 'package:nai_launcher/presentation/widgets/common/translated_tag_text.dart';
 import 'package:nai_launcher/presentation/widgets/prompt/fixed_tag_edit_dialog.dart';
-import 'package:nai_launcher/presentation/widgets/prompt/fixed_tag_entry_tile.dart';
+import 'package:nai_launcher/presentation/widgets/prompt/fixed_tag_chip.dart';
 import 'package:nai_launcher/presentation/widgets/prompt/fixed_tags_button.dart';
 import 'package:nai_launcher/presentation/widgets/prompt/fixed_tags_dialog.dart';
 
@@ -60,7 +60,7 @@ void main() {
     }
   });
 
-  testWidgets('management tile body toggles the entry switch', (tester) async {
+  testWidgets('management chip toggles the entry on tap', (tester) async {
     final entry = FixedTagEntry.create(
       name: 'clickable fixed tag',
       content: 'masterpiece',
@@ -85,20 +85,36 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    final tile = find.ancestor(
-      of: find.text('clickable fixed tag'),
-      matching: find.byType(FixedTagEntryTile),
+    final chip = find.byKey(ValueKey('fixed-tag-entry-${entry.id}'));
+    expect(
+      find.descendant(of: chip, matching: find.text('masterpiece')),
+      findsNothing,
     );
-    final entrySwitch = find.descendant(
-      of: tile,
-      matching: find.byType(ThemedSwitch),
+    expect(
+      find.descendant(
+        of: chip,
+        matching: find.byIcon(Icons.check_circle_rounded),
+      ),
+      findsNothing,
     );
-    expect(tester.widget<ThemedSwitch>(entrySwitch).value, isFalse);
 
     await tester.tap(find.text('clickable fixed tag'));
     await tester.pumpAndSettle();
 
-    expect(tester.widget<ThemedSwitch>(entrySwitch).value, isTrue);
+    final container = ProviderScope.containerOf(
+      tester.element(find.byType(FixedTagsDialog)),
+    );
+    expect(
+      container.read(fixedTagsNotifierProvider).entries.single.enabled,
+      isTrue,
+    );
+    expect(
+      find.descendant(
+        of: chip,
+        matching: find.byIcon(Icons.check_circle_rounded),
+      ),
+      findsOneWidget,
+    );
   });
 
   for (final width in [320.0, 600.0, 840.0, 1180.0, 1600.0]) {
@@ -166,26 +182,23 @@ void main() {
             120,
             scrollable: find
                 .descendant(
-                  of: find.byType(ReorderableListView).last,
+                  of: find.byKey(const ValueKey('fixed-tags-grid-negative')),
                   matching: find.byType(Scrollable),
                 )
                 .first,
           );
           expect(find.text('negative-false'), findsOneWidget);
-          final tile = find.ancestor(
+          final chip = find.ancestor(
             of: find.text('negative-false'),
-            matching: find.byType(FixedTagEntryTile),
+            matching: find.byType(FixedTagChip),
           );
+          expect(tester.widget<FixedTagChip>(chip).entry.enabled, isFalse);
           expect(
-            tester
-                .widget<ThemedSwitch>(
-                  find.descendant(
-                    of: tile,
-                    matching: find.byType(ThemedSwitch),
-                  ),
-                )
-                .value,
-            isFalse,
+            find.descendant(
+              of: chip,
+              matching: find.byIcon(Icons.check_circle_rounded),
+            ),
+            findsNothing,
           );
           expect(tester.takeException(), isNull);
         },
@@ -245,12 +258,12 @@ void main() {
   });
 
   testWidgets('select-all action follows input hit targets', (tester) async {
-    tester.view.physicalSize = const Size(320, 700);
+    tester.view.physicalSize = const Size(840, 700);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.resetPhysicalSize);
     addTearDown(tester.view.resetDevicePixelRatio);
     final storage = _SidebarTestStorage(
-      fixedEntries: const [],
+      fixedEntries: [FixedTagEntry.create(name: 'positive', content: 'tag')],
       categories: const [],
       libraryEntries: const [],
     );
@@ -279,16 +292,11 @@ void main() {
       await tester.pumpAndSettle();
     }
 
-    const touchPolicy = InteractionPolicy.touchFirst;
-    await pump(touchPolicy);
+    await pump(InteractionPolicy.touchFirst);
     final selectAll = find.byKey(
       const ValueKey('fixed-tags-toggle-all-positive'),
     );
-    expect(tester.getSize(selectAll), const Size(52, 48));
-    expect(
-      find.descendant(of: selectAll, matching: find.byType(ThemedSwitch)),
-      findsOneWidget,
-    );
+    expect(tester.getSize(selectAll).height, 48);
 
     await pump(
       const InteractionPolicy(
@@ -297,10 +305,10 @@ void main() {
         precisePointerAvailable: true,
       ),
     );
-    expect(tester.getSize(selectAll), const Size(52, 40));
+    expect(tester.getSize(selectAll).height, 40);
   });
 
-  testWidgets('mobile positive and negative headers use full-size switches', (
+  testWidgets('mobile header menu enables or disables only the visible tab', (
     tester,
   ) async {
     tester.view.physicalSize = const Size(320, 700);
@@ -335,46 +343,55 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
+    final container = ProviderScope.containerOf(
+      tester.element(find.byType(FixedTagsDialog)),
+    );
+    bool enabled(FixedTagPromptType type) => container
+        .read(fixedTagsNotifierProvider)
+        .entries
+        .firstWhere((entry) => entry.promptType == type)
+        .enabled;
 
-    for (final type in FixedTagPromptType.values) {
-      if (type == FixedTagPromptType.negative) {
-        await tester.tap(
-          find.byKey(const ValueKey('fixed-tags-mobile-tab-negative')),
-        );
-        await tester.pumpAndSettle();
-      }
-      final toggle = find.byKey(ValueKey('fixed-tags-toggle-all-${type.name}'));
-      expect(toggle, findsOneWidget);
-      expect(tester.getSize(toggle), const Size(52, 48));
-      final switchFinder = find.descendant(
-        of: toggle,
-        matching: find.byType(ThemedSwitch),
-      );
-      expect(tester.widget<ThemedSwitch>(switchFinder).value, isTrue);
-
-      await tester.tap(switchFinder);
+    Future<void> toggleVisibleTab() async {
+      await tester.tap(find.byKey(const ValueKey('fixed-tags-header-menu')));
       await tester.pumpAndSettle();
-
-      expect(tester.widget<ThemedSwitch>(switchFinder).value, isFalse);
+      await tester.tap(
+        find.byKey(const ValueKey('fixed-tags-menu-toggle-all')),
+      );
+      await tester.pumpAndSettle();
     }
+
+    await toggleVisibleTab();
+    expect(enabled(FixedTagPromptType.positive), isFalse);
+    expect(enabled(FixedTagPromptType.negative), isTrue);
+
+    await tester.tap(
+      find.byKey(const ValueKey('fixed-tags-mobile-tab-negative')),
+    );
+    await tester.pumpAndSettle();
+    await toggleVisibleTab();
+    expect(enabled(FixedTagPromptType.negative), isFalse);
+    expect(enabled(FixedTagPromptType.positive), isFalse);
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('mobile entries scroll before a long-press starts reordering', (
+  testWidgets('mobile long-press opens details and reordering uses handles', (
     tester,
   ) async {
     tester.view.physicalSize = const Size(320, 700);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.resetPhysicalSize);
     addTearDown(tester.view.resetDevicePixelRatio);
+    final entries = [
+      for (var index = 0; index < 40; index++)
+        FixedTagEntry.create(
+          name: 'mobile fixed tag $index',
+          content: 'tag_$index',
+          sortOrder: index,
+        ),
+    ];
     final storage = _SidebarTestStorage(
-      fixedEntries: [
-        for (var index = 0; index < 20; index++)
-          FixedTagEntry.create(
-            name: 'mobile fixed tag $index',
-            content: 'tag_$index',
-          ),
-      ],
+      fixedEntries: entries,
       categories: const [],
       libraryEntries: const [],
     );
@@ -399,17 +416,44 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(find.byType(ReorderableDelayedDragStartListener), findsWidgets);
-    expect(find.byType(ReorderableDragStartListener), findsNothing);
+    expect(find.byKey(const ValueKey('fixed-tags-grid-positive')), findsOne);
+    expect(find.byType(ReorderableListView), findsNothing);
     expect(find.byType(AgentResourceDragSource), findsNothing);
 
-    final firstCenter = tester.getCenter(find.text('mobile fixed tag 0'));
-    final thirdCenter = tester.getCenter(find.text('mobile fixed tag 2'));
-    final reorderGesture = await tester.startGesture(firstCenter);
-    await tester.pump(kLongPressTimeout + const Duration(milliseconds: 100));
-    await reorderGesture.moveTo(thirdCenter + const Offset(0, 24));
-    await tester.pump(const Duration(milliseconds: 300));
-    await reorderGesture.up();
+    await tester.longPress(find.text('mobile fixed tag 0'));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const ValueKey('fixed-tag-details')), findsOneWidget);
+    await tester.binding.handlePopRoute();
+    await tester.pumpAndSettle();
+    expect(find.byKey(const ValueKey('fixed-tag-details')), findsNothing);
+
+    final grid = find.descendant(
+      of: find.byKey(const ValueKey('fixed-tags-grid-positive')),
+      matching: find.byType(Scrollable),
+    );
+    final position = tester.state<ScrollableState>(grid.first).position;
+    await tester.drag(find.text('mobile fixed tag 0'), const Offset(0, -240));
+    await tester.pumpAndSettle();
+    expect(position.pixels, greaterThan(0));
+    position.jumpTo(0);
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(const ValueKey('fixed-tags-header-menu')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('fixed-tags-menu-reorder')));
+    await tester.pumpAndSettle();
+    expect(find.byType(ReorderableListView), findsOneWidget);
+
+    final handle = find.byKey(
+      ValueKey('fixed-tags-reorder-handle-${entries.first.id}'),
+    );
+    final gesture = await tester.startGesture(tester.getCenter(handle));
+    await tester.pump();
+    for (var step = 0; step < 6; step++) {
+      await gesture.moveBy(const Offset(0, 30));
+      await tester.pump(const Duration(milliseconds: 16));
+    }
+    await gesture.up();
     await tester.pumpAndSettle();
 
     final container = ProviderScope.containerOf(
@@ -424,21 +468,10 @@ void main() {
           .name,
       isNot('mobile fixed tag 0'),
     );
-    expect(tester.takeException(), isNull);
 
-    final scrollable = find
-        .descendant(
-          of: find.byType(ReorderableListView),
-          matching: find.byType(Scrollable),
-        )
-        .first;
-    final position = tester.state<ScrollableState>(scrollable).position;
-    expect(position.pixels, 0);
-
-    await tester.drag(find.text('mobile fixed tag 0'), const Offset(0, -240));
+    await tester.tap(find.byKey(const ValueKey('fixed-tags-reorder-done')));
     await tester.pumpAndSettle();
-
-    expect(position.pixels, greaterThan(0));
+    expect(find.byType(ReorderableListView), findsNothing);
     expect(tester.takeException(), isNull);
   });
 
@@ -756,8 +789,20 @@ void main() {
         find.byKey(const ValueKey('fixed-tags-mobile-tab-negative')),
         findsOneWidget,
       );
-      expect(find.text('新建'), findsOneWidget);
-      expect(find.text('从词库添加'), findsOneWidget);
+      Future<void> expectAddMenu(String createLabel) async {
+        await tester.tap(find.byKey(const ValueKey('fixed-tags-add-menu')));
+        await tester.pumpAndSettle();
+        expect(find.text(createLabel), findsOneWidget);
+        expect(find.text('从词库添加'), findsOneWidget);
+        await tester.tapAt(const Offset(4, 4));
+        await tester.pumpAndSettle();
+      }
+
+      expect(
+        find.byKey(const ValueKey('fixed-tags-columns-button')),
+        findsOneWidget,
+      );
+      await expectAddMenu('新建正向固定词');
       final dialogRect = tester.getRect(
         find.byKey(const ValueKey('fixed-tags-dialog-surface')),
       );
@@ -770,8 +815,7 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      expect(find.text('新建'), findsOneWidget);
-      expect(find.text('从词库添加'), findsOneWidget);
+      await expectAddMenu('新建负向固定词');
       expect(tester.takeException(), isNull);
     },
   );
@@ -813,7 +857,9 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      await tester.tap(find.text('新建'));
+      await tester.tap(find.byKey(const ValueKey('fixed-tags-add-menu')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const ValueKey('fixed-tags-add-new')));
       await tester.pumpAndSettle();
       expect(find.byType(FixedTagEditDialog), findsOneWidget);
       expect(
@@ -854,75 +900,73 @@ void main() {
     },
   );
 
-  testWidgets(
-    'mobile fixed-tag cards keep actions and link management usable',
-    (tester) async {
-      tester.view.physicalSize = const Size(320, 700);
-      tester.view.devicePixelRatio = 1;
-      addTearDown(tester.view.resetPhysicalSize);
-      addTearDown(tester.view.resetDevicePixelRatio);
-      final positive = FixedTagEntry.create(
-        name: '很长的正向固定词名称用于验证手机窄屏布局',
-        content: 'masterpiece, best quality, extremely detailed',
-      );
-      final negative = FixedTagEntry.create(
-        name: '负向固定词',
-        content: 'bad hands, low quality',
-        promptType: FixedTagPromptType.negative,
-      );
-      final storage = _SidebarTestStorage(
-        fixedEntries: [positive, negative],
-        categories: const [],
-        libraryEntries: const [],
-      );
+  testWidgets('mobile fixed-tag chips reach link management through details', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(320, 700);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    final positive = FixedTagEntry.create(
+      name: '很长的正向固定词名称用于验证手机窄屏布局',
+      content: 'masterpiece, best quality, extremely detailed',
+    );
+    final negative = FixedTagEntry.create(
+      name: '负向固定词',
+      content: 'bad hands, low quality',
+      promptType: FixedTagPromptType.negative,
+    );
+    final storage = _SidebarTestStorage(
+      fixedEntries: [positive, negative],
+      categories: const [],
+      libraryEntries: const [],
+    );
 
-      await tester.pumpWidget(
-        ProviderScope(
-          overrides: [
-            localStorageServiceProvider.overrideWith((ref) => storage),
-          ],
-          child: const MaterialApp(
-            locale: Locale('zh'),
-            localizationsDelegates: AppLocalizations.localizationsDelegates,
-            supportedLocales: AppLocalizations.supportedLocales,
-            home: Scaffold(body: FixedTagsDialog()),
-          ),
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [localStorageServiceProvider.overrideWith((ref) => storage)],
+        child: const MaterialApp(
+          locale: Locale('zh'),
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: Scaffold(body: FixedTagsDialog()),
         ),
-      );
-      await tester.pumpAndSettle();
+      ),
+    );
+    await tester.pumpAndSettle();
 
-      expect(find.text(positive.name), findsOneWidget);
-      final tile = find.byKey(ValueKey('fixed-tag-entry-${positive.id}'));
-      final position = find.byKey(
-        ValueKey('fixed-tag-position-${positive.id}'),
-      );
-      expect(
-        tester.getCenter(position).dy,
-        closeTo(tester.getCenter(tile).dy, 0.1),
-      );
-      expect(tester.takeException(), isNull);
+    expect(find.text(positive.name), findsOneWidget);
+    expect(find.text(positive.content), findsNothing);
+    expect(tester.takeException(), isNull);
 
-      await tester.tap(
-        find.byKey(ValueKey('fixed-tag-mobile-link-${positive.id}')),
-      );
-      await tester.pumpAndSettle();
+    await tester.longPress(find.text(positive.name));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const ValueKey('fixed-tag-details')), findsOneWidget);
+    await tester.tap(find.byKey(const ValueKey('fixed-tag-details-links')));
+    await tester.pumpAndSettle();
 
-      expect(find.text('管理联动'), findsOneWidget);
-      expect(find.text(negative.name), findsWidgets);
-      expect(tester.takeException(), isNull);
+    expect(find.byKey(const ValueKey('fixed-tag-details')), findsNothing);
+    expect(find.text('管理联动'), findsOneWidget);
+    expect(find.text(negative.name), findsWidgets);
+    expect(tester.takeException(), isNull);
 
-      await tester.tap(
-        find.byKey(ValueKey('fixed-tag-link-option-${negative.id}')),
-      );
-      await tester.pumpAndSettle();
+    await tester.tap(
+      find.byKey(ValueKey('fixed-tag-link-option-${negative.id}')),
+    );
+    await tester.pumpAndSettle();
 
-      final container = ProviderScope.containerOf(
-        tester.element(find.byType(FixedTagsDialog)),
-      );
-      expect(container.read(fixedTagsNotifierProvider).links, hasLength(1));
-      expect(tester.takeException(), isNull);
-    },
-  );
+    final container = ProviderScope.containerOf(
+      tester.element(find.byType(FixedTagsDialog)),
+    );
+    expect(container.read(fixedTagsNotifierProvider).links, hasLength(1));
+    await tester.binding.handlePopRoute();
+    await tester.pumpAndSettle();
+    expect(
+      find.byKey(ValueKey('fixed-tag-link-mark-${positive.id}')),
+      findsOneWidget,
+    );
+    expect(tester.takeException(), isNull);
+  });
 
   testWidgets(
     'fixed-tag overlay stays scrollable at 320 3x with SafeArea and IME',
@@ -989,12 +1033,12 @@ void main() {
         findsOneWidget,
       );
 
-      final positiveList = tester.widget<ReorderableListView>(
-        find.byType(ReorderableListView),
+      final positiveGrid = tester.widget<CustomScrollView>(
+        find.byKey(const ValueKey('fixed-tags-grid-positive')),
       );
       await _jumpToEndUntilVisible(
         tester,
-        positiveList.scrollController!,
+        positiveGrid.controller!,
         find.text('positive fixed tag 11'),
       );
       expect(find.text('positive fixed tag 11').hitTestable(), findsOneWidget);
@@ -1003,12 +1047,12 @@ void main() {
         find.byKey(const ValueKey('fixed-tags-mobile-tab-negative')),
       );
       await tester.pumpAndSettle();
-      final negativeList = tester.widget<ReorderableListView>(
-        find.byType(ReorderableListView),
+      final negativeGrid = tester.widget<CustomScrollView>(
+        find.byKey(const ValueKey('fixed-tags-grid-negative')),
       );
       await _jumpToEndUntilVisible(
         tester,
-        negativeList.scrollController!,
+        negativeGrid.controller!,
         find.text('negative fixed tag 11'),
       );
       final lastNegative = find.text('negative fixed tag 11');

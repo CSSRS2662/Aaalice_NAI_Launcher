@@ -107,7 +107,6 @@
   "common_folder": "フォルダー",
   "common_filter": "フィルター",
   "common_grid": "グリッド",
-  "common_list": "リスト",
   "common_grouped": "グループ",
   "common_date": "日付",
   "common_pack": "パック",
@@ -3067,7 +3066,6 @@
       "target": {}
     }
   },
-  "fixedTags_dragToLink": "ドラッグしてリンクを作成します",
   "fixedTags_linkedToNames": "リンク済み: {names}",
   "@fixedTags_linkedToNames": {
     "placeholders": {
@@ -3089,6 +3087,12 @@
   "fixedTags_addFromLibrary": "ライブラリから追加",
   "fixedTags_searchLibraryEntries": "ライブラリ エントリを検索します...",
   "fixedTags_noMatchingResults": "一致する結果はありません",
+  "fixedTags_reorder": "並べ替え",
+  "fixedTags_reorderHint": "右のハンドルをドラッグして並べ替え",
+  "fixedTags_reorderDone": "完了",
+  "fixedTags_gridHintTouch": "タップでオン/オフ、長押しで詳細と操作",
+  "fixedTags_gridHintPointer": "クリックでオン/オフ、右クリックで詳細と操作",
+  "fixedTags_addMenu": "固定タグを追加",
   "reversePrompt_title": "逆プロンプト",
   "reversePrompt_imageCount": "{count} 画像",
   "@reversePrompt_imageCount": {
@@ -3508,7 +3512,6 @@
   "tagLibraryPicker_allCategories": "すべてのカテゴリ",
   "tagLibrary_addedToFixed": "固定タグに追加",
   "tagLibrary_entryMoved": "エントリがターゲット カテゴリに移動されました",
-  "tagLibrary_addFavorite": "お気に入りに追加",
   "tagLibrary_thumbnail": "サムネイル",
   "tagLibrary_selectImage": "画像を選択してください",
   "tagLibrary_thumbnailHint": "PNG、JPG、WEBP、GIF、BMP、TIFF などをサポート",
@@ -6463,6 +6466,22 @@
   "randomManager_noCategoryResults": "一致するカテゴリ、グループ、タグがありません",
   "common_share": "共有",
   "common_moreActions": "その他の操作",
+  "common_columnCount": "{count} 列",
+  "@common_columnCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "common_columnCountTooltip": "1 行 {count} 列（タップで切り替え）",
+  "@common_columnCountTooltip": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "nav_more": "その他",
   "nav_explore": "ギャラリー",
   "image_savedToSystemGallery": "システムギャラリーに保存しました",

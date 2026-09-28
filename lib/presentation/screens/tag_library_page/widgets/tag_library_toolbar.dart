@@ -3,11 +3,13 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/utils/localization_extension.dart';
+import '../../../providers/grid_columns_provider.dart';
 import '../../../providers/tag_library_page_provider.dart';
 import '../../../providers/tag_library_selection_provider.dart';
 import '../../../widgets/autocomplete/autocomplete_config.dart';
 import '../../../widgets/autocomplete/autocomplete_wrapper.dart';
 import '../../../widgets/bulk_action_bar.dart';
+import '../../../widgets/common/grid_column_count.dart';
 import '../../../widgets/common/icon_dropdown_selector.dart';
 import '../../../widgets/gallery/gallery_library_toolbar.dart';
 import '../../../widgets/gallery/gallery_sidebar.dart';
@@ -75,6 +77,8 @@ class _TagLibraryToolbarState extends ConsumerState<TagLibraryToolbar> {
     );
     final state = ref.watch(tagLibraryPageNotifierProvider);
     final selection = ref.watch(tagLibrarySelectionNotifierProvider);
+    final columnsProvider = gridColumnsProvider(GridColumnsSurface.tagLibrary);
+    final columns = ref.watch(columnsProvider);
     final theme = Theme.of(context);
     final allEntryIds = state.filteredEntries.map((entry) => entry.id).toList();
     final isAllSelected =
@@ -183,13 +187,10 @@ class _TagLibraryToolbarState extends ConsumerState<TagLibraryToolbar> {
         ),
         IconDropdownSelector<TagLibraryViewMode>(
           key: const Key('tag-library-view-mode-selector'),
-          value: state.viewMode,
+          value: state.viewMode == TagLibraryViewMode.grouped
+              ? TagLibraryViewMode.grouped
+              : TagLibraryViewMode.card,
           options: [
-            IconDropdownOption(
-              value: TagLibraryViewMode.list,
-              icon: Icons.view_list_rounded,
-              label: context.l10n.common_list,
-            ),
             IconDropdownOption(
               value: TagLibraryViewMode.card,
               icon: Icons.grid_view_rounded,
@@ -204,6 +205,13 @@ class _TagLibraryToolbarState extends ConsumerState<TagLibraryToolbar> {
           onSelected: (value) => ref
               .read(tagLibraryPageNotifierProvider.notifier)
               .setViewMode(value),
+        ),
+        GalleryLibraryAction(
+          key: const Key('tag-library-columns-button'),
+          icon: GridColumnCount.icon(columns),
+          label: context.l10n.common_columnCount(columns),
+          tooltip: context.l10n.common_columnCountTooltip(columns),
+          onPressed: () => ref.read(columnsProvider.notifier).cycle(),
         ),
         GalleryLibraryAction(
           icon: Icons.checklist,

@@ -239,9 +239,6 @@ class AppLocalizationsJa extends AppLocalizations {
   String get common_grid => 'グリッド';
 
   @override
-  String get common_list => 'リスト';
-
-  @override
   String get common_grouped => 'グループ';
 
   @override
@@ -6638,9 +6635,6 @@ class AppLocalizationsJa extends AppLocalizations {
   }
 
   @override
-  String get fixedTags_dragToLink => 'ドラッグしてリンクを作成します';
-
-  @override
   String fixedTags_linkedToNames(Object names) {
     return 'リンク済み: $names';
   }
@@ -6677,6 +6671,24 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get fixedTags_noMatchingResults => '一致する結果はありません';
+
+  @override
+  String get fixedTags_reorder => '並べ替え';
+
+  @override
+  String get fixedTags_reorderHint => '右のハンドルをドラッグして並べ替え';
+
+  @override
+  String get fixedTags_reorderDone => '完了';
+
+  @override
+  String get fixedTags_gridHintTouch => 'タップでオン/オフ、長押しで詳細と操作';
+
+  @override
+  String get fixedTags_gridHintPointer => 'クリックでオン/オフ、右クリックで詳細と操作';
+
+  @override
+  String get fixedTags_addMenu => '固定タグを追加';
 
   @override
   String get reversePrompt_title => '逆プロンプト';
@@ -7502,9 +7514,6 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get tagLibrary_entryMoved => 'エントリがターゲット カテゴリに移動されました';
-
-  @override
-  String get tagLibrary_addFavorite => 'お気に入りに追加';
 
   @override
   String get tagLibrary_thumbnail => 'サムネイル';
@@ -13007,6 +13016,16 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get common_moreActions => 'その他の操作';
+
+  @override
+  String common_columnCount(int count) {
+    return '$count 列';
+  }
+
+  @override
+  String common_columnCountTooltip(int count) {
+    return '1 行 $count 列（タップで切り替え）';
+  }
 
   @override
   String get nav_more => 'その他';

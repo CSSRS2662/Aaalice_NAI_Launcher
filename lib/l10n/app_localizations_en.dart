@@ -242,9 +242,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get common_grid => 'Grid';
 
   @override
-  String get common_list => 'List';
-
-  @override
   String get common_grouped => 'Grouped';
 
   @override
@@ -6809,9 +6806,6 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get fixedTags_dragToLink => 'Drag to create link';
-
-  @override
   String fixedTags_linkedToNames(Object names) {
     return 'Linked: $names';
   }
@@ -6849,6 +6843,26 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get fixedTags_noMatchingResults => 'No matching results';
+
+  @override
+  String get fixedTags_reorder => 'Reorder';
+
+  @override
+  String get fixedTags_reorderHint => 'Drag the handles to reorder';
+
+  @override
+  String get fixedTags_reorderDone => 'Done';
+
+  @override
+  String get fixedTags_gridHintTouch =>
+      'Tap to toggle · long-press for details and actions';
+
+  @override
+  String get fixedTags_gridHintPointer =>
+      'Click to toggle · right-click for details and actions';
+
+  @override
+  String get fixedTags_addMenu => 'Add fixed tag';
 
   @override
   String get reversePrompt_title => 'Reverse Prompt';
@@ -7689,9 +7703,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get tagLibrary_entryMoved => 'Entry moved to target category';
-
-  @override
-  String get tagLibrary_addFavorite => 'Add to Favorites';
 
   @override
   String get tagLibrary_thumbnail => 'Thumbnail';
@@ -13357,6 +13368,16 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get common_moreActions => 'More actions';
+
+  @override
+  String common_columnCount(int count) {
+    return '$count columns';
+  }
+
+  @override
+  String common_columnCountTooltip(int count) {
+    return '$count per row · tap to switch';
+  }
 
   @override
   String get nav_more => 'More';

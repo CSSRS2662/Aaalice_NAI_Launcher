@@ -5,6 +5,7 @@ import '../../../../../core/utils/localization_extension.dart';
 import '../../../../../data/models/tag_library/tag_library_category.dart';
 import '../../../../../data/models/tag_library/tag_library_entry.dart';
 import '../../../../providers/tag_library_page_provider.dart';
+import '../tag_library_grid_layout.dart';
 import 'category_header.dart';
 
 /// 分组视图 - 按类别分组显示条目
@@ -12,10 +13,14 @@ class GroupedEntriesView extends ConsumerWidget {
   final ScrollController? scrollController;
   final Widget Function(TagLibraryEntry) entryBuilder;
 
+  /// Same column choice and card geometry as the flat grid.
+  final TagLibraryGridLayout Function(double availableWidth) layoutFor;
+
   const GroupedEntriesView({
     super.key,
     this.scrollController,
     required this.entryBuilder,
+    required this.layoutFor,
   });
 
   @override
@@ -36,46 +41,38 @@ class GroupedEntriesView extends ConsumerWidget {
       return _buildEmptyState(context);
     }
 
-    return CustomScrollView(
-      controller: scrollController,
-      slivers: [
-        for (final group in nonEmptyGroups) ...[
-          // 吸顶分类标题
-          SliverPersistentHeader(
-            pinned: true,
-            delegate: CategoryHeaderDelegate(
-              title: group.category.displayName,
-              count: group.entries.length,
-            ),
-          ),
-          // 该分类的条目网格
-          SliverPadding(
-            padding: const EdgeInsets.all(16),
-            sliver: SliverGrid(
-              gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
-                maxCrossAxisExtent:
-                    MediaQuery.sizeOf(context).width < 380 ||
-                        MediaQuery.textScalerOf(context).scale(1) > 1.3
-                    ? MediaQuery.sizeOf(context).width
-                    : 240,
-                mainAxisExtent:
-                    68 +
-                    (MediaQuery.textScalerOf(context).scale(1).clamp(1.0, 3.0) -
-                            1) *
-                        40,
-                mainAxisSpacing: 12,
-                crossAxisSpacing: 12,
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final layout = layoutFor(constraints.maxWidth);
+        return CustomScrollView(
+          controller: scrollController,
+          slivers: [
+            for (final group in nonEmptyGroups) ...[
+              // 吸顶分类标题
+              SliverPersistentHeader(
+                pinned: true,
+                delegate: CategoryHeaderDelegate(
+                  title: group.category.displayName,
+                  count: group.entries.length,
+                ),
               ),
-              delegate: SliverChildBuilderDelegate(
-                (context, index) => entryBuilder(group.entries[index]),
-                childCount: group.entries.length,
+              // 该分类的条目网格
+              SliverPadding(
+                padding: EdgeInsets.all(layout.padding),
+                sliver: SliverGrid(
+                  gridDelegate: layout.delegate,
+                  delegate: SliverChildBuilderDelegate(
+                    (context, index) => entryBuilder(group.entries[index]),
+                    childCount: group.entries.length,
+                  ),
+                ),
               ),
-            ),
-          ),
-        ],
-        // 底部留白
-        const SliverToBoxAdapter(child: SizedBox(height: 32)),
-      ],
+            ],
+            // 底部留白
+            const SliverToBoxAdapter(child: SizedBox(height: 32)),
+          ],
+        );
+      },
     );
   }
 

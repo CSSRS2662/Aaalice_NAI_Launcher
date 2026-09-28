@@ -48,13 +48,14 @@ class FixedTagsDialogCommands {
     required this.setAllEnabled,
     required this.setPromptTypeEnabled,
     required this.toggleEntry,
+    required this.showDetails,
+    required this.togglePosition,
     required this.reorder,
     required this.editEntry,
     required this.deleteEntry,
     required this.clearAll,
     required this.pickFromLibrary,
     required this.showLinkManager,
-    required this.createLink,
   });
 
   final VoidCallback close;
@@ -66,6 +67,8 @@ class FixedTagsDialogCommands {
   final void Function(FixedTagPromptType promptType, bool enabled)
   setPromptTypeEnabled;
   final ValueChanged<FixedTagEntry> toggleEntry;
+  final ValueChanged<FixedTagEntry> showDetails;
+  final ValueChanged<FixedTagEntry> togglePosition;
   final void Function(FixedTagPromptType promptType, int oldIndex, int newIndex)
   reorder;
   final void Function(
@@ -77,6 +80,4 @@ class FixedTagsDialogCommands {
   final VoidCallback clearAll;
   final ValueChanged<FixedTagPromptType> pickFromLibrary;
   final ValueChanged<FixedTagEntry> showLinkManager;
-  final void Function(String positiveEntryId, String negativeEntryId)
-  createLink;
 }

@@ -20,6 +20,7 @@ import '../../../core/utils/sd_to_nai_converter.dart';
 import '../../../data/models/tag_library/tag_library_entry.dart';
 import '../../adaptive/adaptive_presenter.dart';
 import '../../providers/fixed_tags_provider.dart';
+import '../../providers/grid_columns_provider.dart';
 import '../../providers/pending_prompt_provider.dart';
 import '../../providers/tag_library_page_provider.dart';
 import '../../providers/tag_library_selection_provider.dart';
@@ -44,9 +45,9 @@ import '../../widgets/shortcuts/shortcut_aware_widget.dart';
 import 'widgets/category_tree_view.dart';
 import 'widgets/entry_card.dart';
 import 'widgets/entry_create_card.dart';
-import 'widgets/entry_list_item.dart';
 import 'widgets/entry_add_dialog.dart';
 import 'widgets/send_to_home_dialog.dart';
+import 'widgets/tag_library_grid_layout.dart';
 import 'widgets/tag_library_toolbar.dart';
 import 'widgets/bulk_move_category_dialog.dart';
 import 'widgets/export_dialog.dart';
@@ -68,9 +69,6 @@ class _TagLibraryPageScreenState extends ConsumerState<TagLibraryPageScreen> {
   final OwnedScrollController _cardScrollController = OwnedScrollController(
     viewport: OwnedViewportOffset(),
   );
-  final OwnedScrollController _listScrollController = OwnedScrollController(
-    viewport: OwnedViewportOffset(),
-  );
   final OwnedScrollController _groupedScrollController = OwnedScrollController(
     viewport: OwnedViewportOffset(),
   );
@@ -85,7 +83,6 @@ class _TagLibraryPageScreenState extends ConsumerState<TagLibraryPageScreen> {
     _expandedCategoryIds.dispose();
     _categoriesExpanded.dispose();
     _cardScrollController.dispose();
-    _listScrollController.dispose();
     _groupedScrollController.dispose();
     super.dispose();
   }
@@ -478,23 +475,34 @@ class _TagLibraryPageScreenState extends ConsumerState<TagLibraryPageScreen> {
       );
     }
 
-    if (entries.isEmpty && state.viewMode != TagLibraryViewMode.card) {
+    // The former list view is the flat grid at one column. An empty flat grid
+    // keeps its "new entry" card, except when a search simply found nothing.
+    final grouped = state.viewMode == TagLibraryViewMode.grouped;
+    if (entries.isEmpty && (grouped || state.searchQuery.isNotEmpty)) {
       return _buildEmptyState(theme, state);
     }
 
-    final content = switch (state.viewMode) {
-      TagLibraryViewMode.card => _buildCardGrid(
-        theme,
-        entries,
-        showCreateCard: !isSelectionMode,
-      ),
-      TagLibraryViewMode.list => _buildListView(theme, entries),
-      TagLibraryViewMode.grouped => GroupedEntriesView(
-        scrollController: _groupedScrollController,
-        entryBuilder: (entry) =>
-            _buildEntryItem(entry, true, showCategory: false),
-      ),
-    };
+    final columns = ref.watch(
+      gridColumnsProvider(GridColumnsSurface.tagLibrary),
+    );
+    final textScale = MediaQuery.textScalerOf(context).scale(14) / 14;
+    TagLibraryGridLayout layoutFor(double width) => computeTagLibraryGridLayout(
+      width,
+      textScale,
+      preferredColumns: columns,
+    );
+    final content = grouped
+        ? GroupedEntriesView(
+            scrollController: _groupedScrollController,
+            layoutFor: layoutFor,
+            entryBuilder: (entry) =>
+                _buildEntryItem(entry, showCategory: false),
+          )
+        : _buildCardGrid(
+            entries,
+            layoutFor: layoutFor,
+            showCreateCard: !isSelectionMode,
+          );
 
     if (isSelectionMode) return content;
     return GestureDetector(
@@ -548,30 +556,21 @@ class _TagLibraryPageScreenState extends ConsumerState<TagLibraryPageScreen> {
 
   /// 构建卡片网格
   Widget _buildCardGrid(
-    ThemeData theme,
     List<TagLibraryEntry> entries, {
+    required TagLibraryGridLayout Function(double width) layoutFor,
     required bool showCreateCard,
   }) {
     return LayoutBuilder(
       builder: (context, constraints) {
-        final textScale = MediaQuery.textScalerOf(context).scale(14) / 14;
-        final layout = computeTagLibraryGridLayout(
-          constraints.maxWidth,
-          textScale,
-        );
+        final layout = layoutFor(constraints.maxWidth);
         return GridView.builder(
           controller: _cardScrollController,
           padding: EdgeInsets.all(layout.padding),
-          gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
-            maxCrossAxisExtent: layout.maxCrossAxisExtent,
-            mainAxisExtent: layout.mainAxisExtent,
-            mainAxisSpacing: 12,
-            crossAxisSpacing: 12,
-          ),
+          gridDelegate: layout.delegate,
           itemCount: entries.length + (showCreateCard ? 1 : 0),
           itemBuilder: (context, index) {
             if (index < entries.length) {
-              return _buildEntryItem(entries[index], true);
+              return _buildEntryItem(entries[index]);
             }
             return EntryCreateCard(onPressed: _showAddEntryDialog);
           },
@@ -580,30 +579,12 @@ class _TagLibraryPageScreenState extends ConsumerState<TagLibraryPageScreen> {
     );
   }
 
-  /// 构建列表视图
-  Widget _buildListView(ThemeData theme, List<TagLibraryEntry> entries) {
-    return ListView.builder(
-      controller: _listScrollController,
-      padding: const EdgeInsets.all(16),
-      itemCount: entries.length,
-      itemBuilder: (context, index) => Padding(
-        padding: const EdgeInsets.only(bottom: 8),
-        child: _buildEntryItem(entries[index], false),
-      ),
-    );
-  }
-
-  /// 构建条目组件（卡片或列表项）
-  Widget _buildEntryItem(
-    TagLibraryEntry entry,
-    bool isCard, {
-    bool showCategory = true,
-  }) {
+  /// 构建条目卡片：点按使用（发送到提示词或固定词），长按多选，更多菜单编辑。
+  Widget _buildEntryItem(TagLibraryEntry entry, {bool showCategory = true}) {
     final state = ref.read(tagLibraryPageNotifierProvider);
     final selectionState = ref.watch(tagLibrarySelectionNotifierProvider);
     final allIds = state.filteredEntries.map((e) => e.id).toList();
     final categoryName = _getCategoryName(state.categories, entry.categoryId);
-    final isSelected = selectionState.isSelected(entry.id);
 
     void toggleSelection() {
       final notifier = ref.read(tagLibrarySelectionNotifierProvider.notifier);
@@ -616,51 +597,22 @@ class _TagLibraryPageScreenState extends ConsumerState<TagLibraryPageScreen> {
       }
     }
 
-    final commonProps = (
-      isSelectionMode: selectionState.isActive,
-      isSelected: isSelected,
-      onToggleSelection: toggleSelection,
-      onDelete: () => _showDeleteEntryConfirmation(entry.id),
-      onEdit: () => _showEditDialog(entry),
-      onToggleFavorite: () => ref
-          .read(tagLibraryPageNotifierProvider.notifier)
-          .toggleFavorite(entry.id),
-    );
-
-    if (isCard) {
-      return _agentResourceDrag(
-        entry,
-        EntryCard(
-          key: ValueKey(entry.id),
-          entry: entry,
-          categoryName: showCategory ? categoryName : null,
-          isSelectionMode: commonProps.isSelectionMode,
-          isSelected: commonProps.isSelected,
-          onToggleSelection: commonProps.onToggleSelection,
-          onTap: commonProps.onEdit,
-          onDelete: commonProps.onDelete,
-          onEdit: commonProps.onEdit,
-          onSend: () => _showEntryDetail(entry),
-          onClassify: () => _classifyEntry(entry),
-          onToggleFavorite: commonProps.onToggleFavorite,
-        ),
-      );
-    }
-
     return _agentResourceDrag(
       entry,
-      EntryListItem(
+      EntryCard(
         key: ValueKey(entry.id),
         entry: entry,
         categoryName: showCategory ? categoryName : null,
-        isSelectionMode: commonProps.isSelectionMode,
-        isSelected: commonProps.isSelected,
-        onToggleSelection: commonProps.onToggleSelection,
+        isSelectionMode: selectionState.isActive,
+        isSelected: selectionState.isSelected(entry.id),
+        onToggleSelection: toggleSelection,
         onTap: () => _showEntryDetail(entry),
-        onDelete: commonProps.onDelete,
-        onEdit: commonProps.onEdit,
+        onDelete: () => _showDeleteEntryConfirmation(entry.id),
+        onEdit: () => _showEditDialog(entry),
         onClassify: () => _classifyEntry(entry),
-        onToggleFavorite: commonProps.onToggleFavorite,
+        onToggleFavorite: () => ref
+            .read(tagLibraryPageNotifierProvider.notifier)
+            .toggleFavorite(entry.id),
       ),
     );
   }
@@ -1177,32 +1129,4 @@ class _AddCategoryFormState extends State<_AddCategoryForm> {
       ],
     );
   }
-}
-
-@immutable
-class TagLibraryGridLayout {
-  const TagLibraryGridLayout({
-    required this.maxCrossAxisExtent,
-    required this.mainAxisExtent,
-    required this.padding,
-  });
-
-  final double maxCrossAxisExtent;
-  final double mainAxisExtent;
-  final double padding;
-}
-
-TagLibraryGridLayout computeTagLibraryGridLayout(
-  double availableWidth,
-  double textScale,
-) {
-  final compact = availableWidth < 600;
-  final effectiveScale = textScale.clamp(1.0, 3.0);
-  return TagLibraryGridLayout(
-    maxCrossAxisExtent: availableWidth < 380 || effectiveScale > 1.3
-        ? availableWidth
-        : 240,
-    mainAxisExtent: 68 + (effectiveScale - 1) * 40,
-    padding: compact ? 12 : 16,
-  );
 }

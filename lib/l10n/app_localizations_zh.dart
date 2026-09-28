@@ -237,9 +237,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get common_grid => '网格';
 
   @override
-  String get common_list => '列表';
-
-  @override
   String get common_grouped => '分组';
 
   @override
@@ -6530,9 +6527,6 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
-  String get fixedTags_dragToLink => '拖拽创建联动';
-
-  @override
   String fixedTags_linkedToNames(Object names) {
     return '已联动：$names';
   }
@@ -6568,6 +6562,24 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get fixedTags_noMatchingResults => '无匹配结果';
+
+  @override
+  String get fixedTags_reorder => '调整顺序';
+
+  @override
+  String get fixedTags_reorderHint => '按住右侧手柄拖动调整顺序';
+
+  @override
+  String get fixedTags_reorderDone => '完成';
+
+  @override
+  String get fixedTags_gridHintTouch => '点按选中或取消，长按查看详情与更多操作';
+
+  @override
+  String get fixedTags_gridHintPointer => '点击选中或取消，右键查看详情与更多操作';
+
+  @override
+  String get fixedTags_addMenu => '添加固定词';
 
   @override
   String get reversePrompt_title => '反推';
@@ -7379,9 +7391,6 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get tagLibrary_entryMoved => '条目已移动到目标分类';
-
-  @override
-  String get tagLibrary_addFavorite => '添加收藏';
 
   @override
   String get tagLibrary_thumbnail => '预览图';
@@ -12794,6 +12803,16 @@ class AppLocalizationsZh extends AppLocalizations {
   String get common_moreActions => '更多操作';
 
   @override
+  String common_columnCount(int count) {
+    return '$count 列';
+  }
+
+  @override
+  String common_columnCountTooltip(int count) {
+    return '每行 $count 列，点按切换';
+  }
+
+  @override
   String get nav_more => '更多';
 
   @override
@@ -15186,9 +15205,6 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get common_grid => '網格';
-
-  @override
-  String get common_list => '列表';
 
   @override
   String get common_grouped => '分組';
@@ -21481,9 +21497,6 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   }
 
   @override
-  String get fixedTags_dragToLink => '拖拽建立聯動';
-
-  @override
   String fixedTags_linkedToNames(Object names) {
     return '已聯動：$names';
   }
@@ -21519,6 +21532,24 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get fixedTags_noMatchingResults => '無匹配結果';
+
+  @override
+  String get fixedTags_reorder => '調整順序';
+
+  @override
+  String get fixedTags_reorderHint => '按住右側把手拖曳調整順序';
+
+  @override
+  String get fixedTags_reorderDone => '完成';
+
+  @override
+  String get fixedTags_gridHintTouch => '點按選取或取消，長按查看詳情與更多操作';
+
+  @override
+  String get fixedTags_gridHintPointer => '點擊選取或取消，右鍵查看詳情與更多操作';
+
+  @override
+  String get fixedTags_addMenu => '新增固定詞';
 
   @override
   String get reversePrompt_title => '反推';
@@ -22330,9 +22361,6 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get tagLibrary_entryMoved => '條目已移動到目標分類';
-
-  @override
-  String get tagLibrary_addFavorite => '新增收藏';
 
   @override
   String get tagLibrary_thumbnail => '預覽圖';
@@ -27743,6 +27771,16 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get common_moreActions => '更多操作';
+
+  @override
+  String common_columnCount(int count) {
+    return '$count 欄';
+  }
+
+  @override
+  String common_columnCountTooltip(int count) {
+    return '每行 $count 欄，點按切換';
+  }
 
   @override
   String get nav_more => '更多';

@@ -111,7 +111,6 @@
   "common_folder": "文件夹",
   "common_filter": "筛选",
   "common_grid": "网格",
-  "common_list": "列表",
   "common_grouped": "分组",
   "common_date": "日期",
   "common_pack": "打包",
@@ -3145,7 +3144,6 @@
       "target": {}
     }
   },
-  "fixedTags_dragToLink": "拖拽创建联动",
   "fixedTags_linkedToNames": "已联动：{names}",
   "@fixedTags_linkedToNames": {
     "placeholders": {
@@ -3167,6 +3165,12 @@
   "fixedTags_addFromLibrary": "从词库添加",
   "fixedTags_searchLibraryEntries": "搜索词库条目...",
   "fixedTags_noMatchingResults": "无匹配结果",
+  "fixedTags_reorder": "调整顺序",
+  "fixedTags_reorderHint": "按住右侧手柄拖动调整顺序",
+  "fixedTags_reorderDone": "完成",
+  "fixedTags_gridHintTouch": "点按选中或取消，长按查看详情与更多操作",
+  "fixedTags_gridHintPointer": "点击选中或取消，右键查看详情与更多操作",
+  "fixedTags_addMenu": "添加固定词",
 
   "reversePrompt_title": "反推",
   "reversePrompt_imageCount": "{count} 张",
@@ -3593,7 +3597,6 @@
 
   "tagLibrary_addedToFixed": "已添加到固定词",
   "tagLibrary_entryMoved": "条目已移动到目标分类",
-  "tagLibrary_addFavorite": "添加收藏",
   "tagLibrary_thumbnail": "预览图",
   "tagLibrary_selectImage": "选择图片",
   "tagLibrary_thumbnailHint": "支持 PNG、JPG、WEBP、GIF、BMP、TIFF 等格式",
@@ -6509,6 +6512,22 @@
   "randomManager_noCategoryResults": "没有匹配的类别、词组或标签",
   "common_share": "分享",
   "common_moreActions": "更多操作",
+  "common_columnCount": "{count} 列",
+  "@common_columnCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "common_columnCountTooltip": "每行 {count} 列，点按切换",
+  "@common_columnCountTooltip": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "nav_more": "更多",
   "nav_explore": "画廊",
   "image_savedToSystemGallery": "已保存到系统相册",

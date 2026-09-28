@@ -12,6 +12,7 @@ import 'package:nai_launcher/presentation/providers/shortcuts_provider.dart';
 import 'package:nai_launcher/presentation/providers/tag_library_page_provider.dart';
 import 'package:nai_launcher/presentation/providers/tag_library_selection_provider.dart';
 import 'package:nai_launcher/presentation/screens/tag_library_page/tag_library_page_screen.dart';
+import 'package:nai_launcher/presentation/screens/tag_library_page/widgets/tag_library_grid_layout.dart';
 import 'package:nai_launcher/presentation/widgets/common/input_surface_container.dart';
 import 'package:nai_launcher/presentation/widgets/gallery/gallery_sidebar.dart';
 
@@ -30,13 +31,22 @@ void main() {
     final medium = computeTagLibraryGridLayout(600, 1);
     final expanded = computeTagLibraryGridLayout(1180, 1);
 
-    expect(
-      compact.maxCrossAxisExtent,
-      greaterThan(expanded.maxCrossAxisExtent),
-    );
+    expect(compact.columns, 1);
+    expect(expanded.columns, greaterThan(compact.columns));
     expect(compact.mainAxisExtent, greaterThan(expanded.mainAxisExtent));
     expect(compact.padding, 12);
     expect(medium.padding, 16);
+  });
+
+  test('phones keep the chosen column count and switch to tiles at 3', () {
+    final layouts = [
+      for (final columns in [1, 2, 3])
+        computeTagLibraryGridLayout(411, 1, preferredColumns: columns),
+    ];
+    expect(layouts.map((layout) => layout.columns), [1, 2, 3]);
+    expect(layouts[0].mainAxisExtent, 68);
+    expect(layouts[1].mainAxisExtent, 68);
+    expect(layouts[2].mainAxisExtent, greaterThan(100));
   });
 
   for (final width in [320.0, 600.0, 840.0, 1180.0, 1600.0]) {

@@ -533,12 +533,6 @@ abstract class AppLocalizations {
   /// **'Grid'**
   String get common_grid;
 
-  /// No description provided for @common_list.
-  ///
-  /// In en, this message translates to:
-  /// **'List'**
-  String get common_list;
-
   /// No description provided for @common_grouped.
   ///
   /// In en, this message translates to:
@@ -12073,12 +12067,6 @@ abstract class AppLocalizations {
   /// **'No {target}'**
   String fixedTags_emptyTarget(Object target);
 
-  /// No description provided for @fixedTags_dragToLink.
-  ///
-  /// In en, this message translates to:
-  /// **'Drag to create link'**
-  String get fixedTags_dragToLink;
-
   /// No description provided for @fixedTags_linkedToNames.
   ///
   /// In en, this message translates to:
@@ -12144,6 +12132,42 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'No matching results'**
   String get fixedTags_noMatchingResults;
+
+  /// No description provided for @fixedTags_reorder.
+  ///
+  /// In en, this message translates to:
+  /// **'Reorder'**
+  String get fixedTags_reorder;
+
+  /// No description provided for @fixedTags_reorderHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Drag the handles to reorder'**
+  String get fixedTags_reorderHint;
+
+  /// No description provided for @fixedTags_reorderDone.
+  ///
+  /// In en, this message translates to:
+  /// **'Done'**
+  String get fixedTags_reorderDone;
+
+  /// No description provided for @fixedTags_gridHintTouch.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap to toggle · long-press for details and actions'**
+  String get fixedTags_gridHintTouch;
+
+  /// No description provided for @fixedTags_gridHintPointer.
+  ///
+  /// In en, this message translates to:
+  /// **'Click to toggle · right-click for details and actions'**
+  String get fixedTags_gridHintPointer;
+
+  /// No description provided for @fixedTags_addMenu.
+  ///
+  /// In en, this message translates to:
+  /// **'Add fixed tag'**
+  String get fixedTags_addMenu;
 
   /// No description provided for @reversePrompt_title.
   ///
@@ -13602,12 +13626,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Entry moved to target category'**
   String get tagLibrary_entryMoved;
-
-  /// No description provided for @tagLibrary_addFavorite.
-  ///
-  /// In en, this message translates to:
-  /// **'Add to Favorites'**
-  String get tagLibrary_addFavorite;
 
   /// No description provided for @tagLibrary_thumbnail.
   ///
@@ -23205,6 +23223,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'More actions'**
   String get common_moreActions;
+
+  /// No description provided for @common_columnCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} columns'**
+  String common_columnCount(int count);
+
+  /// No description provided for @common_columnCountTooltip.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} per row · tap to switch'**
+  String common_columnCountTooltip(int count);
 
   /// No description provided for @nav_more.
   ///

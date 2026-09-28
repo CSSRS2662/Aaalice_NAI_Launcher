@@ -2,12 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:nai_launcher/core/platform/platform_capabilities.dart';
+import 'package:nai_launcher/core/storage/local_storage_service.dart';
 import 'package:nai_launcher/l10n/app_localizations.dart';
 import 'package:nai_launcher/presentation/adaptive/interaction_policy.dart';
 import 'package:nai_launcher/presentation/providers/tag_library_page_provider.dart';
 import 'package:nai_launcher/presentation/screens/tag_library_page/widgets/tag_library_toolbar.dart';
 import 'package:nai_launcher/presentation/widgets/common/icon_dropdown_selector.dart';
 import 'package:nai_launcher/presentation/widgets/gallery/gallery_library_toolbar.dart';
+
+import '../../../../helpers/light_theme_contrast.dart';
 
 class _FakeTagLibraryPageNotifier extends TagLibraryPageNotifier {
   @override
@@ -45,8 +48,8 @@ void main() {
         findsOneWidget,
       );
       expect(find.text('分组'), findsOneWidget);
-      expect(find.text('列表'), findsNothing);
       expect(find.text('网格'), findsNothing);
+      expect(find.text('2 列'), findsOneWidget);
       for (final label in ['分类', '多选', '导入', '导出', '文件夹', '添加条目']) {
         expect(find.text(label), findsOneWidget);
       }
@@ -86,24 +89,37 @@ void main() {
       await tester.pumpAndSettle();
 
       for (final icon in [
-        Icons.view_list_rounded,
         Icons.grid_view_rounded,
         Icons.folder_copy_outlined,
       ]) {
         expect(find.byIcon(icon), findsWidgets);
       }
-      expect(find.text('列表'), findsOneWidget);
+      expect(find.byIcon(Icons.view_list_rounded), findsNothing);
       expect(find.text('网格'), findsOneWidget);
       expect(find.text('分组'), findsNWidgets(2));
 
-      await tester.tap(find.text('列表'));
+      await tester.tap(find.text('网格'));
       await tester.pumpAndSettle();
 
-      expect(find.text('列表'), findsOneWidget);
+      expect(find.text('网格'), findsOneWidget);
       expect(find.text('分组'), findsNothing);
       expect(tester.takeException(), isNull);
     });
   }
+
+  testWidgets('列数按钮在 1 到 3 列之间循环并记住选择', (tester) async {
+    final storage = InMemoryLocalStorageService();
+    await _pumpToolbar(tester, width: 1180, storage: storage);
+
+    final button = find.byKey(const Key('tag-library-columns-button'));
+    expect(find.text('2 列'), findsOneWidget);
+    for (final expected in ['3 列', '1 列', '2 列', '3 列']) {
+      await tester.tap(button);
+      await tester.pumpAndSettle();
+      expect(find.text(expected), findsOneWidget);
+    }
+    expect(storage.getSetting<int>('tag_library_grid_columns'), 3);
+  });
 
   testWidgets('分类与文件夹按钮转发顶栏操作', (tester) async {
     var categoryToggleCount = 0;
@@ -150,12 +166,16 @@ Future<void> _pumpToolbar(
   VoidCallback? onShowCategories,
   VoidCallback? onOpenFolder,
   InteractionPolicy? interactionPolicy,
+  LocalStorageService? storage,
 }) async {
   await tester.binding.setSurfaceSize(Size(width, 900));
   addTearDown(() => tester.binding.setSurfaceSize(null));
   await tester.pumpWidget(
     ProviderScope(
       overrides: [
+        localStorageServiceProvider.overrideWith(
+          (ref) => storage ?? InMemoryLocalStorageService(),
+        ),
         tagLibraryPageNotifierProvider.overrideWith(
           _FakeTagLibraryPageNotifier.new,
         ),

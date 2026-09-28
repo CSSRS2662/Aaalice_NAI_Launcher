@@ -3,7 +3,6 @@ export 'bulk_move_category_dialog.dart';
 export 'category_tree_view.dart';
 export 'entry_add_dialog.dart';
 export 'entry_card.dart';
-export 'entry_list_item.dart';
 export 'entry_selector_dialog.dart';
 export 'export_dialog.dart';
 export 'import_dialog.dart';
