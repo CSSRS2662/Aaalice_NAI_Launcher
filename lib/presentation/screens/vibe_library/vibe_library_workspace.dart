@@ -297,7 +297,11 @@ class _Toolbar extends StatelessWidget {
           key: const Key('vibe-library-import-button'),
           icon: Icons.file_download_outlined,
           label: l10n.common_import,
-          tooltip: l10n.vibeLibrary_importTooltip,
+          // Right-click opens the import options only with a mouse; on
+          // touch the tap itself shows them.
+          tooltip: context.interactionPolicy.precisePointerAvailable
+              ? l10n.vibeLibrary_importTooltip
+              : l10n.vibeLibrary_importTooltipTouch,
           isLoading: controller.isPickingFile,
           onPressed: controller.isBusy
               ? null

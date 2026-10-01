@@ -7,6 +7,7 @@ import '../../../../core/autocomplete/cooccurrence_data_pack_provider.dart';
 import '../../../../core/autocomplete/cooccurrence_data_pack_service.dart';
 import '../../../../core/autocomplete/completion_models.dart';
 import '../../../../core/autocomplete/zh_dictionary_models.dart';
+import '../../../../core/platform/platform_capabilities.dart';
 import '../../../../core/utils/byte_format.dart';
 import '../../../../core/utils/localization_extension.dart';
 import '../../../adaptive/adaptive_presenter.dart';
@@ -92,8 +93,13 @@ class DataSourceCacheSettings extends ConsumerWidget {
               ),
               SwitchListTile.adaptive(
                 title: Text(context.l10n.autocomplete_openOnTagClick),
+                // Ctrl/Command-click needs a desktop keyboard.
                 subtitle: Text(
-                  context.l10n.autocomplete_openOnTagClickSubtitle,
+                  PlatformCapabilities
+                          .current
+                          .supportsKeyboardShortcutConfiguration
+                      ? context.l10n.autocomplete_openOnTagClickSubtitle
+                      : context.l10n.autocomplete_openOnTagClickSubtitleTouch,
                 ),
                 value: settings.openOnTagClick,
                 onChanged: notifier.setOpenOnTagClick,
@@ -116,7 +122,13 @@ class DataSourceCacheSettings extends ConsumerWidget {
               _ZhDictionaryStatus(state: zh),
               SwitchListTile.adaptive(
                 title: Text(context.l10n.autocomplete_relatedTagsTitle),
-                subtitle: Text(context.l10n.autocomplete_relatedTagsSubtitle),
+                subtitle: Text(
+                  PlatformCapabilities
+                          .current
+                          .supportsKeyboardShortcutConfiguration
+                      ? context.l10n.autocomplete_relatedTagsSubtitle
+                      : context.l10n.autocomplete_relatedTagsSubtitleTouch,
+                ),
                 value: settings.relatedTagsEnabled,
                 onChanged: (value) async {
                   await notifier.setRelatedTagsEnabled(value);

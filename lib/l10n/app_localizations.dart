@@ -5855,6 +5855,12 @@ abstract class AppLocalizations {
   /// **'Reuse'**
   String get vibe_reuseButton;
 
+  /// No description provided for @vibe_replaceButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Replace current Vibes'**
+  String get vibe_replaceButton;
+
   /// No description provided for @vibe_info.
   ///
   /// In en, this message translates to:
@@ -6695,11 +6701,23 @@ abstract class AppLocalizations {
   /// **'Removed when copying, sending, or adding to queue; right-click to manage'**
   String get onlineGallery_outputFilteredTagTooltip;
 
+  /// No description provided for @onlineGallery_outputFilteredTagTooltipTouch.
+  ///
+  /// In en, this message translates to:
+  /// **'Removed when copying, sending, or adding to queue; long-press to manage'**
+  String get onlineGallery_outputFilteredTagTooltipTouch;
+
   /// No description provided for @onlineGallery_tagContextMenuTooltip.
   ///
   /// In en, this message translates to:
   /// **'Right-click to add to the blacklist or output filter'**
   String get onlineGallery_tagContextMenuTooltip;
+
+  /// No description provided for @onlineGallery_tagContextMenuTooltipTouch.
+  ///
+  /// In en, this message translates to:
+  /// **'Long-press to copy or add to the blacklist or output filter'**
+  String get onlineGallery_tagContextMenuTooltipTouch;
 
   /// No description provided for @onlineGallery_outputFilterTagAdded.
   ///
@@ -15942,6 +15960,12 @@ abstract class AppLocalizations {
   /// **'Import Vibe files or PNG/JPG/JPEG/WEBP images (right-click for more options)'**
   String get vibeLibrary_importTooltip;
 
+  /// No description provided for @vibeLibrary_importTooltipTouch.
+  ///
+  /// In en, this message translates to:
+  /// **'Import Vibe files or PNG/JPG/JPEG/WEBP images'**
+  String get vibeLibrary_importTooltipTouch;
+
   /// No description provided for @vibeLibrary_exportTooltip.
   ///
   /// In en, this message translates to:
@@ -17969,6 +17993,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Click to switch the central preview, double-click or hold for details, and browse with Left/Right'**
   String get settings_historyClickBehavior_linkedDescription;
+
+  /// No description provided for @settings_historyClickBehavior_linkedDescriptionTouch.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap to switch the central preview; double-tap or hold for details'**
+  String get settings_historyClickBehavior_linkedDescriptionTouch;
 
   /// No description provided for @image_viewDetail.
   ///
@@ -22578,6 +22608,12 @@ abstract class AppLocalizations {
   /// **'When enabled, clicking an existing tag opens normal autocomplete; Ctrl/Command-click still shows related tags'**
   String get autocomplete_openOnTagClickSubtitle;
 
+  /// No description provided for @autocomplete_openOnTagClickSubtitleTouch.
+  ///
+  /// In en, this message translates to:
+  /// **'When enabled, tapping an existing tag opens normal autocomplete'**
+  String get autocomplete_openOnTagClickSubtitleTouch;
+
   /// No description provided for @autocomplete_replaceUnderscores.
   ///
   /// In en, this message translates to:
@@ -22601,6 +22637,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Suggest after accepting a tag; also use Ctrl+Shift+Space or Ctrl+click on a tag'**
   String get autocomplete_relatedTagsSubtitle;
+
+  /// No description provided for @autocomplete_relatedTagsSubtitleTouch.
+  ///
+  /// In en, this message translates to:
+  /// **'Suggest related tags after accepting a tag'**
+  String get autocomplete_relatedTagsSubtitleTouch;
 
   /// No description provided for @autocomplete_danbooruApi.
   ///
@@ -25605,6 +25647,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Drag the selected layer. Arrow keys move precisely; hold Shift for larger steps.'**
   String get watermark_dragHint;
+
+  /// No description provided for @watermark_dragHintTouch.
+  ///
+  /// In en, this message translates to:
+  /// **'Drag the selected layer to move it.'**
+  String get watermark_dragHintTouch;
 
   /// No description provided for @watermark_moveLeft.
   ///

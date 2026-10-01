@@ -61,6 +61,11 @@ class VibeCard extends ConsumerStatefulWidget {
   final String? categoryLabel;
   final ImageCardCallback? onFavoriteToggle;
   final ImageCardCallback? onSendToGeneration;
+
+  /// Replaces the Vibes in generation instead of appending. With a mouse the
+  /// same result is Shift+click on "reuse"; the menu item keeps it reachable
+  /// on touch.
+  final ImageCardCallback? onReplaceInGeneration;
   final ImageCardCallback? onExport;
   final ImageCardCallback? onEdit;
   final ImageCardCallback? onClassify;
@@ -80,6 +85,7 @@ class VibeCard extends ConsumerStatefulWidget {
     this.categoryLabel,
     this.onFavoriteToggle,
     this.onSendToGeneration,
+    this.onReplaceInGeneration,
     this.onExport,
     this.onEdit,
     this.onClassify,
@@ -826,6 +832,15 @@ class _VibeCardState extends ConsumerState<VibeCard>
           label:
               '${context.l10n.vibe_reuseButton}\n${context.l10n.vibe_shiftReplaceHint}',
           invoke: widget.onSendToGeneration!,
+        ),
+      if (widget.onReplaceInGeneration != null)
+        ImageCardAction(
+          id: ImageCardActionId.replace,
+          key: ValueKey('vibe-card-replace-${widget.entry.id}'),
+          icon: Icons.swap_horiz_rounded,
+          label: context.l10n.vibe_replaceButton,
+          showOnHover: false,
+          invoke: widget.onReplaceInGeneration!,
         ),
       if (widget.onExport != null)
         ImageCardAction(

@@ -558,7 +558,7 @@ class GalleryDetailInfoPanel extends StatelessWidget {
       normalTooltip: viewModel.labels.tagContextMenuTooltip,
       filteredTooltip: viewModel.labels.outputFilteredTagTooltip,
       onTagTap: actions.searchTag,
-      onTagSecondaryTapUp: actions.showTagMenu,
+      onTagMenu: actions.showTagMenu,
     );
   }
 

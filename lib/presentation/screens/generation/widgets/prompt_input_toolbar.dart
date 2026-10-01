@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/autocomplete/autocomplete_settings.dart'
     as completion_settings;
 import '../../../../core/constants/model_capabilities.dart';
+import '../../../../core/platform/platform_capabilities.dart';
 import '../../../../core/utils/localization_extension.dart';
 import '../../../adaptive/interaction_policy.dart';
 import '../../../providers/image_generation_provider.dart';
@@ -311,7 +312,9 @@ class PromptInputToolbar extends ConsumerWidget {
           'cooccurrence',
           cooccurrence,
           context.l10n.prompt_cooccurrenceRecommendation,
-          context.l10n.prompt_cooccurrenceRecommendationSubtitle,
+          PlatformCapabilities.current.supportsKeyboardShortcutConfiguration
+              ? context.l10n.prompt_cooccurrenceRecommendationSubtitle
+              : context.l10n.autocomplete_relatedTagsSubtitleTouch,
         ),
       ],
     );

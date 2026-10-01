@@ -9,6 +9,20 @@ import 'package:nai_launcher/l10n/app_localizations.dart';
 import 'package:nai_launcher/presentation/adaptive/interaction_policy.dart';
 import 'package:nai_launcher/presentation/widgets/common/image_comparison_view.dart';
 
+// "Follow mouse" only exists with a precise pointer.
+const _mouse = InteractionPolicy(
+  modality: InteractionModality.pointer,
+  touchAvailable: false,
+  precisePointerAvailable: true,
+);
+
+// A touchscreen laptop: precise pointer with touch-sized targets.
+const _touchLaptop = InteractionPolicy(
+  modality: InteractionModality.pointer,
+  touchAvailable: true,
+  precisePointerAvailable: true,
+);
+
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
@@ -21,6 +35,7 @@ void main() {
       height: 450,
       pixelControls: true,
       generatedSize: const Size(832, 1216),
+      policy: _mouse,
     );
     final keys = [
       'comparison-zoom-out',
@@ -189,7 +204,7 @@ void main() {
   testWidgets('mouse follow leaves left drags to canvas at the divider', (
     tester,
   ) async {
-    await _pumpComparison(tester, width: 400, height: 300);
+    await _pumpComparison(tester, width: 400, height: 300, policy: _mouse);
     final transform = tester
         .widget<InteractiveViewer>(find.byType(InteractiveViewer))
         .transformationController!;
@@ -243,7 +258,13 @@ void main() {
       addTearDown(() => tester.binding.setSurfaceSize(null));
       for (final width in [320.0, 600.0, 840.0, 1180.0, 1600.0]) {
         await tester.binding.setSurfaceSize(Size(width, 360));
-        await _pumpComparison(tester, width: width, height: 300, textScale: 3);
+        await _pumpComparison(
+          tester,
+          width: width,
+          height: 300,
+          textScale: 3,
+          policy: _touchLaptop,
+        );
         final toggle = find.byKey(const ValueKey('comparison-follow-mouse'));
         final viewport = tester.getRect(find.byType(ImageComparisonView));
         final rect = tester.getRect(toggle);
@@ -444,6 +465,7 @@ Future<void> _pumpComparison(
   bool pixelControls = false,
   double textScale = 1,
   Size generatedSize = const Size(4, 3),
+  InteractionPolicy? policy,
 }) async {
   await tester.pumpWidget(
     ProviderScope(
@@ -455,7 +477,7 @@ Future<void> _pumpComparison(
           data: MediaQuery.of(
             context,
           ).copyWith(textScaler: TextScaler.linear(textScale)),
-          child: InteractionPolicyScope(child: child!),
+          child: InteractionPolicyScope(initialPolicy: policy, child: child!),
         ),
         locale: const Locale('zh'),
         localizationsDelegates: AppLocalizations.localizationsDelegates,

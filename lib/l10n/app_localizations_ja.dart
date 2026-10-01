@@ -3173,6 +3173,9 @@ class AppLocalizationsJa extends AppLocalizations {
   String get vibe_reuseButton => '再利用';
 
   @override
+  String get vibe_replaceButton => '現在の Vibe を置き換え';
+
+  @override
   String get vibe_info => 'Vibe 情報';
 
   @override
@@ -3645,8 +3648,16 @@ class AppLocalizationsJa extends AppLocalizations {
       'コピー、送信、キュー追加時に除外されます。右クリックで管理できます';
 
   @override
+  String get onlineGallery_outputFilteredTagTooltipTouch =>
+      'コピー、送信、キュー追加時に除外されます。長押しで管理できます';
+
+  @override
   String get onlineGallery_tagContextMenuTooltip =>
       '右クリックでブラックリストまたは出力フィルターに追加';
+
+  @override
+  String get onlineGallery_tagContextMenuTooltipTouch =>
+      '長押しでコピー、またはブラックリスト・出力フィルターに追加';
 
   @override
   String onlineGallery_outputFilterTagAdded(Object tag) {
@@ -8775,6 +8786,10 @@ class AppLocalizationsJa extends AppLocalizations {
       'Vibe ファイルまたは PNG/JPG/JPEG/WEBP 画像をインポートします (右クリックしてその他のオプションを表示します)';
 
   @override
+  String get vibeLibrary_importTooltipTouch =>
+      'Vibe ファイルまたは PNG/JPG/JPEG/WEBP 画像をインポートします';
+
+  @override
   String get vibeLibrary_exportTooltip => 'Vibe をファイルにエクスポート';
 
   @override
@@ -9991,6 +10006,10 @@ class AppLocalizationsJa extends AppLocalizations {
   @override
   String get settings_historyClickBehavior_linkedDescription =>
       'クリックで中央プレビューを切り替え、ダブルクリックまたは長押しで詳細を開き、左右キーで移動します';
+
+  @override
+  String get settings_historyClickBehavior_linkedDescriptionTouch =>
+      'タップで中央プレビューを切り替え、ダブルタップまたは長押しで詳細を開きます';
 
   @override
   String get image_viewDetail => '詳細を表示';
@@ -12646,6 +12665,10 @@ class AppLocalizationsJa extends AppLocalizations {
       'オンにすると既存タグのクリックで通常の補完を開きます。Ctrl/Command＋クリックでは引き続き関連タグを表示します';
 
   @override
+  String get autocomplete_openOnTagClickSubtitleTouch =>
+      'オンにすると既存タグのタップで通常の補完を開きます';
+
+  @override
   String get autocomplete_replaceUnderscores => '挿入時にアンダースコアを空白に置換';
 
   @override
@@ -12657,6 +12680,9 @@ class AppLocalizationsJa extends AppLocalizations {
   @override
   String get autocomplete_relatedTagsSubtitle =>
       'タグ確定後に自動表示。タグ上で Ctrl+Shift+Space または Ctrl+クリックでも表示できます';
+
+  @override
+  String get autocomplete_relatedTagsSubtitleTouch => 'タグ確定後に関連タグを自動表示します';
 
   @override
   String get autocomplete_danbooruApi => 'Danbooru オンライン補完';
@@ -14354,6 +14380,9 @@ class AppLocalizationsJa extends AppLocalizations {
   @override
   String get watermark_dragHint =>
       '選択したレイヤーをドラッグします。矢印キーで微調整し、Shift キーで大きく移動します。';
+
+  @override
+  String get watermark_dragHintTouch => '選択したレイヤーをドラッグして移動します。';
 
   @override
   String get watermark_moveLeft => 'レイヤーを左へ移動';

@@ -506,6 +506,70 @@ void main() {
     await tester.tap(find.text('移动到分类'), kind: PointerDeviceKind.touch);
     expect(classifyCount, 1);
   });
+
+  testWidgets('触屏菜单同时提供追加与替换复用，替换不占悬浮操作位', (tester) async {
+    final calls = <String>[];
+    final entry = _entry(rawImageData: _onePixelPng);
+    final storage = _HoverStorage(entry, _onePixelPng);
+
+    Future<void> pumpCard(InteractionPolicy policy) => tester.pumpWidget(
+      ProviderScope(
+        key: ValueKey(policy),
+        overrides: [
+          vibeLibraryStorageServiceProvider.overrideWithValue(storage),
+        ],
+        child: InteractionPolicyScope(
+          initialPolicy: policy,
+          child: MaterialApp(
+            locale: const Locale('zh'),
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            home: Scaffold(
+              body: VibeCard(
+                entry: entry.toDisplayEntry(),
+                width: 180,
+                onSendToGeneration: () => calls.add('append'),
+                onReplaceInGeneration: () => calls.add('replace'),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+
+    await pumpCard(
+      const InteractionPolicy(
+        modality: InteractionModality.touch,
+        touchAvailable: true,
+        precisePointerAvailable: false,
+      ),
+    );
+    await tester.tap(
+      find.byIcon(Icons.more_vert_rounded),
+      kind: PointerDeviceKind.touch,
+    );
+    await tester.pumpAndSettle();
+    expect(find.text('一键复用'), findsOneWidget);
+    expect(find.textContaining('Shift'), findsNothing);
+    await tester.tap(find.text('替换现有 Vibe'), kind: PointerDeviceKind.touch);
+    await tester.pumpAndSettle();
+    expect(calls, ['replace']);
+
+    await pumpCard(
+      const InteractionPolicy(
+        modality: InteractionModality.pointer,
+        touchAvailable: false,
+        precisePointerAvailable: true,
+      ),
+    );
+    final mouse = await tester.createGesture(kind: PointerDeviceKind.mouse);
+    addTearDown(mouse.removePointer);
+    await mouse.addPointer(location: Offset.zero);
+    await mouse.moveTo(tester.getCenter(find.byType(VibeCard)));
+    await tester.pump();
+    expect(find.byIcon(Icons.send), findsOneWidget);
+    expect(find.byIcon(Icons.swap_horiz_rounded), findsNothing);
+  });
 }
 
 VibeLibraryEntry _entry({required Uint8List rawImageData}) {

@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/constants/storage_keys.dart';
+import '../../../../core/platform/platform_capabilities.dart';
 import '../../../../core/storage/local_storage_service.dart';
 import '../../../../core/utils/app_logger.dart';
 import '../../../../core/utils/localization_extension.dart';
@@ -182,26 +183,34 @@ class _GenerationSettingsSectionState
                       .set(value);
                 },
               ),
-              SwitchListTile(
-                secondary: const Icon(Icons.mouse_outlined),
-                title: Text(l10n.settings_enablePromptWeightScroll),
-                subtitle: Text(l10n.settings_enablePromptWeightScrollSubtitle),
-                value: promptWeightScrollEnabled,
-                onChanged: (value) async {
-                  final messenger = ScaffoldMessenger.maybeOf(context);
-                  try {
-                    await ref
-                        .read(promptWeightScrollSettingsProvider.notifier)
-                        .set(value);
-                  } catch (error) {
-                    messenger?.showSnackBar(
-                      SnackBar(
-                        content: Text(l10n.globalSettings_saveFailed('$error')),
-                      ),
-                    );
-                  }
-                },
-              ),
+              // Mouse-wheel weight editing only exists with desktop pointers.
+              if (PlatformCapabilities
+                  .current
+                  .supportsDesktopOverlayInteractions)
+                SwitchListTile(
+                  secondary: const Icon(Icons.mouse_outlined),
+                  title: Text(l10n.settings_enablePromptWeightScroll),
+                  subtitle: Text(
+                    l10n.settings_enablePromptWeightScrollSubtitle,
+                  ),
+                  value: promptWeightScrollEnabled,
+                  onChanged: (value) async {
+                    final messenger = ScaffoldMessenger.maybeOf(context);
+                    try {
+                      await ref
+                          .read(promptWeightScrollSettingsProvider.notifier)
+                          .set(value);
+                    } catch (error) {
+                      messenger?.showSnackBar(
+                        SnackBar(
+                          content: Text(
+                            l10n.globalSettings_saveFailed('$error'),
+                          ),
+                        ),
+                      );
+                    }
+                  },
+                ),
             ],
           ),
         ),

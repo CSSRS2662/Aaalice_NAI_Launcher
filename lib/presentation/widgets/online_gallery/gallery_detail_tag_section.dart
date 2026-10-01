@@ -28,7 +28,7 @@ class GalleryDetailTagSection extends StatelessWidget {
     required this.normalTooltip,
     required this.filteredTooltip,
     required this.onTagTap,
-    required this.onTagSecondaryTapUp,
+    required this.onTagMenu,
     this.sectionLabel = '',
     this.onCopySection,
     this.sectionCopyTooltip = '',
@@ -42,7 +42,7 @@ class GalleryDetailTagSection extends StatelessWidget {
   final String normalTooltip;
   final String filteredTooltip;
   final ValueChanged<String> onTagTap;
-  final void Function(String tag, TapUpDetails details) onTagSecondaryTapUp;
+  final void Function(String tag, Offset globalPosition) onTagMenu;
 
   @override
   Widget build(BuildContext context) {
@@ -73,8 +73,7 @@ class GalleryDetailTagSection extends StatelessWidget {
                       ? filteredTooltip
                       : normalTooltip,
                   onTap: () => onTagTap(tag),
-                  onSecondaryTapUp: (details) =>
-                      onTagSecondaryTapUp(tag, details),
+                  onMenu: (position) => onTagMenu(tag, position),
                 ),
             ],
           ),

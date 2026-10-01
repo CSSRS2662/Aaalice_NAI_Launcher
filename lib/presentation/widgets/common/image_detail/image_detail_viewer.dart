@@ -13,6 +13,7 @@ import '../../../../core/utils/image_share_sanitizer.dart';
 import '../../../../core/utils/window_focus_tracker.dart';
 import '../../../../core/windowing/workspace_side_panel_contract.dart';
 import '../../../adaptive/adaptive_presenter.dart';
+import '../../../adaptive/interaction_policy.dart';
 import '../../../providers/share_image_settings_provider.dart';
 import '../../../providers/copy_drag_watermark_provider.dart';
 import '../../../screens/mosaic/mosaic_editor_launcher.dart';
@@ -643,8 +644,10 @@ class _ImageDetailViewerState extends ConsumerState<ImageDetailViewer> {
             child: _buildBottomBar(),
           ),
 
-        // 左右导航按钮
-        if (_showControls && widget.images.length > 1) ...[
+        // 左右导航按钮：触屏直接左右滑动切图，按钮只会遮挡画面
+        if (_showControls &&
+            widget.images.length > 1 &&
+            context.interactionPolicy.precisePointerAvailable) ...[
           if (_currentIndex > 0)
             Positioned(
               left: 16,

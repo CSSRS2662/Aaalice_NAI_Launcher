@@ -3253,6 +3253,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get vibe_reuseButton => 'Reuse';
 
   @override
+  String get vibe_replaceButton => 'Replace current Vibes';
+
+  @override
   String get vibe_info => 'Vibe Info';
 
   @override
@@ -3738,8 +3741,16 @@ class AppLocalizationsEn extends AppLocalizations {
       'Removed when copying, sending, or adding to queue; right-click to manage';
 
   @override
+  String get onlineGallery_outputFilteredTagTooltipTouch =>
+      'Removed when copying, sending, or adding to queue; long-press to manage';
+
+  @override
   String get onlineGallery_tagContextMenuTooltip =>
       'Right-click to add to the blacklist or output filter';
+
+  @override
+  String get onlineGallery_tagContextMenuTooltipTouch =>
+      'Long-press to copy or add to the blacklist or output filter';
 
   @override
   String onlineGallery_outputFilterTagAdded(Object tag) {
@@ -8991,6 +9002,10 @@ class AppLocalizationsEn extends AppLocalizations {
       'Import Vibe files or PNG/JPG/JPEG/WEBP images (right-click for more options)';
 
   @override
+  String get vibeLibrary_importTooltipTouch =>
+      'Import Vibe files or PNG/JPG/JPEG/WEBP images';
+
+  @override
   String get vibeLibrary_exportTooltip => 'Export Vibe to file';
 
   @override
@@ -10234,6 +10249,10 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get settings_historyClickBehavior_linkedDescription =>
       'Click to switch the central preview, double-click or hold for details, and browse with Left/Right';
+
+  @override
+  String get settings_historyClickBehavior_linkedDescriptionTouch =>
+      'Tap to switch the central preview; double-tap or hold for details';
 
   @override
   String get image_viewDetail => 'View details';
@@ -12978,6 +12997,10 @@ class AppLocalizationsEn extends AppLocalizations {
       'When enabled, clicking an existing tag opens normal autocomplete; Ctrl/Command-click still shows related tags';
 
   @override
+  String get autocomplete_openOnTagClickSubtitleTouch =>
+      'When enabled, tapping an existing tag opens normal autocomplete';
+
+  @override
   String get autocomplete_replaceUnderscores =>
       'Replace underscores with spaces on insertion';
 
@@ -12990,6 +13013,10 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get autocomplete_relatedTagsSubtitle =>
       'Suggest after accepting a tag; also use Ctrl+Shift+Space or Ctrl+click on a tag';
+
+  @override
+  String get autocomplete_relatedTagsSubtitleTouch =>
+      'Suggest related tags after accepting a tag';
 
   @override
   String get autocomplete_danbooruApi => 'Danbooru online supplement';
@@ -14742,6 +14769,9 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get watermark_dragHint =>
       'Drag the selected layer. Arrow keys move precisely; hold Shift for larger steps.';
+
+  @override
+  String get watermark_dragHintTouch => 'Drag the selected layer to move it.';
 
   @override
   String get watermark_moveLeft => 'Move layer left';

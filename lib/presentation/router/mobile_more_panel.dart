@@ -57,9 +57,9 @@ Future<void> showMobileMorePanel({
       return Column(
         children: [
           Expanded(
+            // Touch scrollbars appear while scrolling, as elsewhere on Android.
             child: Scrollbar(
               controller: scrollController,
-              thumbVisibility: true,
               child: ListView(
                 controller: scrollController,
                 padding: const EdgeInsets.fromLTRB(8, 8, 12, 0),

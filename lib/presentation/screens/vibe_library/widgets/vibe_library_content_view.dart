@@ -205,6 +205,8 @@ class _VibeLibraryContentViewState
                     physicalKeys.contains(PhysicalKeyboardKey.shiftRight);
                 await _sendEntryToGeneration(context, entry, isShiftPressed);
               },
+              onReplaceInGeneration: () =>
+                  _sendEntryToGeneration(context, entry, true),
               onExport: () => _exportSingleEntry(context, entry),
               onEdit: () => _showVibeDetail(context, entry),
               onClassify: () => _classifyEntry(entry),

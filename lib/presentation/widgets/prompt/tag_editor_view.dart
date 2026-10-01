@@ -11,6 +11,8 @@ import '../../../core/autocomplete/tag_translation_lookup.dart';
 import '../../../core/utils/app_logger.dart';
 import '../../../core/utils/localization_extension.dart';
 import '../../../core/utils/prompt_edit_document.dart';
+import '../../adaptive/adaptive_presenter.dart';
+import '../../adaptive/content_sized_adaptive_form.dart';
 import '../../adaptive/interaction_policy.dart';
 import '../../themes/core/layered_surface_style.dart';
 import '../../themes/core/input_surface_style.dart';
@@ -409,24 +411,24 @@ class _TagEditorViewState extends ConsumerState<TagEditorView> {
     if (!widget.enabled || !commands.available(action)) return;
     switch (action) {
       case TagEditorAction.weight:
-        await showDialog<void>(
+        // Bottom sheet on phones, bounded dialog on wider panes.
+        await AdaptivePresenter.showForm<void>(
           context: context,
-          builder: (context) => AlertDialog(
-            title: Text(context.l10n.tagMode_weight),
-            content: ListenableBuilder(
-              listenable: session,
-              builder: (context, _) => PromptWeightControls(
-                onClose: session.clearSelection,
-                weight: commands.weight,
-                enabled: widget.enabled && commands.canAdjust,
-                onWeight: (value) => commands.adjustWeight(value: value),
-                onStep: (step) => commands.adjustWeight(step: step),
-              ),
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: Text(context.l10n.common_close),
+          title: context.l10n.tagMode_weight,
+          dialogWidth: 440,
+          builder: (_, scrollController) => ContentSizedAdaptiveForm(
+            key: const ValueKey('tag-weight-form'),
+            scrollController: scrollController,
+            content: [
+              ListenableBuilder(
+                listenable: session,
+                builder: (context, _) => PromptWeightControls(
+                  onClose: session.clearSelection,
+                  weight: commands.weight,
+                  enabled: widget.enabled && commands.canAdjust,
+                  onWeight: (value) => commands.adjustWeight(value: value),
+                  onStep: (step) => commands.adjustWeight(step: step),
+                ),
               ),
             ],
           ),

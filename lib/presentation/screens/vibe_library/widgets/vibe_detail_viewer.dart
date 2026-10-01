@@ -438,8 +438,8 @@ class _VibeDetailViewerState extends ConsumerState<VibeDetailViewer> {
   // 操作方法
   // ============================================================
 
-  void _sendToGeneration() {
-    // 检测是否按住 Shift 键
+  void _sendToGeneration({bool replace = false}) {
+    // 按住 Shift 或选择“替换”时替换现有 Vibe，否则追加
     final physicalKeys = HardwareKeyboard.instance.physicalKeysPressed;
     final isShiftPressed =
         physicalKeys.contains(PhysicalKeyboardKey.shiftLeft) ||
@@ -449,7 +449,7 @@ class _VibeDetailViewerState extends ConsumerState<VibeDetailViewer> {
       _entry,
       _strength,
       _infoExtracted,
-      isShiftPressed,
+      replace || isShiftPressed,
       applyParamOverrides: _hasParamChanges,
       bundleChildParamOverrideIndex: _entry.isBundle
           ? _selectedSubVibeIndex
@@ -851,6 +851,7 @@ class _VibeDetailViewerState extends ConsumerState<VibeDetailViewer> {
       onStrengthChanged: _onStrengthChanged,
       onInfoExtractedChanged: _onInfoExtractedChanged,
       onSendToGeneration: _sendToGeneration,
+      onReplaceInGeneration: () => _sendToGeneration(replace: true),
       onExport: _export,
       onDelete: _delete,
       onRename: _rename,

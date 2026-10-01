@@ -152,11 +152,16 @@ class _DraggableNumberInputState extends State<DraggableNumberInput> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final primaryColor = theme.colorScheme.primary;
+    // Drag-to-scrub is a mouse accelerator. On touch a horizontal swipe here
+    // would change the value instead of the page, so touch only taps to type.
+    final scrub = context.interactionPolicy.precisePointerAvailable;
 
     return MouseRegion(
       cursor: _isEditing
           ? SystemMouseCursors.text
-          : SystemMouseCursors.resizeLeftRight,
+          : scrub
+          ? SystemMouseCursors.resizeLeftRight
+          : SystemMouseCursors.click,
       child: Listener(
         onPointerSignal: (event) {
           if (event is PointerScrollEvent) {
@@ -165,9 +170,9 @@ class _DraggableNumberInputState extends State<DraggableNumberInput> {
         },
         child: GestureDetector(
           onTap: _isEditing ? null : _startEditing,
-          onHorizontalDragStart: _onDragStart,
-          onHorizontalDragUpdate: _onDragUpdate,
-          onHorizontalDragEnd: _onDragEnd,
+          onHorizontalDragStart: scrub ? _onDragStart : null,
+          onHorizontalDragUpdate: scrub ? _onDragUpdate : null,
+          onHorizontalDragEnd: scrub ? _onDragEnd : null,
           child: Container(
             constraints: BoxConstraints(
               minHeight: context.interactionPolicy.minimumControlExtent,

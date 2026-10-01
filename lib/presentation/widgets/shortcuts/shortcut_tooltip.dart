@@ -1,7 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../core/platform/platform_capabilities.dart';
 import '../../../core/shortcuts/shortcut_manager.dart';
 import '../../providers/shortcuts_provider.dart';
+
+/// Phones cannot configure (or usually press) shortcuts, so none of these
+/// widgets advertise key combinations there.
+bool get _shortcutsShown =>
+    PlatformCapabilities.current.supportsKeyboardShortcutConfiguration;
 
 /// 快捷键提示组件
 /// 自动在Tooltip中添加快捷键信息
@@ -32,6 +38,9 @@ class ShortcutTooltip extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    if (!_shortcutsShown) {
+      return Tooltip(message: message, waitDuration: waitDuration, child: child);
+    }
     final configAsync = ref.watch(shortcutConfigNotifierProvider);
 
     return configAsync.when(
@@ -169,6 +178,7 @@ class ShortcutBadge extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    if (!_shortcutsShown) return child;
     final configAsync = ref.watch(shortcutConfigNotifierProvider);
 
     return configAsync.when(
@@ -288,6 +298,11 @@ class ShortcutText extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    if (!_shortcutsShown) {
+      return fallback != null
+          ? Text(fallback!, style: style)
+          : const SizedBox.shrink();
+    }
     final configAsync = ref.watch(shortcutConfigNotifierProvider);
 
     return configAsync.when(
@@ -343,6 +358,7 @@ class ShortcutLabel extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    if (!_shortcutsShown) return const SizedBox.shrink();
     final configAsync = ref.watch(shortcutConfigNotifierProvider);
 
     return configAsync.when(

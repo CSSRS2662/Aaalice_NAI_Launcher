@@ -819,10 +819,7 @@ class _MosaicEditorScreenState extends ConsumerState<MosaicEditorScreen> {
               Expanded(
                 child: ExcludeFocus(
                   excluding: _saving,
-                  child: AbsorbPointer(
-                    absorbing: _saving,
-                    child: _buildBody(),
-                  ),
+                  child: AbsorbPointer(absorbing: _saving, child: _buildBody()),
                 ),
               ),
               _buildActions(),
@@ -1033,11 +1030,15 @@ class _MosaicEditorScreenState extends ConsumerState<MosaicEditorScreen> {
         ..._buildMaskControls(),
         ..._buildRegionListControls(),
         if (selected != null) ..._buildSelectedRegionControls(selected),
-        const SizedBox(height: 12),
-        Text(
-          context.l10n.mosaic_keyboardHint,
-          style: Theme.of(context).textTheme.bodySmall,
-        ),
+        if (PlatformCapabilities
+            .current
+            .supportsKeyboardShortcutConfiguration) ...[
+          const SizedBox(height: 12),
+          Text(
+            context.l10n.mosaic_keyboardHint,
+            style: Theme.of(context).textTheme.bodySmall,
+          ),
+        ],
       ],
     );
   }

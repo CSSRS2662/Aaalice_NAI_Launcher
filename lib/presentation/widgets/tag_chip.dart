@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/autocomplete/tag_translation_lookup.dart';
@@ -12,7 +13,10 @@ class SimpleTagChip extends ConsumerStatefulWidget {
   final String tag;
   final Color? color;
   final VoidCallback? onTap;
-  final GestureTapUpCallback? onSecondaryTapUp;
+
+  /// Opens the tag's action menu at a global position. Right-click and
+  /// long-press both use it, so touch reaches the same actions.
+  final ValueChanged<Offset>? onMenu;
   final String? translation;
   final bool autoTranslate;
   final int? category;
@@ -26,7 +30,7 @@ class SimpleTagChip extends ConsumerStatefulWidget {
     required this.tag,
     this.color,
     this.onTap,
-    this.onSecondaryTapUp,
+    this.onMenu,
     this.translation,
     this.autoTranslate = true,
     this.category,
@@ -43,6 +47,20 @@ class SimpleTagChip extends ConsumerStatefulWidget {
 class _SimpleTagChipState extends ConsumerState<SimpleTagChip> {
   bool _isHovering = false;
   String? _autoTranslation;
+  Offset? _pressPosition;
+
+  void _openMenuFromLongPress() {
+    final onMenu = widget.onMenu;
+    if (onMenu == null) return;
+    final box = context.findRenderObject() as RenderBox?;
+    final position =
+        _pressPosition ??
+        (box == null
+            ? Offset.zero
+            : box.localToGlobal(box.size.center(Offset.zero)));
+    HapticFeedback.mediumImpact();
+    onMenu(position);
+  }
 
   @override
   void initState() {
@@ -91,7 +109,11 @@ class _SimpleTagChipState extends ConsumerState<SimpleTagChip> {
       onExit: (_) => setState(() => _isHovering = false),
       child: InkWell(
         onTap: widget.onTap,
-        onSecondaryTapUp: widget.onSecondaryTapUp,
+        onTapDown: (details) => _pressPosition = details.globalPosition,
+        onLongPress: widget.onMenu == null ? null : _openMenuFromLongPress,
+        onSecondaryTapUp: widget.onMenu == null
+            ? null
+            : (details) => widget.onMenu!(details.globalPosition),
         borderRadius: BorderRadius.circular(4),
         child: AnimatedContainer(
           duration: MediaQuery.disableAnimationsOf(context)
@@ -172,9 +194,17 @@ class _SimpleTagChipState extends ConsumerState<SimpleTagChip> {
         ),
       ),
     );
+    // With a menu, long-press opens it instead of the tooltip; mouse hover
+    // still shows the tooltip.
     return widget.tooltip == null
         ? chip
-        : Tooltip(message: widget.tooltip!, child: chip);
+        : Tooltip(
+            message: widget.tooltip!,
+            triggerMode: widget.onMenu == null
+                ? null
+                : TooltipTriggerMode.manual,
+            child: chip,
+          );
   }
 }
 

@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hive/hive.dart';
+import 'package:nai_launcher/core/platform/platform_capabilities.dart';
 import 'package:nai_launcher/core/constants/storage_keys.dart';
 import 'package:nai_launcher/core/storage/local_storage_service.dart';
 import 'package:nai_launcher/l10n/app_localizations.dart';
@@ -64,10 +65,7 @@ void main() {
     await tester.tap(entry);
     await tester.pumpAndSettle();
     for (final mode in ['system', 'light', 'dark']) {
-      expect(
-        find.byKey(ValueKey('settings-theme-mode-$mode')),
-        findsOneWidget,
-      );
+      expect(find.byKey(ValueKey('settings-theme-mode-$mode')), findsOneWidget);
     }
     await tester.tap(find.byKey(const ValueKey('settings-theme-mode-dark')));
     await tester.pumpAndSettle();
@@ -154,7 +152,38 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
+  testWidgets('手机上不显示只作用于桌面工作区的生成页布局', (tester) async {
+    PlatformCapabilities.debugOverride = PlatformCapabilities.forPlatform(
+      TargetPlatform.android,
+    );
+    addTearDown(() => PlatformCapabilities.debugOverride = null);
+    tester.view.physicalSize = const Size(411, 860);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+
+    await tester.pumpWidget(
+      const ProviderScope(
+        child: MaterialApp(
+          locale: Locale('zh'),
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: Scaffold(
+            body: SingleChildScrollView(child: AppearanceSettingsSection()),
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('生成页布局'), findsNothing);
+    expect(find.text('历史记录点击行为'), findsOneWidget);
+  });
+
   testWidgets('外观分类不再显示已移除的悬浮球设置', (tester) async {
+    PlatformCapabilities.debugOverride = PlatformCapabilities.forPlatform(
+      TargetPlatform.windows,
+    );
+    addTearDown(() => PlatformCapabilities.debugOverride = null);
     await tester.binding.setSurfaceSize(const Size(1000, 1600));
     addTearDown(() => tester.binding.setSurfaceSize(null));
 
@@ -210,6 +239,10 @@ void main() {
   }
 
   testWidgets('短高度与 3x 文本下布局选择弹窗可滚动', (tester) async {
+    PlatformCapabilities.debugOverride = PlatformCapabilities.forPlatform(
+      TargetPlatform.windows,
+    );
+    addTearDown(() => PlatformCapabilities.debugOverride = null);
     tester.view.physicalSize = const Size(320, 420);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.resetPhysicalSize);

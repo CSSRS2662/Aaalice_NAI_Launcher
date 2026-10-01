@@ -8,6 +8,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:nai_launcher/core/shortcuts/shortcut_config.dart';
 import 'package:nai_launcher/data/models/gallery/nai_image_metadata.dart';
 import 'package:nai_launcher/l10n/app_localizations.dart';
+import 'package:nai_launcher/presentation/adaptive/interaction_policy.dart';
 import 'package:nai_launcher/presentation/providers/shortcuts_provider.dart';
 import 'package:nai_launcher/presentation/widgets/common/horizontal_resize_handle.dart';
 import 'package:nai_launcher/presentation/widgets/common/image_detail/components/detail_metadata_panel.dart';
@@ -149,7 +150,16 @@ void main() {
       _TestImageData('third', _validPngBytes),
     ];
 
-    await _pumpViewer(tester, images: images);
+    // Touch swipes between pages; the arrows only cover the image.
+    await _pumpViewer(
+      tester,
+      images: images,
+      interactionPolicy: InteractionPolicy.touchFirst,
+    );
+    await tester.pump();
+    expect(find.byIcon(Icons.chevron_right), findsNothing);
+
+    await _pumpViewer(tester, images: images, interactionPolicy: _mousePolicy);
     await tester.pump();
 
     expect(find.byType(DetailThumbnailBar), findsOneWidget);
@@ -203,6 +213,7 @@ void main() {
     await _pumpViewer(
       tester,
       images: images,
+      interactionPolicy: _mousePolicy,
       callbacks: ImageDetailCallbacks(
         onSave: (image) async {
           saved.add(image.identifier);
@@ -268,9 +279,11 @@ Future<void> _pumpViewer(
   ImageDetailCallbacks? callbacks,
   bool showMetadataPanel = true,
   TextScaler textScaler = TextScaler.noScaling,
+  InteractionPolicy? interactionPolicy,
 }) {
   return tester.pumpWidget(
     ProviderScope(
+      key: ValueKey(interactionPolicy),
       overrides: [
         shortcutConfigNotifierProvider.overrideWith(
           _FakeShortcutConfigNotifier.new,
@@ -284,15 +297,24 @@ Future<void> _pumpViewer(
           data: MediaQuery.of(context).copyWith(textScaler: textScaler),
           child: child!,
         ),
-        home: ImageDetailViewer(
-          images: images,
-          callbacks: callbacks,
-          showMetadataPanel: showMetadataPanel,
+        home: InteractionPolicyScope(
+          initialPolicy: interactionPolicy,
+          child: ImageDetailViewer(
+            images: images,
+            callbacks: callbacks,
+            showMetadataPanel: showMetadataPanel,
+          ),
         ),
       ),
     ),
   );
 }
+
+const _mousePolicy = InteractionPolicy(
+  modality: InteractionModality.pointer,
+  touchAvailable: false,
+  precisePointerAvailable: true,
+);
 
 final Uint8List _validPngBytes = base64Decode(
   'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=',

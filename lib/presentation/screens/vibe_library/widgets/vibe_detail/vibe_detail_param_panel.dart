@@ -10,7 +10,7 @@ import '../../../../themes/design_tokens.dart';
 import '../../../../widgets/common/animated_favorite_button.dart';
 import '../../../../widgets/common/editable_double_field.dart';
 
-enum _VibeDetailAction { save, rename, export, delete }
+enum _VibeDetailAction { replace, save, rename, export, delete }
 
 /// Vibe 详情毛玻璃参数面板
 ///
@@ -25,6 +25,9 @@ class VibeDetailParamPanel extends StatelessWidget {
   final ValueChanged<double> onStrengthChanged;
   final ValueChanged<double> onInfoExtractedChanged;
   final VoidCallback? onSendToGeneration;
+
+  /// Replaces the Vibes in generation; the mouse shortcut is Shift+send.
+  final VoidCallback? onReplaceInGeneration;
   final VoidCallback? onExport;
   final VoidCallback? onDelete;
   final VoidCallback? onRename;
@@ -46,6 +49,7 @@ class VibeDetailParamPanel extends StatelessWidget {
     required this.onStrengthChanged,
     required this.onInfoExtractedChanged,
     this.onSendToGeneration,
+    this.onReplaceInGeneration,
     this.onExport,
     this.onDelete,
     this.onRename,
@@ -432,6 +436,9 @@ class VibeDetailParamPanel extends StatelessWidget {
                   constraints: const BoxConstraints(minWidth: 220),
                   onSelected: (action) {
                     switch (action) {
+                      case _VibeDetailAction.replace:
+                        onReplaceInGeneration?.call();
+                        break;
                       case _VibeDetailAction.save:
                         onSaveParams?.call();
                         break;
@@ -447,6 +454,16 @@ class VibeDetailParamPanel extends StatelessWidget {
                     }
                   },
                   itemBuilder: (context) => [
+                    if (onReplaceInGeneration != null)
+                      PopupMenuItem(
+                        key: const ValueKey('vibe-detail-replace'),
+                        value: _VibeDetailAction.replace,
+                        child: ListTile(
+                          contentPadding: EdgeInsets.zero,
+                          leading: const Icon(Icons.swap_horiz_rounded),
+                          title: Text(l10n.vibe_replaceButton),
+                        ),
+                      ),
                     PopupMenuItem(
                       value: _VibeDetailAction.save,
                       enabled:
@@ -541,6 +558,18 @@ class VibeDetailParamPanel extends StatelessWidget {
                   label: Text(l10n.vibeLibrary_sendToGeneration),
                 ),
               ),
+              if (onReplaceInGeneration != null) ...[
+                const SizedBox(height: DesignTokens.spacingSm),
+                SizedBox(
+                  width: double.infinity,
+                  child: TextButton.icon(
+                    key: const ValueKey('vibe-detail-replace'),
+                    onPressed: onReplaceInGeneration,
+                    icon: const Icon(Icons.swap_horiz_rounded),
+                    label: Text(l10n.vibe_replaceButton),
+                  ),
+                ),
+              ],
               const SizedBox(height: DesignTokens.spacingSm),
               Row(
                 children: [

@@ -609,6 +609,12 @@ class _WatermarkEditorScreenState extends ConsumerState<WatermarkEditorScreen> {
     );
   }
 
+  /// Arrow keys and Shift exist only with a desktop keyboard.
+  String _dragHint(BuildContext context) =>
+      PlatformCapabilities.current.supportsKeyboardShortcutConfiguration
+      ? context.l10n.watermark_dragHint
+      : context.l10n.watermark_dragHintTouch;
+
   String _layoutStatus() {
     if (!_settings.rememberLayoutsByOrientation) {
       return context.l10n.watermark_layoutUniversal;
@@ -820,7 +826,7 @@ class _WatermarkEditorScreenState extends ConsumerState<WatermarkEditorScreen> {
                         final size = previewConstraints.biggest;
                         return Semantics(
                           label:
-                              '${_selectedLayer == WatermarkEditableLayer.text ? context.l10n.watermark_textLayer : context.l10n.watermark_logoLayer}. ${context.l10n.watermark_dragHint}',
+                              '${_selectedLayer == WatermarkEditableLayer.text ? context.l10n.watermark_textLayer : context.l10n.watermark_logoLayer}. ${_dragHint(context)}',
                           customSemanticsActions: {
                             CustomSemanticsAction(
                               label: context.l10n.watermark_moveLeft,
@@ -892,7 +898,7 @@ class _WatermarkEditorScreenState extends ConsumerState<WatermarkEditorScreen> {
                   style: Theme.of(context).textTheme.labelLarge,
                 ),
                 Text(
-                  context.l10n.watermark_dragHint,
+                  _dragHint(context),
                   textAlign: TextAlign.center,
                   style: Theme.of(context).textTheme.bodySmall,
                 ),

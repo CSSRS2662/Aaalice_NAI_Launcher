@@ -19,6 +19,7 @@ import '../../../data/models/online_gallery/gallery_prompt_projection.dart';
 import '../../../data/models/online_gallery/gallery_source.dart';
 import '../../../data/models/queue/replication_task.dart';
 import '../../adaptive/adaptive_presenter.dart';
+import '../../adaptive/interaction_policy.dart';
 import '../../providers/character_prompt_provider.dart';
 import '../../providers/online_gallery_output_filter_provider.dart';
 import '../../providers/online_gallery_prompt_tag_settings_provider.dart';
@@ -92,6 +93,7 @@ class OnlineGalleryDetailLauncher {
       final isFavorited = ref
           .read(onlineGalleryNotifierProvider.notifier)
           .isFavorited(item);
+      final precisePointer = context.interactionPolicy.precisePointerAvailable;
       await AdaptivePresenter.showForm<void>(
         context: context,
         showHeader: false,
@@ -124,9 +126,13 @@ class OnlineGalleryDetailLauncher {
             copyrights: l10n.onlineGallery_copyrights,
             general: l10n.onlineGallery_general,
             metadata: l10n.onlineGallery_metadata,
-            tagContextMenuTooltip: l10n.onlineGallery_tagContextMenuTooltip,
-            outputFilteredTagTooltip:
-                l10n.onlineGallery_outputFilteredTagTooltip,
+            // Touch reaches the tag menu by long-press, not right-click.
+            tagContextMenuTooltip: precisePointer
+                ? l10n.onlineGallery_tagContextMenuTooltip
+                : l10n.onlineGallery_tagContextMenuTooltipTouch,
+            outputFilteredTagTooltip: precisePointer
+                ? l10n.onlineGallery_outputFilteredTagTooltip
+                : l10n.onlineGallery_outputFilteredTagTooltipTouch,
             author: l10n.onlineGallery_codexAuthor,
             imageFile: l10n.onlineGallery_codexImageFile,
             originalFile: l10n.onlineGallery_codexOriginalFile,

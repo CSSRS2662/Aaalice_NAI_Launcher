@@ -87,7 +87,7 @@ void main() {
         );
         expect(find.byTooltip('进入选择模式'), findsOneWidget);
         expect(
-          find.byTooltip('导入 Vibe 文件或 PNG/JPG/JPEG/WEBP 图片（右键查看更多选项）'),
+          find.byTooltip('导入 Vibe 文件或 PNG/JPG/JPEG/WEBP 图片'),
           findsOneWidget,
         );
 
@@ -121,9 +121,7 @@ void main() {
 
     await _revealToolbarImport(tester);
 
-    await tester.tap(
-      find.byTooltip('导入 Vibe 文件或 PNG/JPG/JPEG/WEBP 图片（右键查看更多选项）'),
-    );
+    await tester.tap(find.byTooltip('导入 Vibe 文件或 PNG/JPG/JPEG/WEBP 图片'));
     await tester.pump();
 
     expect(commands.whereType<ShowImportMenuCommand>(), hasLength(1));
@@ -280,9 +278,7 @@ void main() {
 
       await _revealToolbarImport(tester);
 
-      await tester.tap(
-        find.byTooltip('导入 Vibe 文件或 PNG/JPG/JPEG/WEBP 图片（右键查看更多选项）'),
-      );
+      await tester.tap(find.byTooltip('导入 Vibe 文件或 PNG/JPG/JPEG/WEBP 图片'));
       await tester.pumpAndSettle();
 
       expect(commands.whereType<ShowImportMenuCommand>(), hasLength(1));
@@ -429,7 +425,7 @@ void main() {
       expect(find.byType(TextField), findsOneWidget);
       expect(find.byTooltip('进入选择模式'), findsOneWidget);
       expect(
-        find.byTooltip('导入 Vibe 文件或 PNG/JPG/JPEG/WEBP 图片（右键查看更多选项）'),
+        find.byTooltip('导入 Vibe 文件或 PNG/JPG/JPEG/WEBP 图片'),
         findsOneWidget,
       );
       expect(tester.takeException(), isNull);

@@ -3125,6 +3125,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get vibe_reuseButton => '一键复用';
 
   @override
+  String get vibe_replaceButton => '替换现有 Vibe';
+
+  @override
   String get vibe_info => 'Vibe 信息';
 
   @override
@@ -3586,7 +3589,14 @@ class AppLocalizationsZh extends AppLocalizations {
       '此标签会在复制、发送和加入队列时被剔除；右键可管理';
 
   @override
+  String get onlineGallery_outputFilteredTagTooltipTouch =>
+      '此标签会在复制、发送和加入队列时被剔除；长按可管理';
+
+  @override
   String get onlineGallery_tagContextMenuTooltip => '右键可加入黑名单或输出过滤';
+
+  @override
+  String get onlineGallery_tagContextMenuTooltipTouch => '长按可复制、加入黑名单或输出过滤';
 
   @override
   String onlineGallery_outputFilterTagAdded(Object tag) {
@@ -8644,6 +8654,10 @@ class AppLocalizationsZh extends AppLocalizations {
       '导入 Vibe 文件或 PNG/JPG/JPEG/WEBP 图片（右键查看更多选项）';
 
   @override
+  String get vibeLibrary_importTooltipTouch =>
+      '导入 Vibe 文件或 PNG/JPG/JPEG/WEBP 图片';
+
+  @override
   String get vibeLibrary_exportTooltip => '导出 Vibe 到文件';
 
   @override
@@ -9833,6 +9847,10 @@ class AppLocalizationsZh extends AppLocalizations {
   @override
   String get settings_historyClickBehavior_linkedDescription =>
       '单击切换中央预览，双击或长按打开详情，并支持左右方向键浏览';
+
+  @override
+  String get settings_historyClickBehavior_linkedDescriptionTouch =>
+      '单击切换中央预览，双击或长按打开详情';
 
   @override
   String get image_viewDetail => '查看详情';
@@ -12439,6 +12457,9 @@ class AppLocalizationsZh extends AppLocalizations {
       '开启后，点击已有标签会打开普通补全菜单；Ctrl/Command + 点击仍显示相关标签';
 
   @override
+  String get autocomplete_openOnTagClickSubtitleTouch => '开启后，点击已有标签会打开普通补全菜单';
+
+  @override
   String get autocomplete_replaceUnderscores => '插入时将下划线替换为空格';
 
   @override
@@ -12450,6 +12471,9 @@ class AppLocalizationsZh extends AppLocalizations {
   @override
   String get autocomplete_relatedTagsSubtitle =>
       '选中补全后自动推荐；也可在标签上按 Ctrl+Shift+Space 或 Ctrl+单击';
+
+  @override
+  String get autocomplete_relatedTagsSubtitleTouch => '选中补全后自动推荐相关标签';
 
   @override
   String get autocomplete_danbooruApi => 'Danbooru 在线补充';
@@ -14100,6 +14124,9 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get watermark_dragHint => '拖动所选图层；方向键可精细移动，按住 Shift 可加大步长。';
+
+  @override
+  String get watermark_dragHintTouch => '拖动所选图层调整位置。';
 
   @override
   String get watermark_moveLeft => '向左移动图层';
@@ -18095,6 +18122,9 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get vibe_reuseButton => '一鍵複用';
 
   @override
+  String get vibe_replaceButton => '取代現有 Vibe';
+
+  @override
   String get vibe_info => 'Vibe 資訊';
 
   @override
@@ -18556,7 +18586,14 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
       '此標籤會在複製、傳送和加入佇列時被剔除；右鍵可管理';
 
   @override
+  String get onlineGallery_outputFilteredTagTooltipTouch =>
+      '此標籤會在複製、傳送和加入佇列時被剔除；長按可管理';
+
+  @override
   String get onlineGallery_tagContextMenuTooltip => '右鍵可加入黑名單或輸出過濾';
+
+  @override
+  String get onlineGallery_tagContextMenuTooltipTouch => '長按可複製、加入黑名單或輸出過濾';
 
   @override
   String onlineGallery_outputFilterTagAdded(Object tag) {
@@ -23614,6 +23651,10 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
       '匯入 Vibe 檔案或 PNG/JPG/JPEG/WEBP 圖片（右鍵檢視更多選項）';
 
   @override
+  String get vibeLibrary_importTooltipTouch =>
+      '匯入 Vibe 檔案或 PNG/JPG/JPEG/WEBP 圖片';
+
+  @override
   String get vibeLibrary_exportTooltip => '匯出 Vibe 到檔案';
 
   @override
@@ -24803,6 +24844,10 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   @override
   String get settings_historyClickBehavior_linkedDescription =>
       '單擊切換中央預覽，雙擊或長按開啟詳情，並支援左右方向鍵瀏覽';
+
+  @override
+  String get settings_historyClickBehavior_linkedDescriptionTouch =>
+      '單擊切換中央預覽，雙擊或長按開啟詳情';
 
   @override
   String get image_viewDetail => '檢視詳情';
@@ -27409,6 +27454,9 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
       '開啟後，點選已有標籤會開啟普通補全選單；Ctrl/Command + 點選仍顯示相關標籤';
 
   @override
+  String get autocomplete_openOnTagClickSubtitleTouch => '開啟後，點選已有標籤會開啟普通補全選單';
+
+  @override
   String get autocomplete_replaceUnderscores => '插入時將下劃線替換為空格';
 
   @override
@@ -27420,6 +27468,9 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   @override
   String get autocomplete_relatedTagsSubtitle =>
       '選中補全後自動推薦；也可在標籤上按 Ctrl+Shift+Space 或 Ctrl+單擊';
+
+  @override
+  String get autocomplete_relatedTagsSubtitleTouch => '選中補全後自動推薦相關標籤';
 
   @override
   String get autocomplete_danbooruApi => 'Danbooru 線上補充';
@@ -29071,6 +29122,9 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get watermark_dragHint => '拖曳所選圖層；方向鍵可精細移動，按住 Shift 可加大步長。';
+
+  @override
+  String get watermark_dragHintTouch => '拖曳所選圖層調整位置。';
 
   @override
   String get watermark_moveLeft => '向左移動圖層';

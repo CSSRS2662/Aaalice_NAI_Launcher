@@ -199,7 +199,7 @@ class GalleryDetailActions {
   final Future<void> Function(GalleryMedia media) downloadCurrentOriginal;
   final Future<void> Function(GalleryMedia media)? downloadAndWatermark;
   final ValueChanged<String> searchTag;
-  final void Function(String tag, TapUpDetails details) showTagMenu;
+  final void Function(String tag, Offset globalPosition) showTagMenu;
   final Future<void> Function(List<GalleryMedia> media)? downloadAll;
   final Future<void> Function(GalleryMedia media)? sendToReverse;
 }

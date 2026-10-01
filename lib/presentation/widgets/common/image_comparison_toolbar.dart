@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../core/utils/localization_extension.dart';
+import '../../adaptive/interaction_policy.dart';
 import '../../themes/core/layered_surface_style.dart';
 import 'themed_switch.dart';
 
@@ -136,6 +137,9 @@ class ImageComparisonToolbar extends StatelessWidget {
         ),
       ],
     );
+    // Following the cursor needs a mouse; touch drags the divider directly.
+    final showFollow = context.interactionPolicy.precisePointerAvailable;
+    if (!showFollow && !showZoom) return const SizedBox.shrink();
     return Material(
       color: theme.colorScheme.surfaceContainerLow,
       child: Padding(
@@ -156,16 +160,17 @@ class ImageComparisonToolbar extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
                       zoom,
-                      Align(alignment: Alignment.centerRight, child: follow),
+                      if (showFollow)
+                        Align(alignment: Alignment.centerRight, child: follow),
                     ],
                   );
                 }
                 return Row(
                   children: [
                     if (showZoom) Expanded(child: zoom),
-                    if (showZoom)
+                    if (showZoom && showFollow)
                       follow
-                    else
+                    else if (showFollow)
                       Expanded(
                         child: Align(
                           alignment: Alignment.centerRight,

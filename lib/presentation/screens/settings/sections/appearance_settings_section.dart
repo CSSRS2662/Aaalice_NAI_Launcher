@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../../core/platform/platform_capabilities.dart';
 import '../../../../core/utils/app_locale.dart';
 import '../../../../core/utils/localization_extension.dart';
 import '../../../providers/accent_color_provider.dart';
@@ -12,6 +13,9 @@ import '../../../../core/utils/locale_provider.dart';
 import '../../../providers/theme_provider.dart';
 import '../../../themes/app_theme.dart';
 import '../../../adaptive/adaptive_presenter.dart';
+import '../../../adaptive/interaction_policy.dart';
+import '../../../adaptive/window_size_class.dart';
+import '../../generation/generation_layout_policy.dart';
 import '../../../widgets/common/adaptive_dialog_frame.dart';
 import '../../../widgets/common/themed_divider.dart';
 import '../widgets/accent_color_picker.dart';
@@ -108,17 +112,21 @@ class _AppearanceSettingsSectionState
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              // 生成页布局选择
-              ListTile(
-                leading: const Icon(Icons.view_sidebar_outlined),
-                title: Text(context.l10n.settings_generationLayout),
-                subtitle: Text(
-                  layoutMode == GenerationLayoutMode.webStyle
-                      ? context.l10n.settings_generationLayout_webStyle
-                      : context.l10n.settings_generationLayout_classic,
+              // 生成页布局只影响桌面工作区；手机竖屏与触屏横屏用的是移动工作台
+              if (PlatformCapabilities.current.isDesktop ||
+                  usesDesktopGenerationLayout(
+                    context.adaptiveWindow.safeUsableSize,
+                  ))
+                ListTile(
+                  leading: const Icon(Icons.view_sidebar_outlined),
+                  title: Text(context.l10n.settings_generationLayout),
+                  subtitle: Text(
+                    layoutMode == GenerationLayoutMode.webStyle
+                        ? context.l10n.settings_generationLayout_webStyle
+                        : context.l10n.settings_generationLayout_classic,
+                  ),
+                  onTap: () => _showGenerationLayoutDialog(context, layoutMode),
                 ),
-                onTap: () => _showGenerationLayoutDialog(context, layoutMode),
-              ),
 
               ListTile(
                 leading: const Icon(Icons.photo_library_outlined),
@@ -363,9 +371,13 @@ class _AppearanceSettingsSectionState
                         context.l10n.settings_historyClickBehavior_linked,
                       ),
                       subtitle: Text(
-                        context
-                            .l10n
-                            .settings_historyClickBehavior_linkedDescription,
+                        context.interactionPolicy.precisePointerAvailable
+                            ? context
+                                  .l10n
+                                  .settings_historyClickBehavior_linkedDescription
+                            : context
+                                  .l10n
+                                  .settings_historyClickBehavior_linkedDescriptionTouch,
                       ),
                       value: HistoryClickBehavior.selectPreview,
                     ),

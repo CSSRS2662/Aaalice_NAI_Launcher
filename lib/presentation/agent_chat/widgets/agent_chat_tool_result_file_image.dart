@@ -5,16 +5,20 @@ import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/database/utils/lru_cache.dart';
 import '../../../core/utils/nai_resolution_adapter.dart';
+import '../../../core/utils/localization_extension.dart';
 import '../../../data/models/gallery/local_image_record.dart';
+import '../../adaptive/interaction_policy.dart';
 import '../../providers/krita/krita_bridge_notifier.dart';
 import '../../providers/mosaic_settings_provider.dart';
 import '../../providers/watermark_settings_provider.dart';
 import '../../services/image_send_action_dispatcher.dart';
 import '../../utils/image_detail_opener.dart';
+import '../../widgets/common/card_action_buttons.dart';
 import '../../widgets/common/image_card_context_menu.dart';
 import '../../widgets/common/image_card_hover_motion.dart';
 import '../../widgets/common/image_detail/file_image_detail_data.dart';
@@ -204,12 +208,12 @@ class _AgentChatToolResultFileImageState
     );
   }
 
-  void _showSendMenu(TapUpDetails details) {
+  void _showSendMenu(Offset globalPosition) {
     unawaited(
       _showAgentChatImageSendMenu(
         context: context,
         ref: ref,
-        position: details.globalPosition,
+        position: globalPosition,
         fileName: widget.path.split(RegExp(r'[/\\]')).last,
         loadBytes: () => File(widget.path).readAsBytes(),
       ),
@@ -231,40 +235,81 @@ class _AgentChatToolResultFileImageState
             feedbackWidth: 240,
             child: AspectRatio(
               aspectRatio: _aspect,
-              child: MouseRegion(
-                cursor: SystemMouseCursors.click,
-                onEnter: (_) => setState(() => _isHovering = true),
-                onExit: (_) => setState(() => _isHovering = false),
-                child: GestureDetector(
-                  behavior: HitTestBehavior.opaque,
-                  onTap: _openDetail,
-                  onSecondaryTapUp: _showSendMenu,
-                  child: ImageCardHoverMotion(
-                    hovered: _isHovering,
-                    child: AnimatedContainer(
-                      duration: MediaQuery.disableAnimationsOf(context)
-                          ? Duration.zero
-                          : const Duration(milliseconds: 120),
-                      curve: Curves.easeOut,
-                      foregroundDecoration: BoxDecoration(
-                        color: _isHovering
-                            ? theme.colorScheme.primary.withValues(alpha: 0.07)
-                            : Colors.transparent,
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(8),
-                        child: Image.file(
-                          File(widget.path),
-                          fit: BoxFit.contain,
-                          gaplessPlayback: true,
-                          filterQuality: FilterQuality.medium,
-                          errorBuilder: (_, __, ___) => _missing(theme),
+              child: Stack(
+                fit: StackFit.expand,
+                children: [
+                  MouseRegion(
+                    cursor: SystemMouseCursors.click,
+                    onEnter: (_) => setState(() => _isHovering = true),
+                    onExit: (_) => setState(() => _isHovering = false),
+                    child: GestureDetector(
+                      behavior: HitTestBehavior.opaque,
+                      onTap: _openDetail,
+                      onSecondaryTapUp: (details) =>
+                          _showSendMenu(details.globalPosition),
+                      onLongPressStart: (details) {
+                        HapticFeedback.mediumImpact();
+                        _showSendMenu(details.globalPosition);
+                      },
+                      child: ImageCardHoverMotion(
+                        hovered: _isHovering,
+                        child: AnimatedContainer(
+                          duration: MediaQuery.disableAnimationsOf(context)
+                              ? Duration.zero
+                              : const Duration(milliseconds: 120),
+                          curve: Curves.easeOut,
+                          foregroundDecoration: BoxDecoration(
+                            color: _isHovering
+                                ? theme.colorScheme.primary.withValues(
+                                    alpha: 0.07,
+                                  )
+                                : Colors.transparent,
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(8),
+                            child: Image.file(
+                              File(widget.path),
+                              fit: BoxFit.contain,
+                              gaplessPlayback: true,
+                              filterQuality: FilterQuality.medium,
+                              errorBuilder: (_, __, ___) => _missing(theme),
+                            ),
+                          ),
                         ),
                       ),
                     ),
                   ),
-                ),
+                  // Long-press and right-click are accelerators; touch also
+                  // gets a visible entry to the same send menu.
+                  if (context.interactionPolicy.shouldExposeTouchAlternatives)
+                    PositionedDirectional(
+                      top: 4,
+                      end: 4,
+                      child: Builder(
+                        builder: (buttonContext) => IconButton(
+                          key: const ValueKey('agent-chat-image-more'),
+                          tooltip: context.l10n.common_moreActions,
+                          style: ImageOverlayControlStyle.iconButton(
+                            buttonContext,
+                            extent: buttonContext
+                                .interactionPolicy
+                                .minimumControlExtent,
+                          ),
+                          icon: const Icon(Icons.more_vert_rounded, size: 20),
+                          onPressed: () {
+                            final box =
+                                buttonContext.findRenderObject()! as RenderBox;
+                            _showSendMenu(
+                              box.localToGlobal(
+                                box.size.bottomLeft(Offset.zero),
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                    ),
+                ],
               ),
             ),
           ),

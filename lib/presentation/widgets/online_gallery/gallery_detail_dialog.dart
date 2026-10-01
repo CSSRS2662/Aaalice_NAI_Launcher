@@ -190,12 +190,12 @@ class _GalleryDetailDialogState extends ConsumerState<GalleryDetailDialog> {
     widget.onTagSearch(query);
   }
 
-  Future<void> _showTagMenu(String tag, TapUpDetails details) async {
+  Future<void> _showTagMenu(String tag, Offset globalPosition) async {
     final action = await showOnlineGalleryTagContextMenu(
       context: context,
       ref: ref,
       tag: tag,
-      globalPosition: details.globalPosition,
+      globalPosition: globalPosition,
       onSearch: _searchTag,
     );
     if (!mounted || action != OnlineGalleryTagContextAction.blacklist) return;

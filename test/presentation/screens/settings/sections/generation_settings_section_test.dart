@@ -2,14 +2,51 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:nai_launcher/core/constants/storage_keys.dart';
+import 'package:nai_launcher/core/platform/platform_capabilities.dart';
 import 'package:nai_launcher/core/storage/local_storage_service.dart';
 import 'package:nai_launcher/l10n/app_localizations.dart';
 import 'package:nai_launcher/presentation/screens/settings/sections/generation_settings_section.dart';
 
 void main() {
+  // The wheel toggle exists only where a desktop pointer does.
+  void useDesktop() {
+    PlatformCapabilities.debugOverride = PlatformCapabilities.forPlatform(
+      TargetPlatform.windows,
+    );
+    addTearDown(() => PlatformCapabilities.debugOverride = null);
+  }
+
+  testWidgets('Android 不显示滚轮调整权重开关', (tester) async {
+    PlatformCapabilities.debugOverride = PlatformCapabilities.forPlatform(
+      TargetPlatform.android,
+    );
+    addTearDown(() => PlatformCapabilities.debugOverride = null);
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          localStorageServiceProvider.overrideWith(
+            (ref) => _MemoryLocalStorageService(),
+          ),
+        ],
+        child: const MaterialApp(
+          locale: Locale('zh'),
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: Scaffold(
+            body: SingleChildScrollView(child: GenerationSettingsSection()),
+          ),
+        ),
+      ),
+    );
+    await tester.pump();
+    expect(find.text('滚轮调整提示词权重'), findsNothing);
+    expect(find.text('显示随机提示词工具'), findsOneWidget);
+  });
+
   testWidgets('prompt weight wheel switch defaults on and persists changes', (
     tester,
   ) async {
+    useDesktop();
     final storage = _MemoryLocalStorageService();
 
     await tester.pumpWidget(
@@ -42,6 +79,7 @@ void main() {
   testWidgets('prompt weight wheel switch rolls back and shows save failure', (
     tester,
   ) async {
+    useDesktop();
     final storage = _MemoryLocalStorageService(
       writeError: StateError('settings write failed'),
     );
@@ -102,6 +140,7 @@ void main() {
   });
 
   testWidgets('按任务流展示输入、输出、重试、提醒四个小节', (tester) async {
+    useDesktop();
     final storage = _MemoryLocalStorageService();
     await tester.binding.setSurfaceSize(const Size(1000, 1600));
     addTearDown(() => tester.binding.setSurfaceSize(null));
