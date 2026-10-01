@@ -55,6 +55,9 @@ class _FixedTagsDialogState extends ConsumerState<FixedTagsDialog> {
       libraryEntries: ref.watch(
         tagLibraryPageNotifierProvider.select((state) => state.entries),
       ),
+      libraryCategories: ref.watch(
+        tagLibraryPageNotifierProvider.select((state) => state.categories),
+      ),
     );
     final commands = FixedTagsDialogCoordinator(ref).commands(context);
     return ListenableBuilder(

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../data/models/fixed_tag/fixed_tag_entry.dart';
 import '../../../data/models/fixed_tag/fixed_tag_prompt_type.dart';
+import '../../../data/models/tag_library/tag_library_category.dart';
 import '../../../data/models/tag_library/tag_library_entry.dart';
 import '../../providers/fixed_tags_provider.dart';
 
@@ -10,10 +11,14 @@ class FixedTagsDialogViewData {
   const FixedTagsDialogViewData({
     required this.state,
     required this.libraryEntries,
+    this.libraryCategories = const [],
   });
 
   final FixedTagsState state;
   final List<TagLibraryEntry> libraryEntries;
+
+  /// Groups the grid the same way as the sidebar.
+  final List<TagLibraryCategory> libraryCategories;
 
   List<FixedTagEntry> entriesFor(
     FixedTagPromptType promptType,

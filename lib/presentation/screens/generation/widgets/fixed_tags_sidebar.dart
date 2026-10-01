@@ -18,6 +18,7 @@ import '../../../themes/core/layered_surface_style.dart';
 import '../../../widgets/common/app_toast.dart';
 import '../../../widgets/common/themed_confirm_dialog.dart';
 import '../../../widgets/common/tile_action_button.dart';
+import '../../../widgets/prompt/fixed_tag_category_sections.dart';
 import '../../../widgets/prompt/fixed_tag_edit_dialog.dart';
 import '../../../widgets/tag_library/tag_library_picker_dialog.dart';
 import 'sidebar_entry_tile.dart';
@@ -1198,55 +1199,22 @@ class _FixedTagsSidebarState extends ConsumerState<FixedTagsSidebar> {
     List<FixedTagEntry> sourceEntries,
     List<TagLibraryCategory> categories,
   ) {
-    final categoriesById = {
-      for (final category in categories) category.id: category,
-    };
-    final grouped = <String?, List<FixedTagEntry>>{};
-    for (final entry in sourceEntries) {
-      grouped.putIfAbsent(entry.categoryId, () => []).add(entry);
-    }
-    final sections = <_TagSection>[];
-    for (final category in categories.sortedByOrder()) {
-      final entries = grouped[category.id] ?? const <FixedTagEntry>[];
-      if (entries.isEmpty) continue;
-      sections.add(
+    final colors = Theme.of(context).colorScheme;
+    return [
+      for (final section in groupFixedTagsByCategory(sourceEntries, categories))
         _TagSection(
-          id: category.id,
-          name: category.displayName,
-          entries: entries,
-          color: _categoryColor(category.id),
+          id: section.categoryId ?? _uncategorizedSectionId,
+          name: switch (section.kind) {
+            FixedTagSectionKind.category => section.category!.displayName,
+            FixedTagSectionKind.unknownCategory =>
+              context.l10n.fixedTags_unknownCategory,
+            FixedTagSectionKind.uncategorized =>
+              context.l10n.fixedTags_uncategorized,
+          },
+          entries: section.entries,
+          color: fixedTagCategoryColor(section.categoryId, colors),
         ),
-      );
-    }
-
-    final unknownCategoryIds = grouped.keys.where(
-      (id) => id != null && !categoriesById.containsKey(id),
-    );
-    for (final categoryId in unknownCategoryIds) {
-      final entries = grouped[categoryId] ?? const <FixedTagEntry>[];
-      if (entries.isEmpty) continue;
-      sections.add(
-        _TagSection(
-          id: categoryId!,
-          name: context.l10n.fixedTags_unknownCategory,
-          entries: entries,
-          color: _categoryColor(categoryId),
-        ),
-      );
-    }
-
-    final uncategorized = grouped[null] ?? const <FixedTagEntry>[];
-    if (uncategorized.isNotEmpty) {
-      sections.add(
-        _TagSection(
-          id: _uncategorizedSectionId,
-          name: context.l10n.fixedTags_uncategorized,
-          entries: uncategorized,
-          color: Theme.of(context).colorScheme.outline,
-        ),
-      );
-    }
-    return sections;
+    ];
   }
 
   List<FixedTagLink> _visibleLinks(FixedTagsState state) {
@@ -1259,15 +1227,6 @@ class _FixedTagsSidebarState extends ConsumerState<FixedTagsSidebar> {
               link.negativeEntryId == highlightedEntryId,
         )
         .toList();
-  }
-
-  Color _categoryColor(String? categoryId) {
-    if (categoryId == null) return Theme.of(context).colorScheme.outline;
-    final hash = categoryId.codeUnits.fold<int>(
-      0,
-      (previous, codeUnit) => (previous * 31 + codeUnit) & 0x7fffffff,
-    );
-    return HSLColor.fromAHSL(1, (hash % 360).toDouble(), 0.58, 0.55).toColor();
   }
 
   GlobalKey _anchorKeyFor(FixedTagEntry entry) {

@@ -3239,6 +3239,111 @@ void main() {
       expect(tester.takeException(), isNull);
     },
   );
+
+  testWidgets(
+    'management grid groups tags by library category like the sidebar',
+    (tester) async {
+      tester.view.physicalSize = const Size(411, 860);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.reset);
+      final storage = _SidebarTestStorage(
+        fixedEntries: [
+          FixedTagEntry.create(
+            name: 'categorized tag',
+            content: 'a',
+            categoryId: 'cat-clothes',
+          ),
+          FixedTagEntry.create(name: 'loose tag', content: 'b'),
+        ],
+        categories: [
+          TagLibraryCategory(
+            id: 'cat-clothes',
+            name: '服装',
+            sortOrder: 0,
+            createdAt: DateTime(2026),
+          ),
+        ],
+        libraryEntries: const [],
+      );
+
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            localStorageServiceProvider.overrideWith((ref) => storage),
+          ],
+          child: const MaterialApp(
+            locale: Locale('zh'),
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            home: Scaffold(body: FixedTagsDialog()),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      final clothes = find.byKey(
+        const ValueKey('fixed-tags-section-cat-clothes'),
+      );
+      final none = find.byKey(const ValueKey('fixed-tags-section-none'));
+      expect(
+        find.descendant(of: clothes, matching: find.text('服装')),
+        findsOneWidget,
+      );
+      expect(find.descendant(of: none, matching: find.text('未分类')), findsOne);
+      expect(
+        tester.getTopLeft(clothes).dy,
+        lessThan(tester.getTopLeft(find.text('categorized tag')).dy),
+      );
+      expect(
+        tester.getTopLeft(find.text('categorized tag')).dy,
+        lessThan(tester.getTopLeft(none).dy),
+      );
+      expect(
+        tester.getTopLeft(none).dy,
+        lessThan(tester.getTopLeft(find.text('loose tag')).dy),
+      );
+      expect(tester.takeException(), isNull);
+    },
+  );
+
+  testWidgets('touch long-press on the workbench segment opens the manager', (
+    tester,
+  ) async {
+    final storage = _SidebarTestStorage(
+      fixedEntries: [FixedTagEntry.create(name: 'pinned', content: 'tag')],
+      categories: const [],
+      libraryEntries: const [],
+    )..fixedSidebarExpanded = false;
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [localStorageServiceProvider.overrideWith((ref) => storage)],
+        child: const InteractionPolicyScope(
+          initialPolicy: InteractionPolicy.touchFirst,
+          child: MaterialApp(
+            locale: Locale('zh'),
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            home: Scaffold(body: Center(child: FixedTagsButton(segment: true))),
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.longPress(find.byType(FixedTagsButton));
+    await tester.pumpAndSettle();
+
+    expect(find.byType(FixedTagsDialog), findsOneWidget);
+    final container = ProviderScope.containerOf(
+      tester.element(find.byType(FixedTagsButton)),
+    );
+    expect(
+      container.read(layoutStateNotifierProvider).fixedTagsSidebarExpanded,
+      isFalse,
+    );
+    expect(tester.takeException(), isNull);
+  });
 }
 
 Future<void> _jumpToEndUntilVisible(

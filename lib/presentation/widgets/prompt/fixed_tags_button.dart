@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/utils/localization_extension.dart';
 import '../../../data/models/fixed_tag/fixed_tag_entry.dart';
 import '../../../data/models/fixed_tag/fixed_tag_prompt_type.dart';
+import '../../adaptive/interaction_policy.dart';
 import '../../providers/fixed_tags_provider.dart';
 import '../../providers/layout_state_provider.dart';
 import '../../themes/prompt_semantic_colors.dart';
@@ -69,7 +70,7 @@ class _FixedTagsButtonState extends ConsumerState<FixedTagsButton> {
                   count: enabledCount,
                   semanticLabel: context.l10n.fixedTags_label,
                   onPressed: _open,
-                  onLongPress: _toggleSidebar,
+                  onLongPress: _segmentLongPress,
                 )
               : Semantics(
                   button: true,
@@ -588,6 +589,17 @@ class _FixedTagsButtonState extends ConsumerState<FixedTagsButton> {
 
   void _toggleSidebar() =>
       ref.read(layoutStateNotifierProvider.notifier).toggleFixedTagsSidebar();
+
+  /// The phone workbench has no room for the desktop sidebar, so touch
+  /// long-press opens the same manager as tap; its grid keeps the sidebar's
+  /// category groups. Mouse users keep the sidebar toggle.
+  void _segmentLongPress() {
+    if (context.interactionPolicy.prefersTouchPresentation) {
+      _showFixedTagsDialog(context);
+    } else {
+      _toggleSidebar();
+    }
+  }
 
   void _showFixedTagsDialog(BuildContext context) {
     FixedTagsDialog.show(context);

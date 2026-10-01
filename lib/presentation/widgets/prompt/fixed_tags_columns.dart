@@ -16,6 +16,7 @@ import '../../themes/core/layered_surface_style.dart';
 import '../common/grid_column_count.dart';
 import '../common/themed_input.dart';
 import '../tag_library/tag_library_entry_hover_preview.dart';
+import 'fixed_tag_category_sections.dart';
 import 'fixed_tag_chip.dart';
 import 'fixed_tags_dialog_controller.dart';
 import 'fixed_tags_dialog_models.dart';
@@ -454,31 +455,37 @@ class _EntryGrid extends StatelessWidget {
                 ),
               )
             else ...[
-              SliverPadding(
-                padding: const EdgeInsets.fromLTRB(
-                  _gridPadding,
-                  4,
-                  _gridPadding,
-                  8,
-                ),
-                sliver: SliverGrid(
-                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: columns,
-                    mainAxisExtent: extent,
-                    mainAxisSpacing: _gridSpacing,
-                    crossAxisSpacing: _gridSpacing,
+              // Tags from the library keep their categories as headed groups,
+              // matching the sidebar; without categories the grid stays flat.
+              for (final section in _sections()) ...[
+                if (section != null)
+                  SliverToBoxAdapter(child: _CategoryHeader(section: section)),
+                SliverPadding(
+                  padding: const EdgeInsets.fromLTRB(
+                    _gridPadding,
+                    4,
+                    _gridPadding,
+                    8,
                   ),
-                  delegate: SliverChildBuilderDelegate(
-                    (context, index) => _gridItem(
-                      context,
-                      config.entries[index],
-                      linkCounts[config.entries[index].id] ?? 0,
-                      maxLines,
+                  sliver: SliverGrid(
+                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: columns,
+                      mainAxisExtent: extent,
+                      mainAxisSpacing: _gridSpacing,
+                      crossAxisSpacing: _gridSpacing,
                     ),
-                    childCount: config.entries.length,
+                    delegate: SliverChildBuilderDelegate((context, index) {
+                      final entry = (section?.entries ?? config.entries)[index];
+                      return _gridItem(
+                        context,
+                        entry,
+                        linkCounts[entry.id] ?? 0,
+                        maxLines,
+                      );
+                    }, childCount: (section?.entries ?? config.entries).length),
                   ),
                 ),
-              ),
+              ],
               SliverToBoxAdapter(
                 child: Padding(
                   padding: const EdgeInsets.fromLTRB(16, 4, 16, 16),
@@ -535,6 +542,17 @@ class _EntryGrid extends StatelessWidget {
     );
   }
 
+  /// One null section means a flat grid.
+  List<FixedTagCategorySection?> _sections() {
+    if (config.entries.every((entry) => entry.categoryId == null)) {
+      return const [null];
+    }
+    return groupFixedTagsByCategory(
+      config.entries,
+      config.data.libraryCategories,
+    );
+  }
+
   static Map<String, int> _linkCounts(FixedTagsState state) {
     final counts = <String, int>{};
     for (final link in state.links) {
@@ -550,6 +568,53 @@ class _EntryGrid extends StatelessWidget {
       );
     }
     return counts;
+  }
+}
+
+class _CategoryHeader extends StatelessWidget {
+  const _CategoryHeader({required this.section});
+
+  final FixedTagCategorySection section;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final name = switch (section.kind) {
+      FixedTagSectionKind.category => section.category!.displayName,
+      FixedTagSectionKind.unknownCategory =>
+        context.l10n.fixedTags_unknownCategory,
+      FixedTagSectionKind.uncategorized => context.l10n.fixedTags_uncategorized,
+    };
+    return Padding(
+      key: ValueKey('fixed-tags-section-${section.categoryId ?? 'none'}'),
+      padding: const EdgeInsets.fromLTRB(16, 10, 16, 2),
+      child: Row(
+        children: [
+          Icon(
+            Icons.folder_rounded,
+            size: 16,
+            color: fixedTagCategoryColor(section.categoryId, theme.colorScheme),
+          ),
+          const SizedBox(width: 6),
+          Expanded(
+            child: Text(
+              name,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: theme.textTheme.labelLarge?.copyWith(
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+          Text(
+            '${section.entries.length}',
+            style: theme.textTheme.labelMedium?.copyWith(
+              color: theme.colorScheme.onSurfaceVariant,
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }
 
