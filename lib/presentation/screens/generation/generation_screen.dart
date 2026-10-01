@@ -5,13 +5,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/platform/platform_capabilities.dart';
 import '../../../core/storage/local_storage_service.dart';
-import '../../adaptive/adaptive_layout.dart';
 import '../../providers/generation_layout_mode_provider.dart';
 import '../../providers/image_generation_provider.dart';
 import '../../providers/layout_state_provider.dart';
 import '../../widgets/common/owned_scroll_controller.dart';
 import '../../widgets/drop/global_drop_handler.dart';
 import 'desktop_layout.dart';
+import 'generation_layout_policy.dart';
 import 'mobile_layout.dart';
 import 'web_style_layout.dart';
 import 'widgets/fixed_tags_sidebar.dart';
@@ -54,10 +54,7 @@ class _GenerationScreenState extends ConsumerState<GenerationScreen> {
   Widget build(BuildContext context) {
     final content = LayoutBuilder(
       builder: (context, constraints) {
-        final sizeClass = AdaptiveBreakpoints.classifyWidth(
-          constraints.maxWidth,
-        );
-        if (sizeClass.isExpandedOrWider) {
+        if (usesDesktopGenerationLayout(constraints.biggest)) {
           final layoutMode = ref.watch(generationLayoutModeNotifierProvider);
           return layoutMode == GenerationLayoutMode.webStyle
               ? WebStyleGenerationLayout(

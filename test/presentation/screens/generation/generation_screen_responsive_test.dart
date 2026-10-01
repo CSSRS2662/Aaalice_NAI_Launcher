@@ -135,6 +135,37 @@ void main() {
     },
   );
 
+  testWidgets('short touch panes such as a sideways phone keep the workbench', (
+    tester,
+  ) async {
+    final flutterErrors = FlutterErrorCollector.install(tester);
+    addTearDown(flutterErrors.restoreAndAssertNoErrors);
+    PlatformCapabilities.debugOverride = PlatformCapabilities.forPlatform(
+      TargetPlatform.android,
+    );
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+
+    for (final (size, desktop) in [
+      (const Size(900, 400), false),
+      (const Size(1180, 520), false),
+      (const Size(1180, 800), true),
+    ]) {
+      await tester.binding.setSurfaceSize(size);
+      await _pumpGeneration(tester);
+      await tester.pump(const Duration(milliseconds: 100));
+      expect(
+        find.byType(MobileGenerationLayout),
+        desktop ? findsNothing : findsOneWidget,
+        reason: '$size',
+      );
+    }
+    flutterErrors.expectNoErrors(reason: 'touch landscape layouts');
+
+    // Unmount and let deferred work (debounces, tooltips) finish.
+    await tester.pumpWidget(const SizedBox.shrink());
+    await tester.pump(const Duration(seconds: 2));
+  });
+
   testWidgets('layout state survives the 840 precise-pointer boundary', (
     tester,
   ) async {
