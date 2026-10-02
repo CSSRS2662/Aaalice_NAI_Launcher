@@ -30,12 +30,16 @@ void main() {
     }
   });
 
-  testWidgets('主界面只显示体力条本身，不显示文字', (tester) async {
+  testWidgets('主界面显示体力条与剩余百分比，命中区不小于 44', (tester) async {
     await tester.pumpWidget(_subject(_subscription(tier: 3, percent: 86)));
     await tester.pump();
 
     expect(bar, findsOneWidget);
-    expect(find.descendant(of: bar, matching: find.byType(Text)), findsNothing);
+    expect(
+      find.descendant(of: bar, matching: find.byType(Text)),
+      findsOneWidget,
+    );
+    expect(find.descendant(of: bar, matching: find.text('86%')), findsOne);
     final fill = tester.widget<FractionallySizedBox>(
       find.byKey(const ValueKey('opus-stamina-fill')),
     );
@@ -48,7 +52,7 @@ void main() {
         hasTapAction: true,
       ),
     );
-    expect(tester.getSize(bar).height, greaterThanOrEqualTo(20));
+    expect(tester.getSize(bar).height, greaterThanOrEqualTo(44));
   });
 
   testWidgets('超出上限时填满轨道并在 100% 处画分界线', (tester) async {
@@ -79,7 +83,13 @@ void main() {
 
     expect(find.byKey(const ValueKey('opus-stamina-details')), findsOneWidget);
     expect(find.text('V5 体力'), findsOneWidget);
-    expect(find.text('86%'), findsOneWidget);
+    expect(
+      find.descendant(
+        of: find.byKey(const ValueKey('opus-stamina-details')),
+        matching: find.text('86%'),
+      ),
+      findsOneWidget,
+    );
     expect(find.text('约 1,488 张'), findsOneWidget);
     expect(find.text('1 小时 53 分'), findsOneWidget);
     expect(find.text('约 1 天 2 小时'), findsOneWidget);
@@ -99,6 +109,7 @@ void main() {
       find.byKey(const ValueKey('opus-stamina-fill')),
     );
     expect(fill.widthFactor, 0);
+    expect(find.descendant(of: bar, matching: find.text('已耗尽')), findsOne);
     expect(
       tester.getSemantics(bar),
       isSemantics(

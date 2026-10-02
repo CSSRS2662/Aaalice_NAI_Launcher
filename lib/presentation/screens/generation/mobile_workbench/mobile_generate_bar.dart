@@ -2,17 +2,21 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/utils/localization_extension.dart';
+import '../../../agent_chat/widgets/agent_chat_entry_button.dart';
 import '../../../providers/generation/image_generation_selectors.dart';
 import '../../../providers/image_generation_provider.dart';
+import '../../../providers/replication_queue_provider.dart';
+import '../../../router/shell_panels_overlay.dart';
 import '../../../themes/theme_extension.dart';
-import '../../../widgets/anlas/opus_stamina_bar.dart';
 import '../../../widgets/common/anlas_cost_badge.dart';
 import '../../../widgets/common/themed_button.dart';
 import '../mobile_generation_view_data.dart';
 import '../widgets/generation_controls/generate_button.dart';
 import '../widgets/generation_controls/random_mode_toggle.dart';
+import 'mobile_generation_status_strip.dart';
 
-/// 生成页底栏：体力条（仅 V5 且有额度数据时）+ 抽卡开关、加入队列与生成按钮。
+/// 生成页底栏：额度条（V5 体力与 Anlas 余额）+ 抽卡开关、加入队列、智能体、
+/// 队列与生成按钮。
 ///
 /// 各页签共用同一个生成入口；进度直接填充在生成按钮内部。
 class MobileGenerateBar extends StatelessWidget {
@@ -23,6 +27,7 @@ class MobileGenerateBar extends StatelessWidget {
     required this.onCancel,
     required this.onSkipCurrent,
     required this.onAddToQueue,
+    required this.onOpenAgent,
   });
 
   final MobileGenerationViewData data;
@@ -30,6 +35,14 @@ class MobileGenerateBar extends StatelessWidget {
   final VoidCallback onCancel;
   final VoidCallback onSkipCurrent;
   final VoidCallback onAddToQueue;
+  final VoidCallback onOpenAgent;
+
+  static final ButtonStyle _toolStyle = IconButton.styleFrom(
+    minimumSize: const Size.square(44),
+    padding: EdgeInsets.zero,
+    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+    visualDensity: VisualDensity.standard,
+  );
 
   bool get _canSkipCurrentBatch =>
       data.isLauncherGenerating &&
@@ -89,15 +102,13 @@ class MobileGenerateBar extends StatelessWidget {
         key: const ValueKey('generation-mobile-bottom-bar'),
         color: theme.colorScheme.surface,
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(12, 2, 16, 10),
+          padding: const EdgeInsets.fromLTRB(12, 4, 12, 10),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              const Padding(
-                padding: EdgeInsets.only(left: 4, bottom: 4),
-                child: OpusStaminaBar(),
-              ),
+              const MobileGenerationStatusStrip(),
+              const SizedBox(height: 8),
               Row(
                 key: const ValueKey('generation-mobile-action-row'),
                 children: [
@@ -113,16 +124,13 @@ class MobileGenerateBar extends StatelessWidget {
                     ),
                   IconButton(
                     key: const ValueKey('generation-add-current-to-queue'),
-                    style: IconButton.styleFrom(
-                      minimumSize: const Size.square(44),
-                      padding: EdgeInsets.zero,
-                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                      visualDensity: VisualDensity.standard,
-                    ),
+                    style: _toolStyle,
                     onPressed: onAddToQueue,
                     icon: const Icon(Icons.playlist_add_rounded),
                     tooltip: context.l10n.queue_addCurrentTask,
                   ),
+                  AgentChatEntryButton(onPressed: onOpenAgent),
+                  const _QueueButton(),
                   const SizedBox(width: 6),
                   Expanded(child: main),
                 ],
@@ -336,6 +344,30 @@ class _CancelLabel extends ConsumerWidget {
           ),
         ),
       ],
+    );
+  }
+}
+
+/// 打开任务队列面板，角标显示排队数。
+class _QueueButton extends ConsumerWidget {
+  const _QueueButton();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final count = ref.watch(
+      replicationQueueNotifierProvider.select((state) => state.count),
+    );
+    return IconButton(
+      key: const ValueKey('generation-mobile-queue-action'),
+      style: MobileGenerateBar._toolStyle,
+      tooltip: context.l10n.mobileWorkbench_queue,
+      onPressed: () =>
+          ref.read(shellPanelProvider.notifier).state = ShellPanel.queue,
+      icon: Badge(
+        isLabelVisible: count > 0,
+        label: Text(count > 99 ? '99+' : '$count'),
+        child: const Icon(Icons.format_list_bulleted_rounded),
+      ),
     );
   }
 }

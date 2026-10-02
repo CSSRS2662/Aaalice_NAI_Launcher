@@ -14,7 +14,15 @@ class AnlasBalanceChip extends ConsumerWidget {
   /// 紧凑模式（移动端使用）
   final bool compact;
 
-  const AnlasBalanceChip({super.key, this.compact = false});
+  /// Sits on a surface that already has a background: only warning states
+  /// keep their own tint.
+  final bool embedded;
+
+  const AnlasBalanceChip({
+    super.key,
+    this.compact = false,
+    this.embedded = false,
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -44,6 +52,7 @@ class AnlasBalanceChip extends ConsumerWidget {
   Widget _buildPlaceholder(ThemeData theme, bool compact) {
     return _ChipContainer(
       compact: compact,
+      embedded: embedded,
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -65,6 +74,7 @@ class AnlasBalanceChip extends ConsumerWidget {
   Widget _buildLoading(BuildContext context, ThemeData theme, bool compact) {
     return _ChipContainer(
       compact: compact,
+      embedded: embedded,
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -116,6 +126,7 @@ class AnlasBalanceChip extends ConsumerWidget {
       borderRadius: BorderRadius.circular(8),
       child: _ChipContainer(
         compact: compact,
+        embedded: embedded,
         backgroundColor: backgroundColor,
         child: Row(
           mainAxisSize: MainAxisSize.min,
@@ -193,11 +204,13 @@ class AnlasBalanceChip extends ConsumerWidget {
 class _ChipContainer extends StatelessWidget {
   final Widget child;
   final bool compact;
+  final bool embedded;
   final Color? backgroundColor;
 
   const _ChipContainer({
     required this.child,
     required this.compact,
+    this.embedded = false,
     this.backgroundColor,
   });
 
@@ -211,7 +224,9 @@ class _ChipContainer extends StatelessWidget {
         vertical: compact ? 4 : 6,
       ),
       decoration: BoxDecoration(
-        color: backgroundColor ?? theme.colorScheme.surfaceContainerHigh,
+        color:
+            backgroundColor ??
+            (embedded ? null : theme.colorScheme.surfaceContainerHigh),
         borderRadius: BorderRadius.circular(8),
       ),
       child: child,

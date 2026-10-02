@@ -26,7 +26,7 @@ class MobileGenerationChrome extends StatelessWidget {
     return ThemedScaffold(
       appBar: controller.agentFullScreen
           ? null
-          : MobileGenerationHeader(onOpenAgent: controller.openAgentChat),
+          : const MobileGenerationHeader(),
       body: body,
       bottomNavigationBar: data.keyboardVisible || controller.agentFullScreen
           ? null
@@ -36,6 +36,7 @@ class MobileGenerationChrome extends StatelessWidget {
               onCancel: controller.cancelGeneration,
               onSkipCurrent: controller.skipCurrentRequest,
               onAddToQueue: () => controller.addCurrentPromptToQueue(context),
+              onOpenAgent: controller.openAgentChat,
             ),
     );
   }

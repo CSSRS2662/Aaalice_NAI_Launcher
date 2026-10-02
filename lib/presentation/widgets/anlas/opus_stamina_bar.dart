@@ -47,7 +47,8 @@ OpusUsageInfo? watchVisibleOpusUsage(WidgetRef ref) {
   return limited ? usage : null;
 }
 
-/// 生成按钮上方的纯体力条；不显示文字，点按打开详情。
+/// 生成按钮上方的体力读数：闪电图标、轨道与剩余百分比，点按打开详情。
+/// 不显示时（非 Opus、无额度数据或模型不受限）不占空间。
 class OpusStaminaBar extends ConsumerWidget {
   const OpusStaminaBar({super.key});
 
@@ -56,9 +57,12 @@ class OpusStaminaBar extends ConsumerWidget {
     final usage = watchVisibleOpusUsage(ref);
     if (usage == null) return const SizedBox.shrink();
     final level = OpusStaminaLevel.from(usage);
+    final theme = Theme.of(context);
+    final colors = theme.colorScheme;
     final percentText = level.exhausted
         ? context.l10n.stamina_stateExhausted
         : '${level.percent.round()}%';
+    final accent = level.exhausted || level.low ? colors.error : colors.primary;
     return Semantics(
       button: true,
       label: context.l10n.stamina_barSemantics(percentText),
@@ -67,12 +71,30 @@ class OpusStaminaBar extends ConsumerWidget {
       child: InkWell(
         key: const ValueKey('opus-stamina-bar'),
         onTap: () => showOpusStaminaSheet(context),
-        borderRadius: BorderRadius.circular(
-          Theme.of(context).appTheme.controlRadius,
-        ),
-        child: SizedBox(
-          height: 20,
-          child: Center(child: OpusStaminaTrack(level: level)),
+        borderRadius: BorderRadius.circular(theme.appTheme.controlRadius),
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(minHeight: 44),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 4),
+            child: Row(
+              children: [
+                Icon(Icons.bolt_rounded, size: 18, color: accent),
+                const SizedBox(width: 6),
+                Expanded(child: OpusStaminaTrack(level: level, height: 6)),
+                const SizedBox(width: 10),
+                Text(
+                  percentText,
+                  key: const ValueKey('opus-stamina-percent'),
+                  maxLines: 1,
+                  style: theme.textTheme.labelLarge?.copyWith(
+                    color: level.exhausted ? colors.error : colors.onSurface,
+                    fontWeight: FontWeight.w700,
+                    fontFeatures: const [FontFeature.tabularFigures()],
+                  ),
+                ),
+              ],
+            ),
+          ),
         ),
       ),
     );

@@ -5,24 +5,18 @@ import '../../../../core/constants/api_constants.dart';
 import '../../../../core/storage/local_storage_service.dart';
 import '../../../../core/utils/localization_extension.dart';
 import '../../../../data/models/image/resolution_preset.dart';
-import '../../../agent_chat/widgets/agent_chat_entry_button.dart';
 import '../../../providers/image_generation_provider.dart';
-import '../../../providers/replication_queue_provider.dart';
-import '../../../router/shell_panels_overlay.dart';
 import '../../../themes/core/layered_surface_style.dart';
 import '../../../themes/theme_extension.dart';
-import '../../../widgets/anlas/anlas_balance_chip.dart';
 import '../../../widgets/common/model_family_icon.dart';
 import '../widgets/saved_resolution_presets.dart';
 
-/// 生成页顶栏：左侧为当前模型与尺寸（点按展开菜单直接切换），右侧为余额、
-/// 智能体与队列。移动端只在这里切换模型，参数页不再重复提供；尺寸在任何
-/// 页签都可以直接切换，输入与保存自定义尺寸仍在参数页。
-class MobileGenerationHeader extends ConsumerWidget
+/// 生成页顶栏：只有模型（左）与尺寸（右）两个菜单，点按直接切换。移动端只在
+/// 这里切换模型，参数页不再重复提供；输入与保存自定义尺寸仍在参数页。余额、
+/// 智能体与队列在底栏。
+class MobileGenerationHeader extends StatelessWidget
     implements PreferredSizeWidget {
-  const MobileGenerationHeader({super.key, required this.onOpenAgent});
-
-  final VoidCallback onOpenAgent;
+  const MobileGenerationHeader({super.key});
 
   @override
   Size get preferredSize => const Size.fromHeight(kToolbarHeight);
@@ -37,41 +31,20 @@ class MobileGenerationHeader extends ConsumerWidget
   static String sizeLabel(int width, int height) => '$width×$height';
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final queueCount = ref.watch(
-      replicationQueueNotifierProvider.select((state) => state.count),
-    );
+  Widget build(BuildContext context) {
     return AppBar(
       key: const ValueKey('generation-mobile-header'),
       automaticallyImplyLeading: false,
       titleSpacing: 12,
-      title: const Align(
-        alignment: AlignmentDirectional.centerStart,
-        child: MobileGenerationHeaderMenus(),
-      ),
-      actions: [
-        const AnlasBalanceChip(compact: true),
-        const SizedBox(width: 2),
-        AgentChatEntryButton(onPressed: onOpenAgent),
-        IconButton(
-          key: const ValueKey('generation-mobile-queue-action'),
-          tooltip: context.l10n.mobileWorkbench_queue,
-          onPressed: () =>
-              ref.read(shellPanelProvider.notifier).state = ShellPanel.queue,
-          icon: Badge(
-            isLabelVisible: queueCount > 0,
-            label: Text(queueCount > 99 ? '99+' : '$queueCount'),
-            child: const Icon(Icons.format_list_bulleted_rounded),
-          ),
-        ),
-        const SizedBox(width: 4),
-      ],
+      title: const MobileGenerationHeaderMenus(),
+      actions: const [SizedBox(width: 12)],
     );
   }
 }
 
-/// Model and size side by side. Each pill's share follows its natural width,
-/// so both show in full when they fit and shrink together when they don't.
+/// Model at the start, size at the end. Each pill's share follows its natural
+/// width, so both show in full when they fit and shrink together when they
+/// don't.
 class MobileGenerationHeaderMenus extends ConsumerWidget {
   const MobileGenerationHeaderMenus({super.key});
 
@@ -90,16 +63,21 @@ class MobileGenerationHeaderMenus extends ConsumerWidget {
     final modelLabel = MobileGenerationHeader.shortModelLabel(model);
     final sizeLabel = MobileGenerationHeader.sizeLabel(size.$1, size.$2);
     return Row(
-      mainAxisSize: MainAxisSize.min,
       children: [
         Flexible(
           flex: _HeaderPill.flexFor(context, modelLabel),
-          child: MobileModelMenu(label: modelLabel),
+          child: Align(
+            alignment: AlignmentDirectional.centerStart,
+            child: MobileModelMenu(label: modelLabel),
+          ),
         ),
         const SizedBox(width: _gap),
         Flexible(
           flex: _HeaderPill.flexFor(context, sizeLabel),
-          child: MobileSizeMenu(label: sizeLabel),
+          child: Align(
+            alignment: AlignmentDirectional.centerEnd,
+            child: MobileSizeMenu(label: sizeLabel),
+          ),
         ),
       ],
     );
