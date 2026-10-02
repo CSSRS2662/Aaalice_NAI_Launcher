@@ -309,16 +309,14 @@ class _PromptGroupCard extends ConsumerWidget {
                 ),
               ],
             ),
+            // An open group always shows its whole text: a box with its own
+            // scroll inside the scrolling group list made vertical drags
+            // ambiguous. Only the header button folds a group away.
             if (!section.collapsed)
               Padding(
                 padding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
-                child: SizedBox(
-                  height: viewData.isMaximized
-                      ? (MediaQuery.sizeOf(context).height * 0.42).clamp(
-                          220.0,
-                          460.0,
-                        )
-                      : null,
+                child: KeyedSubtree(
+                  key: ValueKey('prompt_group_body_${section.id}'),
                   child: UnifiedPromptInput(
                     key: ValueKey('prompt_group_input_${section.id}'),
                     controller: section.controller,
@@ -345,10 +343,9 @@ class _PromptGroupCard extends ConsumerWidget {
                     decoration: const InputDecoration(
                       contentPadding: EdgeInsets.all(12),
                     ),
-                    minLines: viewData.isMaximized ? null : 4,
+                    minLines: viewData.isMaximized ? 6 : 4,
                     maxLines: null,
-                    expands: viewData.isMaximized,
-                    fitContent: !viewData.isMaximized,
+                    fitContent: true,
                     enableAssistant: false,
                     showTagModeSwitch: false,
                     onOpenAssistantSettings: onOpenAssistantSettings,

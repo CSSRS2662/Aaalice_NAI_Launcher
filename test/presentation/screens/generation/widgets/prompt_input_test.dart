@@ -665,6 +665,47 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
+  testWidgets('手机分组词框随内容完全展开，只由分组列表滚动', (tester) async {
+    tester.view.devicePixelRatio = 1;
+    tester.view.physicalSize = const Size(400, 800);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    addTearDown(tester.view.resetPhysicalSize);
+
+    await _pumpMobilePromptHarness(
+      tester,
+      defaultModel: 'nai-diffusion-5-curated',
+    );
+    await tester.tap(
+      find.byKey(const ValueKey('generation_prompt_editor_mode_switch')),
+    );
+    await tester.pump();
+
+    final list = find.byKey(
+      const ValueKey('generation_positive_prompt_groups'),
+    );
+    final field = find
+        .descendant(of: list, matching: find.byType(EditableText))
+        .first;
+    final longText = List.generate(40, (index) => 'tag_$index,\n').join();
+    await tester.enterText(field, longText);
+    await tester.pump();
+
+    final fieldScroll = tester.state<ScrollableState>(
+      find.descendant(of: field, matching: find.byType(Scrollable)).first,
+    );
+    expect(fieldScroll.position.maxScrollExtent, 0);
+    final listScroll = tester.state<ScrollableState>(
+      find.descendant(of: list, matching: find.byType(Scrollable)).first,
+    );
+    expect(listScroll.position.maxScrollExtent, greaterThan(0));
+
+    // A vertical drag on the box scrolls the group list.
+    await tester.drag(field, const Offset(0, -200));
+    await tester.pump();
+    expect(listScroll.position.pixels, greaterThan(0));
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets('手机角色管理不会自动触发单角色编辑', (tester) async {
     tester.view.devicePixelRatio = 1;
     tester.view.physicalSize = const Size(380, 800);
