@@ -57,6 +57,7 @@ NAI Launcher is built for people who use NovelAI regularly. Generation, editing,
 - Each character can have separate positive and negative Prompts, reference images, and a position. Character count and positioning adapt to the current model.
 - The offline Danbooru / e621 catalog and aliases show completion, tag type, popularity, and translations. Optional Chinese and related-tag data packs add more context.
 - Related-tag completion helps explore composition, clothing, poses, and visual elements, while Danbooru online results can fill in newer tags.
+- Completion tolerates input mistakes without AI: Chinese homophones (陈山 → 衬衫), full pinyin, Ziranma double pinyin and initials (chenshan / ifuj / cs), approximate Chinese, Chinese phrases split into words and matched to English tags (坐在椅子上 → sitting_on_chair), and English typo correction. Results can also be ranked by the tags near the cursor and by your usage on this device; each option can be turned off in Settings. Usage history stays on the device and is never cloud-synced.
 - Personal tag, pinned-tag, and random-tag libraries support categories, search, batch editing, and quick insertion.
 - Switch between text and tag mode at the bottom-right of the input to edit original text, adjust weights, long-press and drag selected tags to reorder them, and undo. Simplified and Traditional Chinese interfaces display the same local Chinese translations below tags; other languages show only the original text. Selecting a complete tag in text mode also displays its translation when using a Chinese interface.
 - Drag the bottom edge of the main prompt editor to resize it, or double-click the handle to restore automatic height. Text and tag modes share the same height.
@@ -218,7 +219,7 @@ NAI Launcher does not host your account or artwork on a project-operated server.
 
 ## 🙏 Acknowledgments
 
-Thanks to [NovelAI](https://novelai.net/), [Codex Gallery](https://novelai.quicktagcloud.com/), [AgIzT/NovelAI-Tag](https://github.com/AgIzT/NovelAI-Tag), [ffdkj Danbooru tag translation table](https://github.com/ffdkj/ffdkj-Danbooru_Tag-Chinese-English-Translation-Table), [amenorira/danbooru-tags-data-zh](https://github.com/amenorira/danbooru-tags-data-zh), [Flutter](https://flutter.dev/), [Riverpod](https://riverpod.dev/), and all contributors and testers.
+Thanks to [NovelAI](https://novelai.net/), [Codex Gallery](https://novelai.quicktagcloud.com/), [AgIzT/NovelAI-Tag](https://github.com/AgIzT/NovelAI-Tag), [ffdkj Danbooru tag translation table](https://github.com/ffdkj/ffdkj-Danbooru_Tag-Chinese-English-Translation-Table), [amenorira/danbooru-tags-data-zh](https://github.com/amenorira/danbooru-tags-data-zh), [mozillazg/pinyin-data](https://github.com/mozillazg/pinyin-data), [ECDICT](https://github.com/skywind3000/ECDICT), [Flutter](https://flutter.dev/), [Riverpod](https://riverpod.dev/), and all contributors and testers.
 
 ## 📄 License
 

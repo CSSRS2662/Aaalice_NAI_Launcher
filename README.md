@@ -57,6 +57,7 @@ NAI Launcher 面向经常使用 NovelAI 的图像创作者。生成、改图、P
 - 多角色可以分别设置正负面 Prompt、参考图与画面位置，并根据当前模型处理角色数量和定位能力。
 - 内置 Danbooru / e621 基础标签与别名，可离线显示补全、类型、热度和翻译；也可安装中文词库与相关标签数据包。
 - 相关标签补全能继续寻找构图、服装、动作和画面元素；Danbooru 在线结果可补充较新的标签。
+- 补全不依赖 AI 也能容错：中文同音字（陈山 → 衬衫）、全拼、自然码双拼与首字母（chenshan / ifuj / cs）、近似中文、把中文短句拆词匹配英文标签（坐在椅子上 → sitting_on_chair），以及英文拼写纠错；还可按光标附近的标签和本机使用习惯排序，各项都能在设置中单独关闭。使用习惯只保存在本机，不参与云同步。
 - 自定义标签词库、固定词和随机词库都支持分类、搜索、批量编辑与快速插入。
 - 输入框右下角可切换文本／标签模式，直接编辑原文、调整权重、多选后长按标签拖动排序及撤销；简中与繁中界面在标签下显示同一份本地中文译文，其他语言只显示原文。文本模式选中完整标签时也可查看译文。
 - 主提示词输入框底部可拖动调整高度，双击拖动条恢复自动增高；文本与标签模式共用高度。
@@ -218,7 +219,7 @@ NAI Launcher 不在项目自有服务器上托管你的账号或作品。只有�
 
 ## 🙏 致谢
 
-感谢 [NovelAI](https://novelai.net/)、[法典图鉴](https://novelai.quicktagcloud.com/)、[AgIzT/NovelAI-Tag](https://github.com/AgIzT/NovelAI-Tag)、[ffdkj 中英标签翻译表](https://github.com/ffdkj/ffdkj-Danbooru_Tag-Chinese-English-Translation-Table)、[amenorira/danbooru-tags-data-zh](https://github.com/amenorira/danbooru-tags-data-zh)、[Flutter](https://flutter.dev/)、[Riverpod](https://riverpod.dev/) 以及所有贡献者和测试用户。
+感谢 [NovelAI](https://novelai.net/)、[法典图鉴](https://novelai.quicktagcloud.com/)、[AgIzT/NovelAI-Tag](https://github.com/AgIzT/NovelAI-Tag)、[ffdkj 中英标签翻译表](https://github.com/ffdkj/ffdkj-Danbooru_Tag-Chinese-English-Translation-Table)、[amenorira/danbooru-tags-data-zh](https://github.com/amenorira/danbooru-tags-data-zh)、[mozillazg/pinyin-data](https://github.com/mozillazg/pinyin-data)、[ECDICT](https://github.com/skywind3000/ECDICT)、[Flutter](https://flutter.dev/)、[Riverpod](https://riverpod.dev/) 以及所有贡献者和测试用户。
 
 ## 📄 许可证
 
