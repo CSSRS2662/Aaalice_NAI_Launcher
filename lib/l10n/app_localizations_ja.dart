@@ -12632,6 +12632,10 @@ class AppLocalizationsJa extends AppLocalizations {
   String get autocomplete_missingTranslation => '未翻訳';
 
   @override
+  String get generation_varietyPlusDescription =>
+      '生成初期は CFG ガイダンスを省き、構図・ポーズ・配色をより多様にします。同じ画像を安定して再現したいときはオフにしてください。';
+
+  @override
   String get autocomplete_searchEnhancementTitle => '検索の強化';
 
   @override

@@ -8,6 +8,7 @@ import '../../../widgets/common/draggable_number_input.dart';
 import '../../../widgets/generation/auto_save_toggle_chip.dart';
 import 'generation_controls/batch_settings_button.dart';
 import 'generation_param_sections.dart';
+import 'variety_plus_section.dart';
 import 'img2img_panel.dart';
 import 'precise_reference_panel.dart';
 import 'reverse_prompt_panel.dart';
@@ -137,6 +138,8 @@ class ParameterPanel extends ConsumerWidget {
 
       // CFG Scale
       const CfgScaleSection(),
+
+      const VarietyPlusSection(),
 
       const SizedBox(height: 16),
 

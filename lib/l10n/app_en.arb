@@ -6321,6 +6321,7 @@
 
   "autocomplete_translating": "Translating…",
   "autocomplete_missingTranslation": "Not translated",
+  "generation_varietyPlusDescription": "Skips CFG guidance in the first steps for more varied composition, poses and colors. Turn it off to reproduce an image reliably.",
   "autocomplete_searchEnhancementTitle": "Search enhancements",
   "autocomplete_pinyinSearch": "Pinyin matching",
   "autocomplete_pinyinSearchSubtitle": "Chinese homophones and pinyin typed as letters",

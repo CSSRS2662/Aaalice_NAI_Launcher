@@ -12963,6 +12963,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get autocomplete_missingTranslation => 'Not translated';
 
   @override
+  String get generation_varietyPlusDescription =>
+      'Skips CFG guidance in the first steps for more varied composition, poses and colors. Turn it off to reproduce an image reliably.';
+
+  @override
   String get autocomplete_searchEnhancementTitle => 'Search enhancements';
 
   @override

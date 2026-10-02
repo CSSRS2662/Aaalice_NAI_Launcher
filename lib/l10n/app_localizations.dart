@@ -22548,6 +22548,12 @@ abstract class AppLocalizations {
   /// **'Not translated'**
   String get autocomplete_missingTranslation;
 
+  /// No description provided for @generation_varietyPlusDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Skips CFG guidance in the first steps for more varied composition, poses and colors. Turn it off to reproduce an image reliably.'**
+  String get generation_varietyPlusDescription;
+
   /// No description provided for @autocomplete_searchEnhancementTitle.
   ///
   /// In en, this message translates to:

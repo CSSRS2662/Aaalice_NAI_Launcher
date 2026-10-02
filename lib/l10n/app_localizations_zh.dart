@@ -12424,6 +12424,10 @@ class AppLocalizationsZh extends AppLocalizations {
   String get autocomplete_missingTranslation => '未汉化';
 
   @override
+  String get generation_varietyPlusDescription =>
+      '生成初期跳过 CFG 引导，构图、姿势与配色更多变；想稳定复现同一张图时关闭。';
+
+  @override
   String get autocomplete_searchEnhancementTitle => '搜索增强';
 
   @override
@@ -27535,6 +27539,10 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get autocomplete_missingTranslation => '未漢化';
+
+  @override
+  String get generation_varietyPlusDescription =>
+      '生成初期略過 CFG 引導，構圖、姿勢與配色更多變；想穩定重現同一張圖時關閉。';
 
   @override
   String get autocomplete_searchEnhancementTitle => '搜尋增強';

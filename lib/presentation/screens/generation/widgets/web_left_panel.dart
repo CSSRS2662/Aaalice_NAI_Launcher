@@ -13,6 +13,7 @@ import '../../../widgets/character/inline_character_section.dart';
 import 'collapsed_panel.dart';
 import 'generation_controls/generation_controls.dart';
 import 'generation_param_sections.dart';
+import 'variety_plus_section.dart';
 import 'generation_workspace_header.dart';
 import 'img2img_panel.dart';
 import 'precise_reference_panel.dart';
@@ -299,6 +300,8 @@ class _WebLeftPanelState extends ConsumerState<WebLeftPanel>
                                       SizedBox(height: 10),
                                       StepsSection(),
                                       CfgScaleSection(),
+                                      VarietyPlusSection(),
+                                      SizedBox(height: 10),
                                       AdvancedSamplingOptions(),
                                     ],
                                   ),

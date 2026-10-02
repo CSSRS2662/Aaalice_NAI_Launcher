@@ -299,7 +299,8 @@ class StepsSection extends ConsumerWidget {
   }
 }
 
-/// CFG Scale 分节（标题含当前值 + Decrisp/Variety+ 开关 + 滑杆）
+/// CFG Scale 分节（标题 + V3 的 Decrisp 开关 + 滑杆）；Variety+ 见
+/// `VarietyPlusSection`。
 class CfgScaleSection extends ConsumerWidget {
   const CfgScaleSection({super.key});
 
@@ -310,9 +311,7 @@ class CfgScaleSection extends ConsumerWidget {
         (params) => (
           scale: params.scale,
           decrisp: params.decrisp,
-          varietyPlus: params.varietyPlus,
           isV3Model: params.isV3Model,
-          supportsVarietyPlus: params.capabilities.supportsVarietyPlus,
         ),
       ),
     );
@@ -328,32 +327,16 @@ class CfgScaleSection extends ConsumerWidget {
             ParamSectionTitle(
               _labelBeforeColon(context.l10n.generation_cfgScale('')),
             ),
-            Wrap(
-              spacing: 8,
-              runSpacing: 8,
-              children: [
-                if (data.isV3Model)
-                  GenerationToggleButton(
-                    label: 'Decrisp',
-                    isEnabled: data.decrisp,
-                    onChanged: (value) {
-                      ref
-                          .read(generationParamsNotifierProvider.notifier)
-                          .updateDecrisp(value);
-                    },
-                  ),
-                if (data.supportsVarietyPlus)
-                  GenerationToggleButton(
-                    label: 'Variety+',
-                    isEnabled: data.varietyPlus,
-                    onChanged: (value) {
-                      ref
-                          .read(generationParamsNotifierProvider.notifier)
-                          .updateVarietyPlus(value);
-                    },
-                  ),
-              ],
-            ),
+            if (data.isV3Model)
+              GenerationToggleButton(
+                label: 'Decrisp',
+                isEnabled: data.decrisp,
+                onChanged: (value) {
+                  ref
+                      .read(generationParamsNotifierProvider.notifier)
+                      .updateDecrisp(value);
+                },
+              ),
           ],
         ),
         SteppedSlider(

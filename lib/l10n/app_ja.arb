@@ -6344,6 +6344,7 @@
 
   "autocomplete_translating": "翻訳中…",
   "autocomplete_missingTranslation": "未翻訳",
+  "generation_varietyPlusDescription": "生成初期は CFG ガイダンスを省き、構図・ポーズ・配色をより多様にします。同じ画像を安定して再現したいときはオフにしてください。",
   "autocomplete_searchEnhancementTitle": "検索の強化",
   "autocomplete_pinyinSearch": "ピンイン照合",
   "autocomplete_pinyinSearchSubtitle": "中国語の同音字と、英字で入力したピンイン",
