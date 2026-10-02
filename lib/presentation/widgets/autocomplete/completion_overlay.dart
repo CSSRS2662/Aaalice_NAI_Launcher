@@ -7,6 +7,7 @@ import '../../../core/autocomplete/completion_models.dart';
 import '../../../core/autocomplete/zh_dictionary_service.dart';
 import '../../../core/utils/localization_extension.dart';
 import '../../adaptive/interaction_policy.dart';
+import 'completion_match_note.dart';
 
 const double autocompleteCandidateExtent = 35;
 
@@ -202,6 +203,8 @@ class CompletionOverlay extends StatelessWidget {
                                             showTranslations: showTranslations,
                                             showCategory: showCategory,
                                             showCount: showCount,
+                                            showMatchNote:
+                                                settings.showMatchNotes,
                                             onTap: () => onSelected(index),
                                           );
                                         },
@@ -556,6 +559,7 @@ class _CompletionTile extends StatelessWidget {
     required this.showTranslations,
     required this.showCategory,
     required this.showCount,
+    this.showMatchNote = true,
     required this.onTap,
   });
 
@@ -565,7 +569,15 @@ class _CompletionTile extends StatelessWidget {
   final bool showTranslations;
   final bool showCategory;
   final bool showCount;
+  final bool showMatchNote;
   final VoidCallback onTap;
+
+  Widget? _matchNote(BuildContext context) {
+    if (!showMatchNote) return null;
+    final label = completionMatchNoteLabel(context, candidate);
+    if (label == null) return null;
+    return CompletionMatchNote(label: label, hint: candidate.matchHint);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -636,6 +648,7 @@ class _CompletionTile extends StatelessWidget {
   ) {
     final hasSecondary =
         secondary.isNotEmpty || (showTranslations && candidate.isTranslating);
+    final note = _matchNote(context);
     return Row(
       children: [
         if (showCategory) ...[
@@ -670,6 +683,7 @@ class _CompletionTile extends StatelessWidget {
               const SizedBox(height: 2),
               Row(
                 children: [
+                  if (note != null) ...[note, const SizedBox(width: 6)],
                   Expanded(
                     child: hasSecondary
                         ? _CandidateSecondary(
@@ -697,6 +711,7 @@ class _CompletionTile extends StatelessWidget {
     Color categoryColor,
     List<String> secondary,
   ) {
+    final note = _matchNote(context);
     return Row(
       children: [
         if (showCategory) ...[
@@ -716,6 +731,7 @@ class _CompletionTile extends StatelessWidget {
             ),
           ),
         ),
+        if (note != null) ...[const SizedBox(width: 8), note],
         if (showTranslations) ...[
           const SizedBox(width: 10),
           Expanded(

@@ -215,11 +215,12 @@ void main() {
     await tester.pump();
     await tester.pump();
 
+    // Includes the search enhancement card.
     final settingsCards = find.byType(SettingsCard);
-    expect(settingsCards, findsNWidgets(6));
+    expect(settingsCards, findsNWidgets(7));
 
     final primaryRect = tester.getRect(settingsCards.first);
-    for (var index = 1; index < 6; index++) {
+    for (var index = 1; index < 7; index++) {
       final sectionRect = tester.getRect(settingsCards.at(index));
       expect(sectionRect.left, primaryRect.left);
       expect(sectionRect.right, primaryRect.right);

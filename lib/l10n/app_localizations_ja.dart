@@ -12632,6 +12632,112 @@ class AppLocalizationsJa extends AppLocalizations {
   String get autocomplete_missingTranslation => '未翻訳';
 
   @override
+  String get autocomplete_searchEnhancementTitle => '検索の強化';
+
+  @override
+  String get autocomplete_pinyinSearch => 'ピンイン照合';
+
+  @override
+  String get autocomplete_pinyinSearchSubtitle => '中国語の同音字と、英字で入力したピンイン';
+
+  @override
+  String get autocomplete_pinyinFull => '全拼と頭文字';
+
+  @override
+  String get autocomplete_pinyinFullSubtitle => '例：chenshan、cs';
+
+  @override
+  String get autocomplete_pinyinZiranma => '自然碼双拼';
+
+  @override
+  String get autocomplete_pinyinZiranmaSubtitle => '例：ifuj、iu';
+
+  @override
+  String get autocomplete_fuzzyPinyin => '曖昧音';
+
+  @override
+  String get autocomplete_fuzzyPinyinSubtitle => '選択した組を同じ音として扱う';
+
+  @override
+  String get autocomplete_approximateMatch => '近似照合';
+
+  @override
+  String get autocomplete_approximateMatchSubtitle => '文字の大半が同じ順で一致する中国語ラベル';
+
+  @override
+  String get autocomplete_crossLingual => '語分割照合';
+
+  @override
+  String get autocomplete_crossLingualSubtitle => '中国語を語に分け、中国語ラベルのない英語タグを探す';
+
+  @override
+  String get autocomplete_spellCorrection => '英語の綴り修正と語形';
+
+  @override
+  String get autocomplete_spellCorrectionSubtitle =>
+      '直接の一致がないとき綴りを直し、単複などの語形も試す';
+
+  @override
+  String get autocomplete_contextRanking => '文脈で並べ替え';
+
+  @override
+  String get autocomplete_contextRankingSubtitle =>
+      'カーソル付近のタグとよく共起するものを優先（共起データパックが必要）';
+
+  @override
+  String get autocomplete_personalRanking => '使用履歴で並べ替え';
+
+  @override
+  String get autocomplete_personalRankingSubtitle =>
+      'この端末で選んだタグを優先。記録は端末内のみで同期しません';
+
+  @override
+  String get autocomplete_clearUsageHistory => '記録を消去';
+
+  @override
+  String get autocomplete_clearUsageHistoryConfirm =>
+      'この端末の補完使用記録を消去しますか？並び順は既定に戻ります。';
+
+  @override
+  String get autocomplete_usageHistoryCleared => '使用記録を消去しました';
+
+  @override
+  String get autocomplete_showMatchNotes => '照合の説明を表示';
+
+  @override
+  String get autocomplete_showMatchNotesSubtitle => 'ピンインや綴り修正など字面以外の一致を候補に表示';
+
+  @override
+  String get autocomplete_matchHomophone => '同音';
+
+  @override
+  String get autocomplete_matchFuzzyPinyin => '近い音';
+
+  @override
+  String get autocomplete_matchPinyin => 'ピンイン';
+
+  @override
+  String get autocomplete_matchShuangpin => '双拼';
+
+  @override
+  String get autocomplete_matchInitials => '頭文字';
+
+  @override
+  String get autocomplete_matchApproximate => '近似';
+
+  @override
+  String get autocomplete_matchCrossLingual => '分割';
+
+  @override
+  String get autocomplete_matchSpellCorrected => '修正';
+
+  @override
+  String get autocomplete_matchEnglishVariant => '語形';
+
+  @override
+  String get autocomplete_matchSemantic => '意味';
+
+  @override
   String autocomplete_translationCoverage(int translated, int total) {
     return '翻訳カバー率：$translated/$total';
   }

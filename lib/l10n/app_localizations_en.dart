@@ -12963,6 +12963,117 @@ class AppLocalizationsEn extends AppLocalizations {
   String get autocomplete_missingTranslation => 'Not translated';
 
   @override
+  String get autocomplete_searchEnhancementTitle => 'Search enhancements';
+
+  @override
+  String get autocomplete_pinyinSearch => 'Pinyin matching';
+
+  @override
+  String get autocomplete_pinyinSearchSubtitle =>
+      'Chinese homophones and pinyin typed as letters';
+
+  @override
+  String get autocomplete_pinyinFull => 'Full pinyin and initials';
+
+  @override
+  String get autocomplete_pinyinFullSubtitle => 'For example chenshan, cs';
+
+  @override
+  String get autocomplete_pinyinZiranma => 'Ziranma double pinyin';
+
+  @override
+  String get autocomplete_pinyinZiranmaSubtitle => 'For example ifuj, iu';
+
+  @override
+  String get autocomplete_fuzzyPinyin => 'Fuzzy sounds';
+
+  @override
+  String get autocomplete_fuzzyPinyinSubtitle =>
+      'Selected pairs count as the same sound';
+
+  @override
+  String get autocomplete_approximateMatch => 'Approximate matching';
+
+  @override
+  String get autocomplete_approximateMatchSubtitle =>
+      'Chinese labels sharing most characters in the same order';
+
+  @override
+  String get autocomplete_crossLingual => 'Word-split matching';
+
+  @override
+  String get autocomplete_crossLingualSubtitle =>
+      'Split Chinese into words and find English tags without a Chinese label';
+
+  @override
+  String get autocomplete_spellCorrection => 'English typos and word forms';
+
+  @override
+  String get autocomplete_spellCorrectionSubtitle =>
+      'When nothing matches, fix typos and try other word forms';
+
+  @override
+  String get autocomplete_contextRanking => 'Rank by context';
+
+  @override
+  String get autocomplete_contextRankingSubtitle =>
+      'Prefer tags that often appear with those near the cursor; needs the co-occurrence pack';
+
+  @override
+  String get autocomplete_personalRanking => 'Rank by your usage';
+
+  @override
+  String get autocomplete_personalRankingSubtitle =>
+      'Prefer tags picked on this device; the record stays here and is never synced';
+
+  @override
+  String get autocomplete_clearUsageHistory => 'Clear record';
+
+  @override
+  String get autocomplete_clearUsageHistoryConfirm =>
+      'Clear this device\'s completion usage record? Ranking returns to the default.';
+
+  @override
+  String get autocomplete_usageHistoryCleared => 'Usage record cleared';
+
+  @override
+  String get autocomplete_showMatchNotes => 'Show match notes';
+
+  @override
+  String get autocomplete_showMatchNotesSubtitle =>
+      'Label rows matched by pinyin, typo fixes and other non-literal ways';
+
+  @override
+  String get autocomplete_matchHomophone => 'Homophone';
+
+  @override
+  String get autocomplete_matchFuzzyPinyin => 'Similar sound';
+
+  @override
+  String get autocomplete_matchPinyin => 'Pinyin';
+
+  @override
+  String get autocomplete_matchShuangpin => 'Shuangpin';
+
+  @override
+  String get autocomplete_matchInitials => 'Initials';
+
+  @override
+  String get autocomplete_matchApproximate => 'Similar';
+
+  @override
+  String get autocomplete_matchCrossLingual => 'Split';
+
+  @override
+  String get autocomplete_matchSpellCorrected => 'Corrected';
+
+  @override
+  String get autocomplete_matchEnglishVariant => 'Word form';
+
+  @override
+  String get autocomplete_matchSemantic => 'Semantic';
+
+  @override
   String autocomplete_translationCoverage(int translated, int total) {
     return 'Translation coverage: $translated/$total';
   }

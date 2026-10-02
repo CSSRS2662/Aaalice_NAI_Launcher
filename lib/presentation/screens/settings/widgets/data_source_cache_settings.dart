@@ -17,6 +17,7 @@ import '../../../providers/generation/generation_settings_notifiers.dart'
     as generation_settings;
 import '../../../widgets/common/app_toast.dart';
 import '../../../widgets/common/themed_confirm_dialog.dart';
+import 'search_enhancement_settings.dart';
 import 'settings_card.dart';
 import 'settings_data_status_tile.dart';
 
@@ -112,6 +113,8 @@ class DataSourceCacheSettings extends ConsumerWidget {
             ],
           ),
         ),
+        const SizedBox(height: 16),
+        const SearchEnhancementSettings(),
         const SizedBox(height: 16),
         SettingsCard(
           title: context.l10n.autocomplete_dataSourcesTitle,

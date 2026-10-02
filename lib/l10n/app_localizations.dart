@@ -22548,6 +22548,210 @@ abstract class AppLocalizations {
   /// **'Not translated'**
   String get autocomplete_missingTranslation;
 
+  /// No description provided for @autocomplete_searchEnhancementTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Search enhancements'**
+  String get autocomplete_searchEnhancementTitle;
+
+  /// No description provided for @autocomplete_pinyinSearch.
+  ///
+  /// In en, this message translates to:
+  /// **'Pinyin matching'**
+  String get autocomplete_pinyinSearch;
+
+  /// No description provided for @autocomplete_pinyinSearchSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Chinese homophones and pinyin typed as letters'**
+  String get autocomplete_pinyinSearchSubtitle;
+
+  /// No description provided for @autocomplete_pinyinFull.
+  ///
+  /// In en, this message translates to:
+  /// **'Full pinyin and initials'**
+  String get autocomplete_pinyinFull;
+
+  /// No description provided for @autocomplete_pinyinFullSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'For example chenshan, cs'**
+  String get autocomplete_pinyinFullSubtitle;
+
+  /// No description provided for @autocomplete_pinyinZiranma.
+  ///
+  /// In en, this message translates to:
+  /// **'Ziranma double pinyin'**
+  String get autocomplete_pinyinZiranma;
+
+  /// No description provided for @autocomplete_pinyinZiranmaSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'For example ifuj, iu'**
+  String get autocomplete_pinyinZiranmaSubtitle;
+
+  /// No description provided for @autocomplete_fuzzyPinyin.
+  ///
+  /// In en, this message translates to:
+  /// **'Fuzzy sounds'**
+  String get autocomplete_fuzzyPinyin;
+
+  /// No description provided for @autocomplete_fuzzyPinyinSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Selected pairs count as the same sound'**
+  String get autocomplete_fuzzyPinyinSubtitle;
+
+  /// No description provided for @autocomplete_approximateMatch.
+  ///
+  /// In en, this message translates to:
+  /// **'Approximate matching'**
+  String get autocomplete_approximateMatch;
+
+  /// No description provided for @autocomplete_approximateMatchSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Chinese labels sharing most characters in the same order'**
+  String get autocomplete_approximateMatchSubtitle;
+
+  /// No description provided for @autocomplete_crossLingual.
+  ///
+  /// In en, this message translates to:
+  /// **'Word-split matching'**
+  String get autocomplete_crossLingual;
+
+  /// No description provided for @autocomplete_crossLingualSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Split Chinese into words and find English tags without a Chinese label'**
+  String get autocomplete_crossLingualSubtitle;
+
+  /// No description provided for @autocomplete_spellCorrection.
+  ///
+  /// In en, this message translates to:
+  /// **'English typos and word forms'**
+  String get autocomplete_spellCorrection;
+
+  /// No description provided for @autocomplete_spellCorrectionSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'When nothing matches, fix typos and try other word forms'**
+  String get autocomplete_spellCorrectionSubtitle;
+
+  /// No description provided for @autocomplete_contextRanking.
+  ///
+  /// In en, this message translates to:
+  /// **'Rank by context'**
+  String get autocomplete_contextRanking;
+
+  /// No description provided for @autocomplete_contextRankingSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Prefer tags that often appear with those near the cursor; needs the co-occurrence pack'**
+  String get autocomplete_contextRankingSubtitle;
+
+  /// No description provided for @autocomplete_personalRanking.
+  ///
+  /// In en, this message translates to:
+  /// **'Rank by your usage'**
+  String get autocomplete_personalRanking;
+
+  /// No description provided for @autocomplete_personalRankingSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Prefer tags picked on this device; the record stays here and is never synced'**
+  String get autocomplete_personalRankingSubtitle;
+
+  /// No description provided for @autocomplete_clearUsageHistory.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear record'**
+  String get autocomplete_clearUsageHistory;
+
+  /// No description provided for @autocomplete_clearUsageHistoryConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear this device\'s completion usage record? Ranking returns to the default.'**
+  String get autocomplete_clearUsageHistoryConfirm;
+
+  /// No description provided for @autocomplete_usageHistoryCleared.
+  ///
+  /// In en, this message translates to:
+  /// **'Usage record cleared'**
+  String get autocomplete_usageHistoryCleared;
+
+  /// No description provided for @autocomplete_showMatchNotes.
+  ///
+  /// In en, this message translates to:
+  /// **'Show match notes'**
+  String get autocomplete_showMatchNotes;
+
+  /// No description provided for @autocomplete_showMatchNotesSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Label rows matched by pinyin, typo fixes and other non-literal ways'**
+  String get autocomplete_showMatchNotesSubtitle;
+
+  /// No description provided for @autocomplete_matchHomophone.
+  ///
+  /// In en, this message translates to:
+  /// **'Homophone'**
+  String get autocomplete_matchHomophone;
+
+  /// No description provided for @autocomplete_matchFuzzyPinyin.
+  ///
+  /// In en, this message translates to:
+  /// **'Similar sound'**
+  String get autocomplete_matchFuzzyPinyin;
+
+  /// No description provided for @autocomplete_matchPinyin.
+  ///
+  /// In en, this message translates to:
+  /// **'Pinyin'**
+  String get autocomplete_matchPinyin;
+
+  /// No description provided for @autocomplete_matchShuangpin.
+  ///
+  /// In en, this message translates to:
+  /// **'Shuangpin'**
+  String get autocomplete_matchShuangpin;
+
+  /// No description provided for @autocomplete_matchInitials.
+  ///
+  /// In en, this message translates to:
+  /// **'Initials'**
+  String get autocomplete_matchInitials;
+
+  /// No description provided for @autocomplete_matchApproximate.
+  ///
+  /// In en, this message translates to:
+  /// **'Similar'**
+  String get autocomplete_matchApproximate;
+
+  /// No description provided for @autocomplete_matchCrossLingual.
+  ///
+  /// In en, this message translates to:
+  /// **'Split'**
+  String get autocomplete_matchCrossLingual;
+
+  /// No description provided for @autocomplete_matchSpellCorrected.
+  ///
+  /// In en, this message translates to:
+  /// **'Corrected'**
+  String get autocomplete_matchSpellCorrected;
+
+  /// No description provided for @autocomplete_matchEnglishVariant.
+  ///
+  /// In en, this message translates to:
+  /// **'Word form'**
+  String get autocomplete_matchEnglishVariant;
+
+  /// No description provided for @autocomplete_matchSemantic.
+  ///
+  /// In en, this message translates to:
+  /// **'Semantic'**
+  String get autocomplete_matchSemantic;
+
   /// No description provided for @autocomplete_translationCoverage.
   ///
   /// In en, this message translates to:

@@ -12424,6 +12424,109 @@ class AppLocalizationsZh extends AppLocalizations {
   String get autocomplete_missingTranslation => '未汉化';
 
   @override
+  String get autocomplete_searchEnhancementTitle => '搜索增强';
+
+  @override
+  String get autocomplete_pinyinSearch => '拼音匹配';
+
+  @override
+  String get autocomplete_pinyinSearchSubtitle => '中文同音字，以及用字母输入的拼音';
+
+  @override
+  String get autocomplete_pinyinFull => '全拼与首字母';
+
+  @override
+  String get autocomplete_pinyinFullSubtitle => '例如 chenshan、cs';
+
+  @override
+  String get autocomplete_pinyinZiranma => '自然码双拼';
+
+  @override
+  String get autocomplete_pinyinZiranmaSubtitle => '例如 ifuj、iu';
+
+  @override
+  String get autocomplete_fuzzyPinyin => '模糊音';
+
+  @override
+  String get autocomplete_fuzzyPinyinSubtitle => '选中的音按同一个音处理';
+
+  @override
+  String get autocomplete_approximateMatch => '近似匹配';
+
+  @override
+  String get autocomplete_approximateMatchSubtitle => '大部分字相同且顺序一致的中文标签';
+
+  @override
+  String get autocomplete_crossLingual => '拆词匹配';
+
+  @override
+  String get autocomplete_crossLingualSubtitle => '把中文拆成词，按英文 tag 查找没有中文的标签';
+
+  @override
+  String get autocomplete_spellCorrection => '英文纠错与词形';
+
+  @override
+  String get autocomplete_spellCorrectionSubtitle => '没有直接结果时纠正拼写，并尝试单复数等词形';
+
+  @override
+  String get autocomplete_contextRanking => '按上下文排序';
+
+  @override
+  String get autocomplete_contextRankingSubtitle =>
+      '优先常与光标附近 tag 一起出现的结果，需要共现数据包';
+
+  @override
+  String get autocomplete_personalRanking => '按使用习惯排序';
+
+  @override
+  String get autocomplete_personalRankingSubtitle => '优先本机选过的 tag；记录只保存在本机，不同步';
+
+  @override
+  String get autocomplete_clearUsageHistory => '清除记录';
+
+  @override
+  String get autocomplete_clearUsageHistoryConfirm => '清除本机的补全使用记录？排序会恢复默认。';
+
+  @override
+  String get autocomplete_usageHistoryCleared => '使用记录已清除';
+
+  @override
+  String get autocomplete_showMatchNotes => '显示匹配说明';
+
+  @override
+  String get autocomplete_showMatchNotesSubtitle => '在候选上标出拼音、纠错等非字面匹配';
+
+  @override
+  String get autocomplete_matchHomophone => '同音';
+
+  @override
+  String get autocomplete_matchFuzzyPinyin => '近音';
+
+  @override
+  String get autocomplete_matchPinyin => '拼音';
+
+  @override
+  String get autocomplete_matchShuangpin => '双拼';
+
+  @override
+  String get autocomplete_matchInitials => '首字母';
+
+  @override
+  String get autocomplete_matchApproximate => '近似';
+
+  @override
+  String get autocomplete_matchCrossLingual => '拆词';
+
+  @override
+  String get autocomplete_matchSpellCorrected => '纠错';
+
+  @override
+  String get autocomplete_matchEnglishVariant => '词形';
+
+  @override
+  String get autocomplete_matchSemantic => '语义';
+
+  @override
   String autocomplete_translationCoverage(int translated, int total) {
     return '汉化覆盖：$translated/$total';
   }
@@ -27432,6 +27535,109 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get autocomplete_missingTranslation => '未漢化';
+
+  @override
+  String get autocomplete_searchEnhancementTitle => '搜尋增強';
+
+  @override
+  String get autocomplete_pinyinSearch => '拼音匹配';
+
+  @override
+  String get autocomplete_pinyinSearchSubtitle => '中文同音字，以及用字母輸入的拼音';
+
+  @override
+  String get autocomplete_pinyinFull => '全拼與首字母';
+
+  @override
+  String get autocomplete_pinyinFullSubtitle => '例如 chenshan、cs';
+
+  @override
+  String get autocomplete_pinyinZiranma => '自然碼雙拼';
+
+  @override
+  String get autocomplete_pinyinZiranmaSubtitle => '例如 ifuj、iu';
+
+  @override
+  String get autocomplete_fuzzyPinyin => '模糊音';
+
+  @override
+  String get autocomplete_fuzzyPinyinSubtitle => '選中的音按同一個音處理';
+
+  @override
+  String get autocomplete_approximateMatch => '近似匹配';
+
+  @override
+  String get autocomplete_approximateMatchSubtitle => '大部分字相同且順序一致的中文標籤';
+
+  @override
+  String get autocomplete_crossLingual => '拆詞匹配';
+
+  @override
+  String get autocomplete_crossLingualSubtitle => '把中文拆成詞，按英文 tag 查找沒有中文的標籤';
+
+  @override
+  String get autocomplete_spellCorrection => '英文糾錯與詞形';
+
+  @override
+  String get autocomplete_spellCorrectionSubtitle => '沒有直接結果時糾正拼寫，並嘗試單複數等詞形';
+
+  @override
+  String get autocomplete_contextRanking => '按上下文排序';
+
+  @override
+  String get autocomplete_contextRankingSubtitle =>
+      '優先常與游標附近 tag 一起出現的結果，需要共現資料包';
+
+  @override
+  String get autocomplete_personalRanking => '按使用習慣排序';
+
+  @override
+  String get autocomplete_personalRankingSubtitle => '優先本機選過的 tag；記錄只保存在本機，不同步';
+
+  @override
+  String get autocomplete_clearUsageHistory => '清除記錄';
+
+  @override
+  String get autocomplete_clearUsageHistoryConfirm => '清除本機的補全使用記錄？排序會恢復預設。';
+
+  @override
+  String get autocomplete_usageHistoryCleared => '使用記錄已清除';
+
+  @override
+  String get autocomplete_showMatchNotes => '顯示匹配說明';
+
+  @override
+  String get autocomplete_showMatchNotesSubtitle => '在候選上標出拼音、糾錯等非字面匹配';
+
+  @override
+  String get autocomplete_matchHomophone => '同音';
+
+  @override
+  String get autocomplete_matchFuzzyPinyin => '近音';
+
+  @override
+  String get autocomplete_matchPinyin => '拼音';
+
+  @override
+  String get autocomplete_matchShuangpin => '雙拼';
+
+  @override
+  String get autocomplete_matchInitials => '首字母';
+
+  @override
+  String get autocomplete_matchApproximate => '近似';
+
+  @override
+  String get autocomplete_matchCrossLingual => '拆詞';
+
+  @override
+  String get autocomplete_matchSpellCorrected => '糾錯';
+
+  @override
+  String get autocomplete_matchEnglishVariant => '詞形';
+
+  @override
+  String get autocomplete_matchSemantic => '語義';
 
   @override
   String autocomplete_translationCoverage(int translated, int total) {
