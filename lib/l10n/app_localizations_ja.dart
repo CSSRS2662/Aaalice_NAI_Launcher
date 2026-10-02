@@ -107,6 +107,12 @@ class AppLocalizationsJa extends AppLocalizations {
   String get common_delete => '削除';
 
   @override
+  String get common_decrease => '減らす';
+
+  @override
+  String get common_increase => '増やす';
+
+  @override
   String get common_edit => '編集';
 
   @override
@@ -10889,14 +10895,13 @@ class AppLocalizationsJa extends AppLocalizations {
   }
 
   @override
-  String get toast_favorited => 'お気に入りに登録しました';
-
-  @override
-  String get toast_unfavorited => 'お気に入りから削除しました';
-
-  @override
   String toast_favoriteUpdateFailed(Object error) {
     return 'お気に入りの状態を更新できませんでした: $error';
+  }
+
+  @override
+  String toast_seedReused(Object seed) {
+    return 'シード $seed を適用しました';
   }
 
   @override
@@ -12683,6 +12688,9 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get autocomplete_relatedTagsSubtitleTouch => 'タグ確定後に関連タグを自動表示します';
+
+  @override
+  String get autocomplete_relatedTagsAction => '関連タグ';
 
   @override
   String get autocomplete_danbooruApi => 'Danbooru オンライン補完';
@@ -15154,6 +15162,11 @@ class AppLocalizationsJa extends AppLocalizations {
   @override
   String mobileWorkbench_selectModel(Object model) {
     return 'モデル $model、タップして切り替え';
+  }
+
+  @override
+  String mobileWorkbench_selectSize(Object size) {
+    return 'サイズ $size、タップで切り替え';
   }
 
   @override

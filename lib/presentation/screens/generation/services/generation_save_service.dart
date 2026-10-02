@@ -19,7 +19,7 @@ import '../../../widgets/common/app_toast.dart';
 import '../../../widgets/common/image_detail/file_image_detail_data.dart';
 import '../../../widgets/common/image_detail/image_detail_data.dart';
 import '../../../widgets/common/image_detail/image_detail_viewer.dart';
-import 'generated_image_file_link.dart';
+import 'generated_image_favorite.dart';
 
 /// 图像保存服务类
 ///
@@ -102,42 +102,11 @@ class GenerationSaveService {
         onFavoriteToggle: (detail) {
           final image = sourceForDetail(detail);
           if (image != null) {
-            unawaited(_toggleFavorite(context, ref, image));
+            unawaited(toggleGeneratedImageFavorite(context, ref, image));
           }
         },
       ),
     );
-  }
-
-  static Future<void> _toggleFavorite(
-    BuildContext context,
-    WidgetRef ref,
-    GeneratedImage image,
-  ) async {
-    // 保存期间调用方可能被卸载，句柄在第一个 await 之前取好。
-    final gallery = ref.read(localGalleryNotifierProvider.notifier);
-    try {
-      final linked = await GeneratedImageFileLink.ensureSaved(
-        ref,
-        image,
-        context.l10n,
-      );
-      final favorite = await gallery.toggleFavorite(linked.path);
-      if (!context.mounted) return;
-      AppToast.success(
-        context,
-        favorite
-            ? context.l10n.toast_favorited
-            : context.l10n.toast_unfavorited,
-      );
-    } catch (error) {
-      if (context.mounted) {
-        AppToast.error(
-          context,
-          context.l10n.toast_favoriteUpdateFailed(error.toString()),
-        );
-      }
-    }
   }
 
   /// 从详情页保存图像

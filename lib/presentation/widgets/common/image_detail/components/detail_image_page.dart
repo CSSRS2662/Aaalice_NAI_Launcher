@@ -1,3 +1,4 @@
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 
 import '../../image_viewport_surface.dart';
@@ -15,11 +16,21 @@ class DetailImagePage extends StatefulWidget {
   /// 外部传入的 TransformationController，用于快捷键控制缩放
   final TransformationController? transformationController;
 
+  /// 手指单击（鼠标点击不触发），用于切换控制栏。
+  final VoidCallback? onTouchTap;
+
+  /// 未放大时单指竖向拖动的位移增量与松手速度，用于下滑关闭。
+  final ValueChanged<double>? onDismissDragUpdate;
+  final ValueChanged<double>? onDismissDragEnd;
+
   const DetailImagePage({
     super.key,
     required this.data,
     this.heroTag,
     this.transformationController,
+    this.onTouchTap,
+    this.onDismissDragUpdate,
+    this.onDismissDragEnd,
   });
 
   @override
@@ -36,6 +47,10 @@ class _DetailImagePageState extends State<DetailImagePage>
   Matrix4? _animationEnd;
   bool _disableAnimations = false;
   TapDownDetails? _doubleTapDetails;
+
+  // 单指、触屏、未放大时开始的拖动才可能是下滑关闭；竖向为主才真正接管。
+  bool _dismissCandidate = false;
+  bool _dismissing = false;
 
   /// 加载状态
   bool _isLoading = true;
@@ -114,6 +129,50 @@ class _DetailImagePageState extends State<DetailImagePage>
         );
 
     _animationController.forward(from: 0);
+  }
+
+  void _handleInteractionStart(ScaleStartDetails details) {
+    _dismissing = false;
+    _dismissCandidate =
+        widget.onDismissDragUpdate != null &&
+        details.pointerCount == 1 &&
+        (details.kind == PointerDeviceKind.touch ||
+            details.kind == PointerDeviceKind.stylus) &&
+        _transformController.value.getMaxScaleOnAxis() <= 1.01;
+  }
+
+  void _handleInteractionUpdate(ScaleUpdateDetails details) {
+    if (!_dismissCandidate) return;
+    if (details.pointerCount != 1) {
+      // 第二根手指落下即转为缩放，已拖出的位移回弹。
+      _finishDismissDrag(0);
+      _dismissCandidate = false;
+      return;
+    }
+    final delta = details.focalPointDelta;
+    if (!_dismissing) {
+      if (delta.dy.abs() <= delta.dx.abs()) return;
+      _dismissing = true;
+    }
+    widget.onDismissDragUpdate!(delta.dy);
+  }
+
+  void _handleInteractionEnd(ScaleEndDetails details) {
+    _finishDismissDrag(details.velocity.pixelsPerSecond.dy);
+    _dismissCandidate = false;
+  }
+
+  void _finishDismissDrag(double velocityY) {
+    if (!_dismissing) return;
+    _dismissing = false;
+    widget.onDismissDragEnd?.call(velocityY);
+  }
+
+  void _handleTapUp(TapUpDetails details) {
+    if (details.kind == PointerDeviceKind.touch ||
+        details.kind == PointerDeviceKind.stylus) {
+      widget.onTouchTap?.call();
+    }
   }
 
   /// 构建加载指示器
@@ -214,12 +273,16 @@ class _DetailImagePageState extends State<DetailImagePage>
       children: [
         // 主图像区域
         GestureDetector(
+          onTapUp: widget.onTouchTap == null ? null : _handleTapUp,
           onDoubleTapDown: _handleDoubleTapDown,
           onDoubleTap: _handleDoubleTap,
           child: InteractiveViewer(
             transformationController: _transformController,
             minScale: _minScale,
             maxScale: _maxScale,
+            onInteractionStart: _handleInteractionStart,
+            onInteractionUpdate: _handleInteractionUpdate,
+            onInteractionEnd: _handleInteractionEnd,
             child: Center(child: imageWidget),
           ),
         ),

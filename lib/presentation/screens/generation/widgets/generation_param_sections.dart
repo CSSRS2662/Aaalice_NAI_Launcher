@@ -9,8 +9,8 @@ import '../../../providers/image_generation_provider.dart';
 import '../../../widgets/common/app_toast.dart';
 import '../../../widgets/common/themed_dropdown.dart';
 import '../../../widgets/common/model_family_icon.dart';
+import '../../../widgets/common/stepped_slider.dart';
 import '../../../widgets/common/themed_input.dart';
-import '../../../widgets/common/themed_slider.dart';
 import 'generation_toggle_button.dart';
 import 'size_selector.dart';
 
@@ -20,6 +20,12 @@ import 'size_selector.dart';
 /// 官网式布局的一体滚动列/参数抽屉共用同一份控件，避免双份维护。
 
 /// 参数分节标题
+/// "步数: {steps}" → "步数" where a field next to the slider shows the value.
+String _labelBeforeColon(String text) {
+  final colonIndex = text.indexOf(RegExp('[:：]'));
+  return (colonIndex < 0 ? text : text.substring(0, colonIndex)).trim();
+}
+
 class ParamSectionTitle extends StatelessWidget {
   final String title;
 
@@ -274,11 +280,13 @@ class StepsSection extends ConsumerWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        ParamSectionTitle(context.l10n.generation_steps(steps.toString())),
-        ThemedSlider(
+        ParamSectionTitle(_labelBeforeColon(context.l10n.generation_steps(''))),
+        SteppedSlider(
+          idPrefix: 'generation-steps',
           value: steps.toDouble(),
           min: 1,
           max: 50,
+          step: 1,
           divisions: 49,
           onChanged: (value) {
             ref
@@ -318,7 +326,7 @@ class CfgScaleSection extends ConsumerWidget {
           runSpacing: 8,
           children: [
             ParamSectionTitle(
-              context.l10n.generation_cfgScale(data.scale.toStringAsFixed(1)),
+              _labelBeforeColon(context.l10n.generation_cfgScale('')),
             ),
             Wrap(
               spacing: 8,
@@ -348,10 +356,13 @@ class CfgScaleSection extends ConsumerWidget {
             ),
           ],
         ),
-        ThemedSlider(
+        SteppedSlider(
+          idPrefix: 'generation-cfg',
           value: data.scale,
           min: 1,
           max: 20,
+          step: 0.1,
+          decimals: 1,
           divisions: 190,
           onChanged: (value) {
             ref
@@ -640,14 +651,15 @@ class AdvancedSamplingOptions extends ConsumerWidget {
           ListTile(
             contentPadding: EdgeInsets.zero,
             title: Text(
-              context.l10n.generation_cfgRescale(
-                data.cfgRescale.toStringAsFixed(2),
-              ),
+              _labelBeforeColon(context.l10n.generation_cfgRescale('')),
             ),
-            subtitle: ThemedSlider(
+            subtitle: SteppedSlider(
+              idPrefix: 'generation-cfg-rescale',
               value: data.cfgRescale,
               min: 0,
               max: 1,
+              step: 0.01,
+              decimals: 2,
               divisions: 100,
               onChanged: (value) {
                 ref

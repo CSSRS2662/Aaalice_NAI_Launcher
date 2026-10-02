@@ -50,6 +50,8 @@
   "common_deselectAll": "すべての選択を解除",
   "common_save": "保存",
   "common_delete": "削除",
+  "common_decrease": "減らす",
+  "common_increase": "増やす",
   "common_edit": "編集",
   "common_clear": "クリア",
   "common_copy": "コピー",
@@ -5365,12 +5367,16 @@
       "skipped": {}
     }
   },
-  "toast_favorited": "お気に入りに登録しました",
-  "toast_unfavorited": "お気に入りから削除しました",
   "toast_favoriteUpdateFailed": "お気に入りの状態を更新できませんでした: {error}",
   "@toast_favoriteUpdateFailed": {
     "placeholders": {
       "error": {}
+    }
+  },
+  "toast_seedReused": "シード {seed} を適用しました",
+  "@toast_seedReused": {
+    "placeholders": {
+      "seed": {}
     }
   },
   "toast_packFailedWithError": "パックに失敗しました: {error}",
@@ -6357,6 +6363,7 @@
   "autocomplete_relatedTagsTitle": "共起・関連タグ候補",
   "autocomplete_relatedTagsSubtitle": "タグ確定後に自動表示。タグ上で Ctrl+Shift+Space または Ctrl+クリックでも表示できます",
   "autocomplete_relatedTagsSubtitleTouch": "タグ確定後に関連タグを自動表示します",
+  "autocomplete_relatedTagsAction": "関連タグ",
   "autocomplete_danbooruApi": "Danbooru オンライン補完",
   "autocomplete_danbooruPrivacy": "現在の英語タグのみ送信し、プロンプト全体は送信しません",
   "autocomplete_llmTranslation": "不足する翻訳に Prompt Assistant を使用",
@@ -7174,6 +7181,12 @@
   "@mobileWorkbench_selectModel": {
     "placeholders": {
       "model": {}
+    }
+  },
+  "mobileWorkbench_selectSize": "サイズ {size}、タップで切り替え",
+  "@mobileWorkbench_selectSize": {
+    "placeholders": {
+      "size": {}
     }
   },
   "mobileWorkbench_queue": "生成キュー",

@@ -161,8 +161,15 @@ class _AutocompleteWrapperState extends ConsumerState<AutocompleteWrapper> {
     widget.controller.addListener(_onTextChanged);
     _focusNode.addListener(_onFocusChanged);
     _scrollController.addListener(_onCompletionScrolled);
+    widget.overlayHandle?.bindRelated(_showRelatedTags);
     WidgetsBinding.instance.addPostFrameCallback((_) => _initializeUnified());
   }
+
+  void _showRelatedTags() => _startQuery(
+    related: true,
+    resetPinnedRelatedTag: true,
+    keepEmptyVisible: true,
+  );
 
   void _onCompletionScrolled() {
     _visibleTranslationDebounce?.cancel();
@@ -261,6 +268,10 @@ class _AutocompleteWrapperState extends ConsumerState<AutocompleteWrapper> {
   @override
   void didUpdateWidget(covariant AutocompleteWrapper oldWidget) {
     super.didUpdateWidget(oldWidget);
+    if (oldWidget.overlayHandle != widget.overlayHandle) {
+      oldWidget.overlayHandle?.unbindRelated(_showRelatedTags);
+      widget.overlayHandle?.bindRelated(_showRelatedTags);
+    }
     if (oldWidget.controller != widget.controller) {
       oldWidget.controller.removeListener(_onTextChanged);
       _lastObservedValue = widget.controller.value;
@@ -880,6 +891,7 @@ class _AutocompleteWrapperState extends ConsumerState<AutocompleteWrapper> {
   @override
   void dispose() {
     _visibleTranslationDebounce?.cancel();
+    widget.overlayHandle?.unbindRelated(_showRelatedTags);
     widget.controller.removeListener(_onTextChanged);
     _focusNode.removeListener(_onFocusChanged);
     _removeOverlay();

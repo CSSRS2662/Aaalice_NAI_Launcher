@@ -49,6 +49,30 @@ void main() {
     ]);
   });
 
+  test('earlier images offer both reuse parameters and reuse seed', () {
+    ImageCardAction action(ImageCardActionId id) => ImageCardAction(
+      id: id,
+      icon: Icons.circle,
+      label: id.name,
+      invoke: () {},
+    );
+
+    final ordered = orderedImageCardActions([
+      action(ImageCardActionId.copy),
+      action(ImageCardActionId.reuseSeed),
+      action(ImageCardActionId.favorite),
+      action(ImageCardActionId.reuseParameters),
+      action(ImageCardActionId.save),
+    ]);
+
+    expect(ordered.map((item) => item.id).take(4), [
+      ImageCardActionId.save,
+      ImageCardActionId.reuseParameters,
+      ImageCardActionId.reuseSeed,
+      ImageCardActionId.favorite,
+    ]);
+  });
+
   test(
     'menu and button share busy state and prevent duplicate execution',
     () async {

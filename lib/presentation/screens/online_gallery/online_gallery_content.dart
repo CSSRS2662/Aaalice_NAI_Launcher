@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/cache/gallery_image_request.dart';
+import '../../../core/platform/platform_capabilities.dart';
 import '../../../core/online_gallery/gallery_tag_query.dart';
 import '../../../core/utils/localization_extension.dart';
 import '../../../data/models/online_gallery/ai_tag_generation_info.dart';
@@ -19,6 +20,7 @@ import '../../providers/selection_mode_provider.dart';
 import '../../services/gallery_prompt_projection_service.dart';
 import '../../services/generation_prompt_transfer_service.dart';
 import '../../widgets/danbooru_post_card.dart';
+import '../../widgets/gallery/library_scroll_actions.dart';
 import '../../widgets/gelbooru_credentials_dialog.dart';
 import 'gallery_grid_item.dart';
 import 'online_gallery_screen_commands.dart';
@@ -309,15 +311,21 @@ class _OnlineGalleryContentPresenter {
     );
   }
 
-  /// 构建图片网格
+  /// 构建图片网格；手机上从顶部下拉刷新。
   Widget _buildImageGrid(ThemeData theme, OnlineGalleryState state) {
-    return OnlineGalleryGrid(
-      state: state,
-      controller: _controller,
-      itemBuilder: (context, index, itemWidth, columnCount) =>
-          _buildGridItem(theme, state, index, itemWidth, columnCount),
-      footerBuilder: (context, itemWidth, columnCount) =>
-          _buildLoadMoreIndicator(theme, state),
+    return LibraryScrollActions(
+      onRefresh:
+          PlatformCapabilities.current.prefersContinuousLibraryScrolling
+          ? () => _refreshFromVisibleDraft(state)
+          : null,
+      child: OnlineGalleryGrid(
+        state: state,
+        controller: _controller,
+        itemBuilder: (context, index, itemWidth, columnCount) =>
+            _buildGridItem(theme, state, index, itemWidth, columnCount),
+        footerBuilder: (context, itemWidth, columnCount) =>
+            _buildLoadMoreIndicator(theme, state),
+      ),
     );
   }
 

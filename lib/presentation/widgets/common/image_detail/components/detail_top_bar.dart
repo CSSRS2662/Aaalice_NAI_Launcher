@@ -5,7 +5,6 @@ import '../../../../../core/mosaic/mosaic_derivative_registry.dart';
 import '../../../../../core/storage/local_storage_service.dart';
 import '../../../../../core/utils/localization_extension.dart';
 import '../../../../../core/watermark/watermark_derivative_registry.dart';
-import '../../../../../data/models/gallery/local_image_record.dart';
 import '../../../../providers/local_gallery_provider.dart';
 import '../../../../providers/mosaic_settings_provider.dart';
 import '../../../../providers/watermark_settings_provider.dart';
@@ -370,6 +369,13 @@ class _DetailTopBarActions extends ConsumerWidget {
             onPressed: onReuseMetadata,
             tooltip: l10n.shortcut_action_reuse_params,
           ),
+        if (onReuseSeed != null)
+          IconButton(
+            key: const ValueKey('image-detail-reuse-seed'),
+            icon: const Icon(Icons.eco_outlined, color: Colors.white),
+            onPressed: onReuseSeed,
+            tooltip: l10n.shortcut_action_reuse_seed,
+          ),
         if (onSendToImg2Img != null)
           IconButton(
             icon: const Icon(Icons.image_search, color: Colors.white),
@@ -411,24 +417,18 @@ class _DetailTopBarActions extends ConsumerWidget {
     );
   }
 
+  /// The shared per-file status, so images outside the loaded gallery page
+  /// (fresh generations) show their heart too.
   bool _resolveFavorite(WidgetRef ref) {
-    var isFavorite = currentImage.isFavorite;
     final favoritePath = currentImage is LocalImageDetailData
         ? (currentImage as LocalImageDetailData).record.path
         : currentImage is FileImageDetailData
         ? (currentImage as FileImageDetailData).filePath
         : null;
-    if (favoritePath != null && favoritePath.isNotEmpty) {
-      final galleryState = ref.watch(localGalleryNotifierProvider);
-      final record = galleryState.currentImages
-          .cast<LocalImageRecord?>()
-          .firstWhere(
-            (image) => image?.path == favoritePath,
-            orElse: () => null,
-          );
-      isFavorite = record?.isFavorite ?? isFavorite;
-    }
-
-    return isFavorite;
+    return watchImageFavorite(
+      ref,
+      favoritePath,
+      fallback: currentImage.isFavorite,
+    );
   }
 }

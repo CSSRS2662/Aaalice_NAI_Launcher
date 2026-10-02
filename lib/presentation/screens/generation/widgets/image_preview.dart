@@ -2,6 +2,7 @@ import '../../../providers/generation/image_card_selection_provider.dart';
 import '../../../selection/card_selection_scope.dart';
 import '../../../widgets/common/image_card_batch_scope.dart';
 import '../../../widgets/bulk_action_bar.dart';
+import '../services/generated_image_favorite.dart';
 import '../services/generated_image_file_link.dart';
 import '../services/generation_image_batch_actions.dart';
 import '../services/generation_image_deletion.dart';
@@ -740,12 +741,8 @@ class _ImagePreviewWidgetState extends ConsumerState<ImagePreviewWidget> {
         .watch(imageGenerationNotifierProvider)
         .currentImages
         .any((item) => item.id == image.id);
-    final localImages = ref.watch(localGalleryNotifierProvider).currentImages;
-    final isFavorite =
-        image.filePath != null &&
-        localImages.any(
-          (record) => record.path == image.filePath && record.isFavorite,
-        );
+    // 新生成的图通常不在图库当前页，收藏状态按文件单独读取。
+    final isFavorite = watchImageFavorite(ref, image.filePath);
 
     final card = SelectableImageCard(
       imageBytes: imageBytes,
@@ -799,11 +796,12 @@ class _ImagePreviewWidgetState extends ConsumerState<ImagePreviewWidget> {
       onReuseParameters: !isCurrentRound && canUseAsInput
           ? () => _reuseImageParameters(context, image)
           : null,
-      onReuseSeed: isCurrentRound && canUseAsInput
+      // 本轮图的参数就是当前参数，只提供复用种子；其余两项都提供。
+      onReuseSeed: canUseAsInput
           ? () => _reuseGeneratedSeed(context, image)
           : null,
       onFavoriteToggle: image.canFavorite
-          ? () => _toggleGeneratedImageFavorite(context, image)
+          ? () => toggleGeneratedImageFavorite(context, ref, image)
           : null,
       statusBadgeLabel: isFailedSnapshot
           ? context.l10n.generation_failedStreamSnapshot
@@ -917,36 +915,6 @@ class _ImagePreviewWidgetState extends ConsumerState<ImagePreviewWidget> {
       metadata: image.metadata,
       bytes: image.metadata == null ? image.bytes : null,
     );
-  }
-
-  Future<void> _toggleGeneratedImageFavorite(
-    BuildContext context,
-    GeneratedImage image,
-  ) async {
-    // 保存期间预览可能被卸载，句柄在第一个 await 之前取好。
-    final gallery = ref.read(localGalleryNotifierProvider.notifier);
-    try {
-      final linked = await GeneratedImageFileLink.ensureSaved(
-        ref,
-        image,
-        context.l10n,
-      );
-      final isFavorite = await gallery.toggleFavorite(linked.path);
-      if (!context.mounted) return;
-      AppToast.success(
-        context,
-        isFavorite
-            ? context.l10n.toast_favorited
-            : context.l10n.toast_unfavorited,
-      );
-    } catch (error) {
-      if (context.mounted) {
-        AppToast.error(
-          context,
-          context.l10n.toast_favoriteUpdateFailed(error.toString()),
-        );
-      }
-    }
   }
 
   Future<void> _sendPreviewImageToReversePrompt(
@@ -1221,7 +1189,7 @@ class _ImagePreviewWidgetState extends ConsumerState<ImagePreviewWidget> {
           final image = sourceForDetail(detail);
           if (image != null) _reuseGeneratedSeed(context, image);
         },
-        reuseSeedAppliesTo: (detail) =>
+        parametersAreCurrent: (detail) =>
             currentRoundIds.contains(detail.identifier),
         onReuseMetadata: (detail) async {
           final image = sourceForDetail(detail);
@@ -1230,7 +1198,7 @@ class _ImagePreviewWidgetState extends ConsumerState<ImagePreviewWidget> {
         onFavoriteToggle: (detail) {
           final image = sourceForDetail(detail);
           if (image != null) {
-            unawaited(_toggleGeneratedImageFavorite(context, image));
+            unawaited(toggleGeneratedImageFavorite(context, ref, image));
           }
         },
       ),

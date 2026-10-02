@@ -44,6 +44,7 @@ import 'local_gallery_move_target.dart';
 import '../../services/image_workflow_launcher.dart';
 import '../../services/image_send_action_dispatcher.dart';
 import '../../services/image_metadata_import_workflow.dart';
+import '../../services/image_seed_reuse.dart';
 import '../../utils/asset_protection_guard.dart';
 import '../../utils/fixed_tag_metadata_matcher.dart';
 import '../../utils/krita_send_helper.dart';
@@ -545,6 +546,11 @@ class LocalGalleryActionCoordinator {
       case LocalImageContextAction.sendToTextToImage:
       case LocalImageContextAction.importMetadata:
         await importImageMetadata(record);
+      case LocalImageContextAction.reuseSeed:
+        final seed =
+            (await resolveLocalGalleryMetadata(record) ?? availableMetadata)
+                ?.seed;
+        if (_mounted()) reuseImageSeed(_context(), _ref, seed);
       case LocalImageContextAction.sendToImg2Img:
         await _sendToImg2Img(record);
       case LocalImageContextAction.sendToReversePrompt:

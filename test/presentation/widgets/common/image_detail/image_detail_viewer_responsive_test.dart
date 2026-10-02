@@ -13,6 +13,7 @@ import 'package:nai_launcher/presentation/providers/shortcuts_provider.dart';
 import 'package:nai_launcher/presentation/widgets/common/horizontal_resize_handle.dart';
 import 'package:nai_launcher/presentation/widgets/common/image_detail/components/detail_metadata_panel.dart';
 import 'package:nai_launcher/presentation/widgets/common/image_detail/components/detail_thumbnail_bar.dart';
+import 'package:nai_launcher/presentation/widgets/common/image_detail/components/detail_top_bar.dart';
 import 'package:nai_launcher/presentation/widgets/common/image_detail/image_detail_data.dart';
 import 'package:nai_launcher/presentation/widgets/common/image_detail/image_detail_viewer.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -267,6 +268,99 @@ void main() {
     expect(find.byType(ImageDetailViewer), findsOneWidget);
 
     await tester.tap(find.byIcon(Icons.close));
+    await tester.pumpAndSettle();
+    expect(find.byType(ImageDetailViewer), findsNothing);
+    expect(find.text('open'), findsOneWidget);
+  });
+
+  testWidgets('a finger tap toggles the bars; a mouse click leaves them', (
+    tester,
+  ) async {
+    await tester.binding.setSurfaceSize(const Size(360, 700));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+    await _pumpViewer(
+      tester,
+      images: [
+        _TestImageData('one', _validPngBytes),
+        _TestImageData('two', _validPngBytes),
+      ],
+      showMetadataPanel: false,
+    );
+    await tester.pumpAndSettle();
+    Offset barOffset() => tester
+        .widget<AnimatedSlide>(
+          find.ancestor(
+            of: find.byType(DetailTopBar),
+            matching: find.byType(AnimatedSlide),
+          ),
+        )
+        .offset;
+    final center = tester.getCenter(find.byType(ImageDetailViewer));
+
+    await tester.tapAt(center);
+    await tester.pumpAndSettle(const Duration(milliseconds: 400));
+    expect(barOffset(), const Offset(0, -1));
+
+    await tester.tapAt(center);
+    await tester.pumpAndSettle(const Duration(milliseconds: 400));
+    expect(barOffset(), Offset.zero);
+
+    await tester.tapAt(center, kind: PointerDeviceKind.mouse);
+    await tester.pumpAndSettle(const Duration(milliseconds: 400));
+    expect(barOffset(), Offset.zero, reason: 'mouse keeps the bars');
+  });
+
+  testWidgets('swiping down past the threshold closes; a short swipe returns', (
+    tester,
+  ) async {
+    await tester.binding.setSurfaceSize(const Size(360, 700));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+    final image = _TestImageData('swipe', _validPngBytes);
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          shortcutConfigNotifierProvider.overrideWith(
+            _FakeShortcutConfigNotifier.new,
+          ),
+        ],
+        child: MaterialApp(
+          locale: const Locale('en'),
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: Builder(
+            builder: (context) => Scaffold(
+              body: TextButton(
+                onPressed: () => ImageDetailViewer.showSingle(
+                  context,
+                  image: image,
+                  showMetadataPanel: false,
+                ),
+                child: const Text('open'),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.tap(find.text('open'));
+    await tester.pumpAndSettle();
+    final center = tester.getCenter(find.byType(ImageDetailViewer));
+
+    await tester.timedDragFrom(
+      center,
+      const Offset(0, 70),
+      const Duration(milliseconds: 700),
+    );
+    await tester.pumpAndSettle();
+    expect(find.byType(ImageDetailViewer), findsOneWidget);
+    final page = find.byType(PageView);
+    expect(tester.getTopLeft(page).dy, 0, reason: 'sprang back');
+
+    await tester.timedDragFrom(
+      center,
+      const Offset(0, 260),
+      const Duration(milliseconds: 600),
+    );
     await tester.pumpAndSettle();
     expect(find.byType(ImageDetailViewer), findsNothing);
     expect(find.text('open'), findsOneWidget);

@@ -53,6 +53,8 @@
   "common_deselectAll": "Deselect All",
   "common_save": "Save",
   "common_delete": "Delete",
+  "common_decrease": "Decrease",
+  "common_increase": "Increase",
   "common_edit": "Edit",
   "common_close": "Close",
   "common_clear": "Clear",
@@ -5347,12 +5349,16 @@
       "skipped": {}
     }
   },
-  "toast_favorited": "Favorited",
-  "toast_unfavorited": "Unfavorited",
   "toast_favoriteUpdateFailed": "Failed to update favorite state: {error}",
   "@toast_favoriteUpdateFailed": {
     "placeholders": {
       "error": {}
+    }
+  },
+  "toast_seedReused": "Seed {seed} reused",
+  "@toast_seedReused": {
+    "placeholders": {
+      "seed": {}
     }
   },
   "toast_packFailedWithError": "Pack failed: {error}",
@@ -6334,6 +6340,7 @@
   "autocomplete_relatedTagsTitle": "Co-occurrence and related tags",
   "autocomplete_relatedTagsSubtitle": "Suggest after accepting a tag; also use Ctrl+Shift+Space or Ctrl+click on a tag",
   "autocomplete_relatedTagsSubtitleTouch": "Suggest related tags after accepting a tag",
+  "autocomplete_relatedTagsAction": "Related tags",
   "autocomplete_danbooruApi": "Danbooru online supplement",
   "autocomplete_danbooruPrivacy": "Only the current English tag is sent; the full prompt is never uploaded",
   "autocomplete_llmTranslation": "Use Prompt Assistant for missing translations",
@@ -7151,6 +7158,12 @@
   "@mobileWorkbench_selectModel": {
     "placeholders": {
       "model": {}
+    }
+  },
+  "mobileWorkbench_selectSize": "Size {size}, tap to switch",
+  "@mobileWorkbench_selectSize": {
+    "placeholders": {
+      "size": {}
     }
   },
   "mobileWorkbench_queue": "Generation queue",

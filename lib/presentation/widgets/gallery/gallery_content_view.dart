@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
@@ -24,6 +25,8 @@ import '../common/image_detail/image_detail_data.dart';
 import '../common/shimmer_skeleton.dart';
 import 'gallery_grid.dart';
 import 'gallery_state_views.dart';
+import 'library_scroll_actions.dart';
+import '../../selection/card_drag_select.dart';
 import 'local_image_context_menu.dart';
 
 /// 画廊项目构建函数类型
@@ -96,6 +99,12 @@ class GenericGalleryContentView<T> extends ConsumerStatefulWidget {
   final VoidCallback? onClearFilters;
   final VoidCallback? onRefresh;
   final void Function(int page)? onLoadPage;
+
+  /// Touch: pull down to refresh, and append [onLoadMore] pages near the end
+  /// while [canLoadMore] instead of a page bar.
+  final Future<void> Function()? onPullToRefresh;
+  final VoidCallback? onLoadMore;
+  final bool canLoadMore;
   final GlobalKey<GroupedGridViewState>? groupedGridViewKey;
   final Gallery3DViewConfig<T>? view3DConfig;
   final Future<void> Function(
@@ -128,6 +137,9 @@ class GenericGalleryContentView<T> extends ConsumerStatefulWidget {
     this.onClearFilters,
     this.onRefresh,
     this.onLoadPage,
+    this.onPullToRefresh,
+    this.onLoadMore,
+    this.canLoadMore = false,
     this.groupedGridViewKey,
     this.view3DConfig,
     this.onSendAction,
@@ -287,6 +299,16 @@ class _GenericGalleryContentViewState<T>
       );
     }
 
+    return LibraryScrollActions(
+      onRefresh: widget.onPullToRefresh,
+      child: CardDragSelect(child: _buildGroupedGrid(state, selectionState)),
+    );
+  }
+
+  Widget _buildGroupedGrid(
+    GalleryState<T> state,
+    SelectionState selectionState,
+  ) {
     return GroupedGridView(
       key: widget.groupedGridViewKey,
       images: state.groupedImages,
@@ -298,51 +320,56 @@ class _GenericGalleryContentViewState<T>
         final index = state.groupedImages.indexOf(record);
         final isVisible = _visibleIndices.contains(index);
 
-        return VisibilityDetector(
-          key: ValueKey('grouped_visibility_${record.path}_$index'),
-          onVisibilityChanged: (visibilityInfo) {
-            final isNowVisible = visibilityInfo.visibleFraction > 0.05;
-            final wasVisible = _visibleIndices.contains(index);
+        return CardDragSelectTarget(
+          id: record.path,
+          child: VisibilityDetector(
+            key: ValueKey('grouped_visibility_${record.path}_$index'),
+            onVisibilityChanged: (visibilityInfo) {
+              final isNowVisible = visibilityInfo.visibleFraction > 0.05;
+              final wasVisible = _visibleIndices.contains(index);
 
-            if (isNowVisible != wasVisible && mounted) {
-              setState(() {
-                if (isNowVisible) {
-                  _visibleIndices.add(index);
-                } else {
-                  _visibleIndices.remove(index);
+              if (isNowVisible != wasVisible && mounted) {
+                setState(() {
+                  if (isNowVisible) {
+                    _visibleIndices.add(index);
+                  } else {
+                    _visibleIndices.remove(index);
+                  }
+                });
+              }
+            },
+            child: LocalImageCard3D(
+              record: record,
+              width: widget.itemWidth,
+              height: widget.itemWidth / aspectRatio,
+              isSelected: isSelected,
+              isVisible: isVisible,
+              priority: isVisible ? 1 : 5,
+              onTap: () {
+                if (selectionState.isActive) {
+                  widget.onSelectionToggle?.call(record as T);
                 }
-              });
-            }
-          },
-          child: LocalImageCard3D(
-            record: record,
-            width: widget.itemWidth,
-            height: widget.itemWidth / aspectRatio,
-            isSelected: isSelected,
-            isVisible: isVisible,
-            priority: isVisible ? 1 : 5,
-            onTap: () {
-              if (selectionState.isActive) {
-                widget.onSelectionToggle?.call(record as T);
-              }
-            },
-            onLongPress: () {
-              if (!selectionState.isActive) {
-                widget.onEnterSelection?.call(record as T);
-              }
-            },
-            onSecondaryTapUp: widget.onContextMenu != null
-                ? (details) =>
-                      widget.onContextMenu!(record as T, details.globalPosition)
-                : null,
-            onFavoriteToggle: () {
-              widget.onFavoriteToggle?.call(record as T);
-            },
-            onSendAction: widget.onSendAction != null
-                ? (action) => widget.onSendAction!(record, action)
-                : null,
-            enableAddToAgent: !selectionState.isActive,
-            isKritaConnected: widget.isKritaConnected,
+              },
+              onLongPress: () {
+                if (!selectionState.isActive) {
+                  widget.onEnterSelection?.call(record as T);
+                }
+              },
+              onSecondaryTapUp: widget.onContextMenu != null
+                  ? (details) => widget.onContextMenu!(
+                      record as T,
+                      details.globalPosition,
+                    )
+                  : null,
+              onFavoriteToggle: () {
+                widget.onFavoriteToggle?.call(record as T);
+              },
+              onSendAction: widget.onSendAction != null
+                  ? (action) => widget.onSendAction!(record, action)
+                  : null,
+              enableAddToAgent: !selectionState.isActive,
+              isKritaConnected: widget.isKritaConnected,
+            ),
           ),
         );
       },
@@ -427,6 +454,21 @@ class _GenericGalleryContentViewState<T>
       }
     }
 
+    return LibraryScrollActions(
+      onRefresh: widget.onPullToRefresh,
+      onLoadMore: widget.onLoadMore,
+      canLoadMore: widget.canLoadMore,
+      child: CardDragSelect(
+        child: _buildPagedGrid(state, selectionState, selectedIndices),
+      ),
+    );
+  }
+
+  Widget _buildPagedGrid(
+    GalleryState<T> state,
+    SelectionState selectionState,
+    Set<int> selectedIndices,
+  ) {
     return GalleryGrid(
       key: const PageStorageKey<String>('gallery_grid'),
       images: _convertToLocalImageRecords(state.currentImages),
@@ -601,6 +643,12 @@ class LocalGalleryContentView extends ConsumerWidget {
               ? (data) async =>
                     onReuseMetadata?.call((data as LocalImageDetailData).record)
               : null,
+          onReuseSeed: onSendAction != null
+              ? (data) async => onSendAction!.call(
+                  (data as LocalImageDetailData).record,
+                  LocalImageContextAction.reuseSeed,
+                )
+              : null,
           onFavoriteToggle: (data) => ref
               .read(localGalleryNotifierProvider.notifier)
               .toggleFavorite((data as LocalImageDetailData).record.path),
@@ -643,6 +691,8 @@ class LocalGalleryContentView extends ConsumerWidget {
       );
     }
 
+    final continuous =
+        PlatformCapabilities.current.prefersContinuousLibraryScrolling;
     return GenericGalleryContentView<LocalImageRecord>(
       use3DCardView: use3DCardView,
       columns: columns,
@@ -685,6 +735,15 @@ class LocalGalleryContentView extends ConsumerWidget {
           ref.read(localGalleryNotifierProvider.notifier).refresh(),
       onLoadPage: (page) =>
           ref.read(localGalleryNotifierProvider.notifier).loadPage(page),
+      onPullToRefresh: continuous
+          ? () => ref.read(localGalleryNotifierProvider.notifier).refresh()
+          : null,
+      onLoadMore: continuous
+          ? () => unawaited(
+              ref.read(localGalleryNotifierProvider.notifier).loadMore(),
+            )
+          : null,
+      canLoadMore: state.canLoadMore,
       groupedGridViewKey: groupedGridViewKey,
       view3DConfig: Gallery3DViewConfig<LocalImageRecord>(
         images: state.currentImages,

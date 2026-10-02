@@ -53,6 +53,8 @@
   "common_deselectAll": "全不选",
   "common_save": "保存",
   "common_delete": "删除",
+  "common_decrease": "减小",
+  "common_increase": "增大",
   "common_edit": "编辑",
   "common_close": "关闭",
   "common_clear": "清除",
@@ -5145,12 +5147,16 @@
       "skipped": {}
     }
   },
-  "toast_favorited": "已收藏",
-  "toast_unfavorited": "已取消收藏",
   "toast_favoriteUpdateFailed": "收藏状态更新失败: {error}",
   "@toast_favoriteUpdateFailed": {
     "placeholders": {
       "error": {}
+    }
+  },
+  "toast_seedReused": "已复用种子 {seed}",
+  "@toast_seedReused": {
+    "placeholders": {
+      "seed": {}
     }
   },
   "toast_packFailedWithError": "打包失败: {error}",
@@ -6403,6 +6409,7 @@
   "autocomplete_relatedTagsTitle": "共现与相关标签推荐",
   "autocomplete_relatedTagsSubtitle": "选中补全后自动推荐；也可在标签上按 Ctrl+Shift+Space 或 Ctrl+单击",
   "autocomplete_relatedTagsSubtitleTouch": "选中补全后自动推荐相关标签",
+  "autocomplete_relatedTagsAction": "相关标签",
   "autocomplete_danbooruApi": "Danbooru 在线补充",
   "autocomplete_danbooruPrivacy": "仅发送当前英文标签，不会上传完整提示词",
   "autocomplete_llmTranslation": "使用 Prompt Assistant 补译缺失汉化",
@@ -7220,6 +7227,12 @@
   "@mobileWorkbench_selectModel": {
     "placeholders": {
       "model": {}
+    }
+  },
+  "mobileWorkbench_selectSize": "尺寸 {size}，点按切换",
+  "@mobileWorkbench_selectSize": {
+    "placeholders": {
+      "size": {}
     }
   },
   "mobileWorkbench_queue": "生成队列",

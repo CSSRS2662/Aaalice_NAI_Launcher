@@ -37,6 +37,7 @@ import 'widgets/category/vibe_category_destination_panel.dart';
 export 'widgets/category/vibe_category_destination_panel.dart';
 import 'widgets/menus/vibe_import_menu.dart';
 import 'widgets/vibe_export_dialog_advanced.dart';
+import 'widgets/vibe_library_content_view.dart';
 
 class VibeLibraryScreen extends ConsumerStatefulWidget {
   const VibeLibraryScreen({super.key, this.pickImportFiles});
@@ -257,11 +258,9 @@ class _VibeLibraryScreenState extends ConsumerState<VibeLibraryScreen> {
       case ExitSelectionModeCommand():
         selection.exit();
       case ToggleCurrentPageSelectionCommand(:final select):
-        final ids = ref
-            .read(vibeLibraryNotifierProvider)
-            .currentEntries
-            .map((entry) => entry.id)
-            .toList();
+        final ids = vibeLibraryVisibleEntries(
+          ref.read(vibeLibraryNotifierProvider),
+        ).map((entry) => entry.id).toList();
         select ? selection.selectAll(ids) : selection.deselectAll(ids);
       case ChangeSortCommand(:final order):
         await library.setSortOrder(order);

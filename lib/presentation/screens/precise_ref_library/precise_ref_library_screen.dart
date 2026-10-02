@@ -1,5 +1,6 @@
 import '../../widgets/common/image_card_action.dart';
 import '../../widgets/common/image_card_batch_scope.dart';
+import '../../selection/card_drag_select.dart';
 import '../../selection/card_selection_scope.dart';
 import 'dart:async';
 import 'dart:io';
@@ -42,6 +43,7 @@ import '../../widgets/gallery/gallery_sidebar.dart';
 import '../../widgets/gallery/gallery_library_toolbar.dart';
 import '../../widgets/gallery/gallery_scope_controls.dart';
 import '../../widgets/gallery/library_masonry_grid.dart';
+import '../../widgets/gallery/library_scroll_actions.dart';
 import '../../agent_chat/widgets/agent_resource_drop_region.dart';
 import 'widgets/precise_ref_card.dart';
 import 'widgets/precise_ref_entry_edit_dialog.dart';
@@ -640,7 +642,11 @@ class _PreciseRefLibraryScreenState
                   : state.filteredEntries.isEmpty
                   ? _buildEmptyView(state)
                   : _buildGrid(state),
-              footer: !state.isLoading && state.filteredEntries.isNotEmpty
+              // 手机上连续滚动显示全部，不显示分页条。
+              footer:
+                  !_continuous &&
+                      !state.isLoading &&
+                      state.filteredEntries.isNotEmpty
                   ? LayoutBuilder(
                       builder: (context, constraints) =>
                           _buildPagination(state, constraints.maxWidth),
@@ -1045,46 +1051,58 @@ class _PreciseRefLibraryScreenState
       commands: ref.read(preciseRefLibrarySelectionNotifierProvider.notifier),
       orderedIds: entries.map((e) => e.id).toList(),
       child: CardSelectionShortcuts(
-        child: LibraryMasonryGrid(
-          gridKey: const PageStorageKey('precise_ref_library_grid'),
-          itemCount: entries.length,
-          aspectRatioOf: (index) =>
-              ratios.ratioOf(entries[index].imagePath) ?? 1.0,
-          itemBuilder: (context, index, _) {
-            final entry = entries[index];
-            final card = PreciseRefCard(
-              entry: entry,
-              isSelectionMode: selection.isActive,
-              isSelected: selection.selectedIds.contains(entry.id),
-              onToggleSelection: () => ref
-                  .read(preciseRefLibrarySelectionNotifierProvider.notifier)
-                  .toggle(entry.id),
-              onEnterSelectionMode: () => ref
-                  .read(preciseRefLibrarySelectionNotifierProvider.notifier)
-                  .enterAndSelect(entry.id),
-              onSendToPreciseRef: () => _sendToPreciseRef(entry),
-              onSendToImg2Img: () => _sendToImg2Img(entry),
-              onEdit: () => _editEntry(entry),
-              onDelete: () => _deleteEntry(entry),
-              onToggleFavorite: () {
-                ref
+        child: LibraryScrollActions(
+          onRefresh: _continuous
+              ? () => ref
                     .read(preciseRefLibraryNotifierProvider.notifier)
-                    .toggleFavorite(entry.id);
+                    .reload(showLoading: false)
+              : null,
+          child: CardDragSelect(
+            child: LibraryMasonryGrid(
+              gridKey: const PageStorageKey('precise_ref_library_grid'),
+              itemCount: entries.length,
+              aspectRatioOf: (index) =>
+                  ratios.ratioOf(entries[index].imagePath) ?? 1.0,
+              itemBuilder: (context, index, _) {
+                final entry = entries[index];
+                final card = PreciseRefCard(
+                  entry: entry,
+                  isSelectionMode: selection.isActive,
+                  isSelected: selection.selectedIds.contains(entry.id),
+                  onToggleSelection: () => ref
+                      .read(preciseRefLibrarySelectionNotifierProvider.notifier)
+                      .toggle(entry.id),
+                  onEnterSelectionMode: () => ref
+                      .read(preciseRefLibrarySelectionNotifierProvider.notifier)
+                      .enterAndSelect(entry.id),
+                  onSendToPreciseRef: () => _sendToPreciseRef(entry),
+                  onSendToImg2Img: () => _sendToImg2Img(entry),
+                  onEdit: () => _editEntry(entry),
+                  onDelete: () => _deleteEntry(entry),
+                  onToggleFavorite: () {
+                    ref
+                        .read(preciseRefLibraryNotifierProvider.notifier)
+                        .toggleFavorite(entry.id);
+                  },
+                  onClassify: () => _classifyEntry(entry),
+                );
+                return CardDragSelectTarget(
+                  id: entry.id,
+                  child: AgentResourceDragSource(
+                    key: Key('precise-ref-card-${entry.id}'),
+                    enableAddToAgentAction: !selection.isActive,
+                    reference: AgentChatResourceReference(
+                      kind: AgentChatResourceKind.preciseRefLibraryEntry,
+                      source: 'precise_reference_library',
+                      resourceId: entry.id,
+                      display: {'name': entry.name},
+                    ),
+                    child: card,
+                  ),
+                );
               },
-              onClassify: () => _classifyEntry(entry),
-            );
-            return AgentResourceDragSource(
-              key: Key('precise-ref-card-${entry.id}'),
-              enableAddToAgentAction: !selection.isActive,
-              reference: AgentChatResourceReference(
-                kind: AgentChatResourceKind.preciseRefLibraryEntry,
-                source: 'precise_reference_library',
-                resourceId: entry.id,
-                display: {'name': entry.name},
-              ),
-              child: card,
-            );
-          },
+            ),
+          ),
         ),
       ),
     );
@@ -1106,9 +1124,14 @@ class _PreciseRefLibraryScreenState
     });
   }
 
+  bool get _continuous =>
+      PlatformCapabilities.current.prefersContinuousLibraryScrolling;
+
+  /// Every filtered entry on phones (continuous scrolling), else the page.
   List<PreciseRefLibraryEntry> _currentPageEntries(
     PreciseRefLibraryState state,
   ) {
+    if (_continuous) return state.filteredEntries;
     final totalPages = _totalPagesFor(state.filteredEntries.length);
     final page = _currentPage.clamp(0, totalPages - 1);
     final start = page * _pageSize;

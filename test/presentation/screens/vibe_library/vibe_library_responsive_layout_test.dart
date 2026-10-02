@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:nai_launcher/core/platform/platform_capabilities.dart';
 import 'package:nai_launcher/data/models/vibe/vibe_import_progress.dart';
 import 'package:nai_launcher/data/models/vibe/vibe_library_category.dart';
 import 'package:nai_launcher/data/models/vibe/vibe_library_entry.dart';
@@ -131,6 +132,11 @@ void main() {
   testWidgets('desktop reuses gallery sidebar and pagination contracts', (
     tester,
   ) async {
+    // Phones scroll continuously; the page bar is the desktop contract.
+    PlatformCapabilities.debugOverride = PlatformCapabilities.forPlatform(
+      TargetPlatform.windows,
+    );
+    addTearDown(() => PlatformCapabilities.debugOverride = null);
     await _setViewport(tester, const Size(1600, 900));
     final commands = <VibeLibraryCommand>[];
     final controller = VibeLibraryScreenController(onSearch: (_) async {});

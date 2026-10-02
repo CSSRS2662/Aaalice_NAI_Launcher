@@ -96,8 +96,12 @@ class VibeLibraryWorkspace extends StatelessWidget {
                   );
                 },
               ),
+              // 手机上连续滚动显示全部，不显示分页条。
               footer:
-                  !libraryState.isLoading &&
+                  !PlatformCapabilities
+                          .current
+                          .prefersContinuousLibraryScrolling &&
+                      !libraryState.isLoading &&
                       libraryState.filteredEntries.isNotEmpty &&
                       libraryState.totalPages > 0
                   ? LayoutBuilder(
@@ -456,7 +460,9 @@ class _Toolbar extends StatelessWidget {
   }
 
   Widget _buildBulkBar(BuildContext context) {
-    final ids = libraryState.currentEntries.map((entry) => entry.id).toList();
+    final ids = vibeLibraryVisibleEntries(
+      libraryState,
+    ).map((entry) => entry.id).toList();
     final allSelected =
         ids.isNotEmpty && ids.every(selectionState.selectedIds.contains);
     return BulkActionBar(

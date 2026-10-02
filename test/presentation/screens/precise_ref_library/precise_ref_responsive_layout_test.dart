@@ -149,7 +149,8 @@ void main() {
           expect(tester.getTopLeft(find.byKey(toolbarKey)).dx, 0);
           expect(tester.getSize(find.byKey(toolbarKey)).width, 1600);
         }
-        expect(find.byType(PaginationBar), findsOneWidget);
+        // 手机上连续滚动，不显示分页条。
+        expect(find.byType(PaginationBar), findsNothing);
 
         await tester.enterText(_preciseRefSearchField(), '目标');
         await tester.pump(const Duration(milliseconds: 350));
@@ -187,6 +188,9 @@ void main() {
   testWidgets(
     'shared pagination slices the precise reference grid and changes pages',
     (tester) async {
+      PlatformCapabilities.debugOverride = PlatformCapabilities.forPlatform(
+        TargetPlatform.windows,
+      );
       await _setViewport(tester, const Size(1180, 800));
       await _pumpLibrary(tester, notifier: _ManyPreciseRefNotifier.new);
 
@@ -206,6 +210,30 @@ void main() {
       expect(tester.takeException(), isNull);
     },
   );
+
+  testWidgets('phones scroll the whole library without a page bar', (
+    tester,
+  ) async {
+    await _setViewport(tester, const Size(390, 800));
+    await _pumpLibrary(tester, notifier: _ManyPreciseRefNotifier.new);
+
+    expect(find.byType(PaginationBar), findsNothing);
+    expect(find.byKey(const Key('precise-ref-card-entry-0')), findsOneWidget);
+    final last = find.byKey(const Key('precise-ref-card-entry-50'));
+    await tester.scrollUntilVisible(
+      last,
+      400,
+      scrollable: find
+          .descendant(
+            of: find.byType(LibraryMasonryGrid),
+            matching: find.byType(Scrollable),
+          )
+          .first,
+    );
+    expect(last, findsOneWidget);
+    expect(find.byType(RefreshIndicator), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
 
   testWidgets(
     '320px 3x text selector remains searchable and confirms a local selection above IME',

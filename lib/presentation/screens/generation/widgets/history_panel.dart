@@ -3,6 +3,7 @@ import '../../../selection/card_selection_scope.dart';
 import '../../../widgets/common/image_card_action.dart';
 import '../../../widgets/common/image_card_action_dispatch.dart';
 import '../../../widgets/common/image_card_batch_scope.dart';
+import '../services/generated_image_favorite.dart';
 import '../services/generated_image_file_link.dart';
 import '../services/generation_image_batch_actions.dart';
 import '../services/generation_image_deletion.dart';
@@ -29,6 +30,8 @@ import '../../../../data/services/image_metadata_service.dart';
 import '../../../providers/generation/generation_params_selectors.dart';
 import '../../../providers/generation/preview_selection_provider.dart';
 import '../../../providers/history_click_behavior_provider.dart';
+import '../../../providers/image_favorite_status_provider.dart';
+import '../../../selection/card_drag_select.dart';
 import '../../../providers/image_generation_provider.dart';
 import '../../../providers/local_gallery_provider.dart';
 import '../../../providers/reverse_prompt_provider.dart';
@@ -125,10 +128,8 @@ class _HistoryPanelState extends ConsumerState<HistoryPanel> {
   Timer? _hoverPreheatTimer;
   bool _isHistoryScrolling = false;
   String? _lastSharePreparationMaintenanceKey;
-  final Map<String, bool> _favoriteStates = {};
-  final Map<String, String?> _favoriteStatePaths = {};
-  final Set<String> _favoriteStatusLoadingIds = {};
-  final Set<String> _favoriteToggleLoadingIds = {};
+  // 条目懒构建，收藏表在 build 中统一订阅，条目里只查表。
+  Map<String, bool> _favoriteStatus = const {};
   late final OwnedScrollController _scrollController;
   late final GenerationImageDeletion _deletion;
   final Map<String, GlobalKey> _imageKeys = {};
@@ -175,6 +176,7 @@ class _HistoryPanelState extends ConsumerState<HistoryPanel> {
     // 面板自身渲染流式预览卡片，字段投影覆盖不到，只能整状态订阅。
     final state = ref.watch(imageGenerationNotifierProvider);
     final selection = ref.watch(generationImageCardSelectionProvider);
+    _favoriteStatus = ref.watch(imageFavoriteStatusProvider);
     ref.watch(copyDragWatermarkProvider);
     final stripMetadata = ref.watch(
       shareImageSettingsProvider.select(
@@ -745,201 +747,244 @@ class _HistoryPanelState extends ConsumerState<HistoryPanel> {
         return NotificationListener<ScrollNotification>(
           onNotification: (notification) =>
               _handleHistoryScrollNotification(notification, stripMetadata),
-          child: GridView.builder(
-            key: const ValueKey('generation-history-masonry'),
-            controller: _scrollController,
-            padding: const EdgeInsets.all(_historySpacing),
-            gridDelegate: OnlineGalleryMasonryGridDelegate(snapshot: masonry),
-            itemCount: totalCount,
-            itemBuilder: (context, index) {
-              // 格子尺寸已由瀑布流按比例给定，这里只负责内容。
-              if (index < currentGenerationCount) {
-                final currentImage = index < state.currentImages.length
-                    ? state.currentImages[index]
-                    : null;
-                final item = _buildCurrentGenerationItem(
-                  context,
-                  index,
-                  state,
-                  state.batchWidth ?? previewDimensions.width,
-                  state.batchHeight ?? previewDimensions.height,
-                  stripMetadata: stripMetadata,
-                  clickBehavior: clickBehavior,
-                  selectedPreviewId: selectedPreviewId,
-                );
-                return currentImage == null
-                    ? item
-                    : KeyedSubtree(
-                        key: _imageKeyFor(currentImage.id),
-                        child: item,
-                      );
-              }
+          child: CardDragSelect(
+            child: GridView.builder(
+              key: const ValueKey('generation-history-masonry'),
+              controller: _scrollController,
+              padding: const EdgeInsets.all(_historySpacing),
+              gridDelegate: OnlineGalleryMasonryGridDelegate(snapshot: masonry),
+              itemCount: totalCount,
+              itemBuilder: (context, index) {
+                // 格子尺寸已由瀑布流按比例给定，这里只负责内容。
+                if (index < currentGenerationCount) {
+                  final currentImage = index < state.currentImages.length
+                      ? state.currentImages[index]
+                      : null;
+                  final item = _buildCurrentGenerationItem(
+                    context,
+                    index,
+                    state,
+                    state.batchWidth ?? previewDimensions.width,
+                    state.batchHeight ?? previewDimensions.height,
+                    stripMetadata: stripMetadata,
+                    clickBehavior: clickBehavior,
+                    selectedPreviewId: selectedPreviewId,
+                  );
+                  return currentImage == null
+                      ? item
+                      : KeyedSubtree(
+                          key: _imageKeyFor(currentImage.id),
+                          child: CardDragSelectTarget(
+                            id: currentImage.id,
+                            child: item,
+                          ),
+                        );
+                }
 
-              // 历史图像（已去重）- 使用图像自己的宽高比
-              final historyIndex = index - currentGenerationCount;
-              final historyImage = deduplicatedHistory[historyIndex];
-              final isFavorite = _favoriteStateFor(historyImage);
-              final isFailedSnapshot = historyImage.isFailedStreamSnapshot;
-              // 计算在原始 history 中的真实索引（用于选择操作）
-              final actualHistoryIndex = history.indexOf(historyImage);
-              return KeyedSubtree(
-                key: _imageKeyFor(historyImage.id),
-                child: _buildPreparedHistoryItem(
-                  context: context,
-                  image: historyImage,
-                  stripMetadata: stripMetadata,
-                  childBuilder: (dragPreparationReady) => SelectableImageCard(
-                    key: ValueKey(historyImage.id),
-                    imageBytes: historyImage.bytes,
-                    sourceFilePath: historyImage.filePath,
-                    index: actualHistoryIndex,
-                    showIndex: false,
-                    isSelected: _selectedIds.contains(historyImage.id),
-                    isPreviewActive: selectedPreviewId == historyImage.id,
-                    imageIdentity: historyImage.id,
-                    allowRepeatedModifierTaps: true,
-                    isFavorite: isFavorite,
-                    dragPreparationReady: dragPreparationReady,
-                    enableSelection: historyImage.canBulkSelect,
-                    selectionMode: ref
-                        .read(generationImageCardSelectionProvider)
-                        .isActive,
-                    enableSaveAction: historyImage.canSave,
-                    enableCopyAction: historyImage.canSave,
-                    statusBadgeLabel: isFailedSnapshot
-                        ? context.l10n.generation_failedStreamSnapshot
-                        : null,
-                    statusBadgeTooltip: isFailedSnapshot
-                        ? context.l10n.generation_failedStreamSnapshotHint
-                        : null,
-                    onFavoriteToggle: historyImage.canFavorite
-                        ? () => _toggleHistoryFavorite(context, historyImage)
-                        : null,
-                    onReuseParameters: historyImage.canUseAsGenerationInput
-                        ? () => _reuseHistoryParameters(context, historyImage)
-                        : null,
-                    showHoverActionBar: false,
-                    pinnedHoverActions: _pinnedHoverActions,
-                    onDelete: () => _deletion.confirmAndDelete([historyImage]),
-                    onSelectionChanged: (selected) {
-                      if (!historyImage.canBulkSelect) {
-                        return;
-                      }
-                      setState(() {
-                        if (selected) {
-                          _selection.enterAndSelect(historyImage.id);
-                        } else {
-                          _selection.deselect(historyImage.id);
-                        }
-                      });
-                    },
-                    onTap: () =>
-                        _handleImageTap(context, historyImage, clickBehavior),
-                    onDoubleTap:
-                        clickBehavior == HistoryClickBehavior.selectPreview
-                        ? () => _showLinkedDetail(context, historyImage)
-                        : null,
-                    onLongPress: historyImage.canBulkSelect
-                        ? () => _selection.enterAndSelect(historyImage.id)
-                        : () => _showLinkedDetail(context, historyImage),
-                    onFullscreen: () =>
-                        _showLinkedDetail(context, historyImage),
-                    enableContextMenu: true,
-                    hoverEffectsEnabled: !_isHistoryScrolling,
-                    shareWarmupEnabled: false,
-                    onReversePrompt: historyImage.canUseAsGenerationInput
-                        ? () => unawaited(
-                            _sendHistoryImageToReversePrompt(
+                // 历史图像（已去重）- 使用图像自己的宽高比
+                final historyIndex = index - currentGenerationCount;
+                final historyImage = deduplicatedHistory[historyIndex];
+                final isFavorite = _favoriteStateFor(historyImage);
+                final isFailedSnapshot = historyImage.isFailedStreamSnapshot;
+                // 计算在原始 history 中的真实索引（用于选择操作）
+                final actualHistoryIndex = history.indexOf(historyImage);
+                return KeyedSubtree(
+                  key: _imageKeyFor(historyImage.id),
+                  child: CardDragSelectTarget(
+                    id: historyImage.id,
+                    child: _buildPreparedHistoryItem(
+                      context: context,
+                      image: historyImage,
+                      stripMetadata: stripMetadata,
+                      childBuilder: (dragPreparationReady) =>
+                          SelectableImageCard(
+                            key: ValueKey(historyImage.id),
+                            imageBytes: historyImage.bytes,
+                            sourceFilePath: historyImage.filePath,
+                            index: actualHistoryIndex,
+                            showIndex: false,
+                            isSelected: _selectedIds.contains(historyImage.id),
+                            isPreviewActive:
+                                selectedPreviewId == historyImage.id,
+                            imageIdentity: historyImage.id,
+                            allowRepeatedModifierTaps: true,
+                            isFavorite: isFavorite,
+                            dragPreparationReady: dragPreparationReady,
+                            enableSelection: historyImage.canBulkSelect,
+                            selectionMode: ref
+                                .read(generationImageCardSelectionProvider)
+                                .isActive,
+                            enableSaveAction: historyImage.canSave,
+                            enableCopyAction: historyImage.canSave,
+                            statusBadgeLabel: isFailedSnapshot
+                                ? context.l10n.generation_failedStreamSnapshot
+                                : null,
+                            statusBadgeTooltip: isFailedSnapshot
+                                ? context
+                                      .l10n
+                                      .generation_failedStreamSnapshotHint
+                                : null,
+                            onFavoriteToggle: historyImage.canFavorite
+                                ? () => toggleGeneratedImageFavorite(
+                                    context,
+                                    ref,
+                                    historyImage,
+                                  )
+                                : null,
+                            onReuseParameters:
+                                historyImage.canUseAsGenerationInput
+                                ? () => _reuseHistoryParameters(
+                                    context,
+                                    historyImage,
+                                  )
+                                : null,
+                            onReuseSeed: historyImage.canUseAsGenerationInput
+                                ? () =>
+                                      _reuseGeneratedSeed(context, historyImage)
+                                : null,
+                            showHoverActionBar: false,
+                            pinnedHoverActions: _pinnedHoverActions,
+                            onDelete: () =>
+                                _deletion.confirmAndDelete([historyImage]),
+                            onSelectionChanged: (selected) {
+                              if (!historyImage.canBulkSelect) {
+                                return;
+                              }
+                              setState(() {
+                                if (selected) {
+                                  _selection.enterAndSelect(historyImage.id);
+                                } else {
+                                  _selection.deselect(historyImage.id);
+                                }
+                              });
+                            },
+                            onTap: () => _handleImageTap(
                               context,
                               historyImage,
+                              clickBehavior,
                             ),
-                          )
-                        : null,
-                    onImageToImage: historyImage.canUseAsGenerationInput
-                        ? () => _sendHistoryImageToImageToImage(
-                            context,
-                            historyImage,
-                          )
-                        : null,
-                    onVibeTransfer: historyImage.canUseAsGenerationInput
-                        ? () => unawaited(
-                            _sendHistoryImageToVibeTransfer(
-                              context,
-                              historyImage,
-                            ),
-                          )
-                        : null,
-                    onPreciseReference: historyImage.canUseAsGenerationInput
-                        ? () => unawaited(
-                            _sendHistoryImageToPreciseReference(
-                              context,
-                              historyImage,
-                            ),
-                          )
-                        : null,
-                    onSaveToPreciseRefLibrary:
-                        historyImage.canUseAsGenerationInput
-                        ? () => unawaited(
-                            saveBytesToPreciseRefLibrary(
-                              ref,
-                              context,
-                              historyImage.bytes,
-                            ),
-                          )
-                        : null,
-                    onEditImage: historyImage.canUseAsGenerationInput
-                        ? () => ImageWorkflowLauncher.openEditor(
-                            context,
-                            ref,
-                            historyImage.bytes,
-                            mode: ImageEditorMode.edit,
-                          )
-                        : null,
-                    onInpaint: historyImage.canUseAsGenerationInput
-                        ? () => ImageWorkflowLauncher.openInpaint(
-                            context,
-                            ref,
-                            historyImage.bytes,
-                          )
-                        : null,
-                    onGenerateVariations: historyImage.canUseAsGenerationInput
-                        ? () => ImageWorkflowLauncher.generateVariations(
-                            context,
-                            ref,
-                            historyImage.bytes,
-                          )
-                        : null,
-                    onDirectorTools: historyImage.canUseAsGenerationInput
-                        ? () => ImageWorkflowLauncher.openDirectorTools(
-                            context,
-                            ref,
-                            historyImage.bytes,
-                          )
-                        : null,
-                    onEnhance: historyImage.canUseAsGenerationInput
-                        ? () => ImageWorkflowLauncher.openEnhance(
-                            ref,
-                            historyImage.bytes,
-                          )
-                        : null,
-                    onUpscale: historyImage.canUseAsGenerationInput
-                        ? () => ImageWorkflowLauncher.openUpscale(
-                            ref,
-                            historyImage.bytes,
-                          )
-                        : null,
-                    onOpenInExplorer:
-                        historyImage.canSave &&
-                            PlatformCapabilities.current.supportsOpenFolder
-                        ? () => _openImageInExplorer(context, historyImage)
-                        : null,
-                    onSaveToLibrary: historyImage.canUseAsGenerationInput
-                        ? (bytes, _) => _showSaveToLibraryDialog(context, bytes)
-                        : null,
+                            onDoubleTap:
+                                clickBehavior ==
+                                    HistoryClickBehavior.selectPreview
+                                ? () => _showLinkedDetail(context, historyImage)
+                                : null,
+                            onLongPress: historyImage.canBulkSelect
+                                ? () =>
+                                      _selection.enterAndSelect(historyImage.id)
+                                : () =>
+                                      _showLinkedDetail(context, historyImage),
+                            onFullscreen: () =>
+                                _showLinkedDetail(context, historyImage),
+                            enableContextMenu: true,
+                            hoverEffectsEnabled: !_isHistoryScrolling,
+                            shareWarmupEnabled: false,
+                            onReversePrompt:
+                                historyImage.canUseAsGenerationInput
+                                ? () => unawaited(
+                                    _sendHistoryImageToReversePrompt(
+                                      context,
+                                      historyImage,
+                                    ),
+                                  )
+                                : null,
+                            onImageToImage: historyImage.canUseAsGenerationInput
+                                ? () => _sendHistoryImageToImageToImage(
+                                    context,
+                                    historyImage,
+                                  )
+                                : null,
+                            onVibeTransfer: historyImage.canUseAsGenerationInput
+                                ? () => unawaited(
+                                    _sendHistoryImageToVibeTransfer(
+                                      context,
+                                      historyImage,
+                                    ),
+                                  )
+                                : null,
+                            onPreciseReference:
+                                historyImage.canUseAsGenerationInput
+                                ? () => unawaited(
+                                    _sendHistoryImageToPreciseReference(
+                                      context,
+                                      historyImage,
+                                    ),
+                                  )
+                                : null,
+                            onSaveToPreciseRefLibrary:
+                                historyImage.canUseAsGenerationInput
+                                ? () => unawaited(
+                                    saveBytesToPreciseRefLibrary(
+                                      ref,
+                                      context,
+                                      historyImage.bytes,
+                                    ),
+                                  )
+                                : null,
+                            onEditImage: historyImage.canUseAsGenerationInput
+                                ? () => ImageWorkflowLauncher.openEditor(
+                                    context,
+                                    ref,
+                                    historyImage.bytes,
+                                    mode: ImageEditorMode.edit,
+                                  )
+                                : null,
+                            onInpaint: historyImage.canUseAsGenerationInput
+                                ? () => ImageWorkflowLauncher.openInpaint(
+                                    context,
+                                    ref,
+                                    historyImage.bytes,
+                                  )
+                                : null,
+                            onGenerateVariations:
+                                historyImage.canUseAsGenerationInput
+                                ? () =>
+                                      ImageWorkflowLauncher.generateVariations(
+                                        context,
+                                        ref,
+                                        historyImage.bytes,
+                                      )
+                                : null,
+                            onDirectorTools:
+                                historyImage.canUseAsGenerationInput
+                                ? () => ImageWorkflowLauncher.openDirectorTools(
+                                    context,
+                                    ref,
+                                    historyImage.bytes,
+                                  )
+                                : null,
+                            onEnhance: historyImage.canUseAsGenerationInput
+                                ? () => ImageWorkflowLauncher.openEnhance(
+                                    ref,
+                                    historyImage.bytes,
+                                  )
+                                : null,
+                            onUpscale: historyImage.canUseAsGenerationInput
+                                ? () => ImageWorkflowLauncher.openUpscale(
+                                    ref,
+                                    historyImage.bytes,
+                                  )
+                                : null,
+                            onOpenInExplorer:
+                                historyImage.canSave &&
+                                    PlatformCapabilities
+                                        .current
+                                        .supportsOpenFolder
+                                ? () => _openImageInExplorer(
+                                    context,
+                                    historyImage,
+                                  )
+                                : null,
+                            onSaveToLibrary:
+                                historyImage.canUseAsGenerationInput
+                                ? (bytes, _) =>
+                                      _showSaveToLibraryDialog(context, bytes)
+                                : null,
+                          ),
+                    ),
                   ),
-                ),
-              );
-            },
+                );
+              },
+            ),
           ),
         );
       },
@@ -1037,7 +1082,7 @@ class _HistoryPanelState extends ConsumerState<HistoryPanel> {
               ? context.l10n.generation_failedStreamSnapshotHint
               : null,
           onFavoriteToggle: image.canFavorite
-              ? () => _toggleHistoryFavorite(context, image)
+              ? () => toggleGeneratedImageFavorite(context, ref, image)
               : null,
           onReuseSeed: image.canUseAsGenerationInput
               ? () => _reuseGeneratedSeed(context, image)
@@ -1242,10 +1287,8 @@ class _HistoryPanelState extends ConsumerState<HistoryPanel> {
     _showLinkedDetail(context, image);
   }
 
-  bool _favoriteStateFor(GeneratedImage image) {
-    _ensureFavoriteStateLoaded(image);
-    return _favoriteStates[image.id] ?? false;
-  }
+  bool _favoriteStateFor(GeneratedImage image) =>
+      readImageFavorite(ref, _favoriteStatus, image.filePath);
 
   Future<void> _reuseHistoryParameters(
     BuildContext context,
@@ -1266,95 +1309,6 @@ class _HistoryPanelState extends ConsumerState<HistoryPanel> {
       return;
     }
     ref.read(generationParamsNotifierProvider.notifier).updateSeed(seed);
-  }
-
-  void _ensureFavoriteStateLoaded(GeneratedImage image) {
-    final filePath = image.filePath;
-    if (filePath == null || filePath.isEmpty) {
-      if (_favoriteStatePaths[image.id] != null ||
-          _favoriteStates[image.id] == true) {
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          if (!mounted) return;
-          setState(() {
-            _favoriteStatePaths[image.id] = null;
-            _favoriteStates[image.id] = false;
-          });
-        });
-      }
-      return;
-    }
-
-    if (_favoriteStatePaths[image.id] == filePath &&
-        (_favoriteStates.containsKey(image.id) ||
-            _favoriteStatusLoadingIds.contains(image.id))) {
-      return;
-    }
-
-    _favoriteStatePaths[image.id] = filePath;
-    _favoriteStatusLoadingIds.add(image.id);
-
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!mounted) return;
-      unawaited(
-        () async {
-          final isFavorite = await ref
-              .read(localGalleryNotifierProvider.notifier)
-              .isFavorite(filePath);
-          if (!mounted || _favoriteStatePaths[image.id] != filePath) return;
-          setState(() {
-            _favoriteStates[image.id] = isFavorite;
-            _favoriteStatusLoadingIds.remove(image.id);
-          });
-        }().catchError((Object error, StackTrace stack) {
-          if (!mounted) return;
-          setState(() {
-            _favoriteStatusLoadingIds.remove(image.id);
-          });
-        }),
-      );
-    });
-  }
-
-  Future<void> _toggleHistoryFavorite(
-    BuildContext context,
-    GeneratedImage image,
-  ) async {
-    if (!_favoriteToggleLoadingIds.add(image.id)) return;
-
-    final gallery = ref.read(localGalleryNotifierProvider.notifier);
-    try {
-      final linked = await GeneratedImageFileLink.ensureSaved(
-        ref,
-        image,
-        context.l10n,
-      );
-      final filePath = linked.path;
-      final isFavorite = await gallery.toggleFavorite(filePath);
-
-      if (!mounted) return;
-      setState(() {
-        _favoriteStatePaths[image.id] = filePath;
-        _favoriteStates[image.id] = isFavorite;
-      });
-
-      if (context.mounted) {
-        AppToast.success(
-          context,
-          isFavorite
-              ? context.l10n.toast_favorited
-              : context.l10n.toast_unfavorited,
-        );
-      }
-    } catch (e) {
-      if (context.mounted) {
-        AppToast.error(
-          context,
-          context.l10n.toast_favoriteUpdateFailed(e.toString()),
-        );
-      }
-    } finally {
-      _favoriteToggleLoadingIds.remove(image.id);
-    }
   }
 
   String _historyImageFileName(GeneratedImage image) {
@@ -1578,7 +1532,7 @@ class _HistoryPanelState extends ConsumerState<HistoryPanel> {
         onSave: (detail) async {
           await GenerationSaveService.saveImageFromDetail(context, ref, detail);
         },
-        reuseSeedAppliesTo: (detail) =>
+        parametersAreCurrent: (detail) =>
             currentRoundIds.contains(detail.identifier),
         onReuseMetadata: (detail) async {
           final source = sourceForDetail(detail);
@@ -1593,7 +1547,7 @@ class _HistoryPanelState extends ConsumerState<HistoryPanel> {
         onFavoriteToggle: (detail) {
           final source = sourceForDetail(detail);
           if (source != null) {
-            unawaited(_toggleHistoryFavorite(context, source));
+            unawaited(toggleGeneratedImageFavorite(context, ref, source));
           }
         },
       ),

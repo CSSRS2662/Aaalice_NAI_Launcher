@@ -158,6 +158,7 @@ class OnlineGalleryDetailLauncher {
                 : l10n.common_download,
             saveImage: l10n.shortcut_action_save_image,
             reuseParameters: l10n.shortcut_action_reuse_params,
+            reuseSeed: l10n.shortcut_action_reuse_seed,
             downloadAndWatermark: l10n.watermark_actionDownloadCreate,
             previousImage: l10n.onlineGallery_previousPage,
             nextImage: l10n.onlineGallery_nextPage,
@@ -701,27 +702,17 @@ class OnlineGalleryDetailLauncher {
     );
   }
 
-  /// 处理收藏切换
+  /// 处理收藏切换：心形本身就是结果反馈，成功时不再弹提示。
   Future<bool> toggleFavorite(BuildContext context, GalleryItem post) async {
-    final wasFavorited = _galleryNotifier.isFavorited(post);
     try {
       final success = await _galleryNotifier.toggleFavorite(post);
-      if (context.mounted) {
-        if (success) {
-          AppToast.info(
-            context,
-            wasFavorited
-                ? context.l10n.onlineGallery_unfavorited
-                : context.l10n.onlineGallery_favorited,
-          );
-        } else {
-          AppToast.error(
-            context,
-            context.l10n.onlineGallery_actionFailed(
-              context.l10n.onlineGallery_sourceRequestFailed,
-            ),
-          );
-        }
+      if (!success && context.mounted) {
+        AppToast.error(
+          context,
+          context.l10n.onlineGallery_actionFailed(
+            context.l10n.onlineGallery_sourceRequestFailed,
+          ),
+        );
       }
       return success;
     } catch (error, stack) {

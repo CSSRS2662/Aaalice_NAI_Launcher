@@ -110,6 +110,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get common_delete => 'Delete';
 
   @override
+  String get common_decrease => 'Decrease';
+
+  @override
+  String get common_increase => 'Increase';
+
+  @override
   String get common_edit => 'Edit';
 
   @override
@@ -11157,14 +11163,13 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get toast_favorited => 'Favorited';
-
-  @override
-  String get toast_unfavorited => 'Unfavorited';
-
-  @override
   String toast_favoriteUpdateFailed(Object error) {
     return 'Failed to update favorite state: $error';
+  }
+
+  @override
+  String toast_seedReused(Object seed) {
+    return 'Seed $seed reused';
   }
 
   @override
@@ -13017,6 +13022,9 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get autocomplete_relatedTagsSubtitleTouch =>
       'Suggest related tags after accepting a tag';
+
+  @override
+  String get autocomplete_relatedTagsAction => 'Related tags';
 
   @override
   String get autocomplete_danbooruApi => 'Danbooru online supplement';
@@ -15572,6 +15580,11 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String mobileWorkbench_selectModel(Object model) {
     return 'Model $model, tap to switch';
+  }
+
+  @override
+  String mobileWorkbench_selectSize(Object size) {
+    return 'Size $size, tap to switch';
   }
 
   @override

@@ -19,6 +19,7 @@ import 'package:nai_launcher/core/storage/local_storage_service.dart';
 import 'package:nai_launcher/l10n/app_localizations.dart';
 import 'package:nai_launcher/presentation/adaptive/interaction_policy.dart';
 import 'package:nai_launcher/presentation/widgets/autocomplete/autocomplete_config.dart';
+import 'package:nai_launcher/presentation/widgets/autocomplete/autocomplete_overlay_handle.dart';
 import 'package:nai_launcher/presentation/widgets/autocomplete/autocomplete_wrapper.dart';
 import 'package:nai_launcher/presentation/providers/generation/generation_settings_notifiers.dart'
     as generation_settings;
@@ -1252,6 +1253,64 @@ void main() {
       lessThan(12 * 35),
       reason: 'the selected row must not be aligned to the top edge',
     );
+  });
+
+  testWidgets('the handle shows related tags without a keyboard', (
+    tester,
+  ) async {
+    final controller = TextEditingController(text: 'solo_focus');
+    controller.selection = const TextSelection.collapsed(offset: 10);
+    final focusNode = FocusNode();
+    final handle = AutocompleteOverlayHandle();
+    addTearDown(() {
+      controller.dispose();
+      focusNode.dispose();
+      handle.dispose();
+    });
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          autocompleteSettingsProvider.overrideWith(
+            (ref) => _OpenOnTagClickSettingsNotifier(),
+          ),
+          autocompleteServicesProvider.overrideWithValue(
+            AutocompleteServices(
+              localSources: [_NormalAndRelatedSource()],
+              dictionaryTranslations: const _NoTranslations(),
+              llmTranslations: const _NoTranslations(),
+              danbooru: _NoDanbooru(),
+            ),
+          ),
+        ],
+        child: MaterialApp(
+          locale: const Locale('en'),
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: Scaffold(
+            body: AutocompleteWrapper(
+              controller: controller,
+              focusNode: focusNode,
+              overlayHandle: handle,
+              child: TextField(controller: controller, focusNode: focusNode),
+            ),
+          ),
+        ),
+      ),
+    );
+    focusNode.requestFocus();
+    await tester.pump();
+    expect(handle.canShowRelated, isTrue);
+
+    handle.showRelated();
+    await tester.pump(const Duration(milliseconds: 30));
+    await tester.pump();
+
+    expect(find.text('Related tags'), findsOneWidget);
+    expect(find.text('halo'), findsOneWidget);
+
+    await tester.pumpWidget(const SizedBox.shrink());
+    expect(handle.canShowRelated, isFalse);
   });
 
   testWidgets('Ctrl-click keeps related intent until mouse up', (tester) async {

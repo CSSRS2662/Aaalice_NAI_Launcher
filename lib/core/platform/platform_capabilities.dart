@@ -73,4 +73,8 @@ class PlatformCapabilities {
   bool get supportsManagedFileImports => isAndroid;
   bool get supportsInAppPackageInstall => isWindows || isAndroid;
   bool get requiresExternalInstallerFlow => isAndroid;
+
+  /// Image libraries load the next page as the list nears its end instead of
+  /// showing a page bar, and refresh with a pull from the top.
+  bool get prefersContinuousLibraryScrolling => isMobile;
 }

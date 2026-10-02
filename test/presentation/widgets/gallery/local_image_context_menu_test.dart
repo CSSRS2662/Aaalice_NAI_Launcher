@@ -67,6 +67,8 @@ void main() {
       expect(ids, isNot(contains(ImageCardActionId.importMetadata.name)));
       expect(ids, isNot(contains(ImageCardActionId.copyPrompt.name)));
       expect(ids, isNot(contains(ImageCardActionId.copySeed.name)));
+      // Without a known seed there is nothing to reuse.
+      expect(ids, isNot(contains(ImageCardActionId.reuseSeed.name)));
       expect(
         items
             .singleWhere((i) => i.id == ImageCardActionId.createWatermark.name)
@@ -91,6 +93,7 @@ void main() {
         ids,
         containsAll([
           ImageCardActionId.reuseParameters.name,
+          ImageCardActionId.reuseSeed.name,
           ImageCardActionId.imageToImage.name,
           ImageCardActionId.reversePrompt.name,
           ImageCardActionId.vibeTransfer.name,
@@ -101,7 +104,7 @@ void main() {
           ImageCardActionId.createWatermark.name,
         ]),
       );
-      expect(ids.length, 9);
+      expect(ids.length, 10);
     },
   );
 

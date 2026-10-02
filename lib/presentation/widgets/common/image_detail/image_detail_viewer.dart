@@ -25,6 +25,7 @@ import '../horizontal_resize_handle.dart';
 import '../resizable_pane.dart';
 import 'components/detail_image_page.dart';
 import 'components/detail_metadata_panel.dart';
+import 'components/detail_swipe_dismiss.dart';
 import 'components/prompt_copy_dialog.dart';
 import 'components/detail_thumbnail_bar.dart';
 import 'components/detail_top_bar.dart';
@@ -38,11 +39,11 @@ class ImageDetailCallbacks {
   /// 复用元数据回调
   final Future<void> Function(ImageDetailData image)? onReuseMetadata;
 
-  /// 当前轮生成图只复用种子，不覆盖其他生成参数。
+  /// 只把图片的种子写回生成参数。
   final Future<void> Function(ImageDetailData image)? onReuseSeed;
 
-  /// 同一查看序列混合当前轮与历史图时，决定当前图使用哪种复用语义。
-  final bool Function(ImageDetailData image)? reuseSeedAppliesTo;
+  /// 本轮生成图的参数就是当前参数，此时只提供复用种子、不提供复用参数。
+  final bool Function(ImageDetailData image)? parametersAreCurrent;
 
   /// 保存回调
   final Future<void> Function(ImageDetailData image)? onSave;
@@ -60,7 +61,7 @@ class ImageDetailCallbacks {
     this.onFavoriteToggle,
     this.onReuseMetadata,
     this.onReuseSeed,
-    this.reuseSeedAppliesTo,
+    this.parametersAreCurrent,
     this.onSave,
     this.onCopyImage,
     this.onSendToImg2Img,
@@ -132,7 +133,10 @@ class ImageDetailViewer extends ConsumerStatefulWidget {
         // Windows + 外部截图工具 + 焦点切换下，透明路由和快照过渡更容易触发
         // Flutter 引擎原生崩溃；Windows 走纯黑不透明且无动画路径。
         opaque: isWindows,
-        barrierColor: ImageViewportSurface.background,
+        // 背景由查看器自己绘制，下滑关闭时才能淡出、露出下层页面。
+        barrierColor: isWindows
+            ? ImageViewportSurface.background
+            : Colors.transparent,
         allowSnapshotting: !isWindows,
         transitionDuration: transitionDuration,
         reverseTransitionDuration: reverseTransitionDuration,
@@ -180,7 +184,8 @@ class ImageDetailViewer extends ConsumerStatefulWidget {
   ConsumerState<ImageDetailViewer> createState() => _ImageDetailViewerState();
 }
 
-class _ImageDetailViewerState extends ConsumerState<ImageDetailViewer> {
+class _ImageDetailViewerState extends ConsumerState<ImageDetailViewer>
+    with SingleTickerProviderStateMixin {
   static const Duration _windowsEscFocusCooldown = Duration(milliseconds: 1200);
   static const Duration _windowsEscBounceCooldown = Duration(seconds: 4);
   static const Duration _closeRequestThrottle = Duration(milliseconds: 700);
@@ -191,8 +196,9 @@ class _ImageDetailViewerState extends ConsumerState<ImageDetailViewer> {
   late PageController _pageController;
   late ScrollController _thumbnailController;
   late int _currentIndex;
-  // 始终显示控制栏（不自动收起）
-  final bool _showControls = true;
+  // 鼠标下控制栏常驻；触屏单击图片切换显隐。
+  bool _showControls = true;
+  late final DetailSwipeDismissController _swipeDismiss;
   final _focusNode = FocusNode();
   final Map<String, TransformationController> _transformationControllers = {};
   bool _isClosing = false;
@@ -204,6 +210,10 @@ class _ImageDetailViewerState extends ConsumerState<ImageDetailViewer> {
     super.initState();
     _currentIndex = widget.initialIndex;
     _pageController = PageController(initialPage: _currentIndex);
+    _swipeDismiss = DetailSwipeDismissController(
+      vsync: this,
+      onDismiss: () => _requestClose('swipe-down'),
+    );
     _thumbnailController = ScrollController();
     _metadataPanelWidthController = ResizablePaneController(
       initialWidth: _initialMetadataPanelWidth,
@@ -309,8 +319,9 @@ class _ImageDetailViewerState extends ConsumerState<ImageDetailViewer> {
     );
   }
 
-  void _requestClose(String reason) {
-    if (!mounted || _isClosing) return;
+  /// Returns whether the close was started.
+  bool _requestClose(String reason) {
+    if (!mounted || _isClosing) return false;
     final now = DateTime.now();
     final lastCloseAt = _lastCloseRequestedAt;
     if (lastCloseAt != null &&
@@ -319,7 +330,7 @@ class _ImageDetailViewerState extends ConsumerState<ImageDetailViewer> {
         'Ignored duplicated close request: $reason',
         'ImageDetailViewer',
       );
-      return;
+      return false;
     }
     _lastCloseRequestedAt = now;
 
@@ -329,7 +340,7 @@ class _ImageDetailViewerState extends ConsumerState<ImageDetailViewer> {
         'Ignored close request on non-current route: $reason',
         'ImageDetailViewer',
       );
-      return;
+      return false;
     }
 
     _isClosing = true;
@@ -343,6 +354,7 @@ class _ImageDetailViewerState extends ConsumerState<ImageDetailViewer> {
         }
       });
     });
+    return true;
   }
 
   ImageDetailData get _currentImage => widget.images[_currentIndex];
@@ -508,46 +520,55 @@ class _ImageDetailViewerState extends ConsumerState<ImageDetailViewer> {
         focusNode: _focusNode,
         onKeyEvent: _handleKeyEvent,
         child: Scaffold(
-          backgroundColor: ImageViewportSurface.background,
-          body: LayoutBuilder(
-            builder: (context, constraints) {
-              final showSideMetadata = constraints.maxWidth >= 1100;
-              if (!showSideMetadata || !widget.showMetadataPanel) {
-                return _buildMainContent(
-                  showMetadataAction: widget.showMetadataPanel,
-                );
-              }
-
-              final maximumPanelWidth =
-                  WorkspaceSidePanelContract.constrainedWorkspaceWidth(
-                    workspaceWidth: constraints.maxWidth,
-                    preferredWidth: WorkspaceSidePanelContract.maximumWidth,
-                    occupiedWidth: ResizeHandle.defaultWidth,
-                    minimumPrimaryWidth: _minimumImagePaneWidth,
-                    minimumWidth: _minimumMetadataPanelWidth,
+          backgroundColor: Colors.transparent,
+          body: _SwipeDismissBackdrop(
+            controller: _swipeDismiss,
+            // 不透明路由下层不绘制，淡出只会露出空白。
+            canFade: !PlatformCapabilities.current.isWindows,
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                final showSideMetadata = constraints.maxWidth >= 1100;
+                if (!showSideMetadata || !widget.showMetadataPanel) {
+                  return _buildMainContent(
+                    showMetadataAction: widget.showMetadataPanel,
                   );
-              return Row(
-                children: [
-                  Expanded(child: _buildMainContent(showMetadataAction: false)),
-                  ResizeHandle(
-                    key: const ValueKey('image-detail-metadata-resize-handle'),
-                    onDrag: (delta) =>
-                        _metadataPanelWidthController.resizeBy(-delta),
-                  ),
-                  ResizablePane(
-                    controller: _metadataPanelWidthController,
-                    minimumWidth: _minimumMetadataPanelWidth,
-                    maximumWidth: maximumPanelWidth,
-                    child: DetailMetadataPanel(
-                      currentImage: _currentImage,
-                      initialExpanded: true,
-                      collapsible: false,
-                      fillAvailableWidth: true,
+                }
+
+                final maximumPanelWidth =
+                    WorkspaceSidePanelContract.constrainedWorkspaceWidth(
+                      workspaceWidth: constraints.maxWidth,
+                      preferredWidth: WorkspaceSidePanelContract.maximumWidth,
+                      occupiedWidth: ResizeHandle.defaultWidth,
+                      minimumPrimaryWidth: _minimumImagePaneWidth,
+                      minimumWidth: _minimumMetadataPanelWidth,
+                    );
+                return Row(
+                  children: [
+                    Expanded(
+                      child: _buildMainContent(showMetadataAction: false),
                     ),
-                  ),
-                ],
-              );
-            },
+                    ResizeHandle(
+                      key: const ValueKey(
+                        'image-detail-metadata-resize-handle',
+                      ),
+                      onDrag: (delta) =>
+                          _metadataPanelWidthController.resizeBy(-delta),
+                    ),
+                    ResizablePane(
+                      controller: _metadataPanelWidthController,
+                      minimumWidth: _minimumMetadataPanelWidth,
+                      maximumWidth: maximumPanelWidth,
+                      child: DetailMetadataPanel(
+                        currentImage: _currentImage,
+                        initialExpanded: true,
+                        collapsible: false,
+                        fillAvailableWidth: true,
+                      ),
+                    ),
+                  ],
+                );
+              },
+            ),
           ),
         ),
       ),
@@ -557,91 +578,109 @@ class _ImageDetailViewerState extends ConsumerState<ImageDetailViewer> {
   Widget _buildMainContent({required bool showMetadataAction}) {
     final showThumbnails = widget.showThumbnails && widget.images.length > 1;
     final callbacks = widget.callbacks;
-    final useSeedAction =
-        callbacks?.onReuseSeed != null &&
-        (callbacks?.reuseSeedAppliesTo?.call(_currentImage) ??
-            callbacks?.onReuseMetadata == null);
+    final parametersAreCurrent =
+        callbacks?.parametersAreCurrent?.call(_currentImage) ?? false;
 
+    final reduceMotion = MediaQuery.disableAnimationsOf(context);
     return Stack(
       children: [
-        // 主图预览区域
-        // 注意：移除 onTap 切换控制栏，让顶部工具栏始终显示
-        PageView.builder(
-          controller: _pageController,
-          itemCount: widget.images.length,
-          onPageChanged: _onPageChanged,
-          itemBuilder: (context, index) {
-            final data = widget.images[index];
-            final heroTag =
-                widget.heroTagPrefix != null && index == _currentIndex
-                ? '${widget.heroTagPrefix}_${data.identifier}'
-                : null;
-            final transformationController = _transformationControllers
-                .putIfAbsent(data.identifier, TransformationController.new);
-            return DetailImagePage(
-              key: ValueKey(data.identifier),
-              data: data,
-              heroTag: heroTag,
-              transformationController: transformationController,
-            );
-          },
+        // 主图预览区域：鼠标下控制栏常驻；手指单击切换控制栏，未放大时下滑关闭。
+        ListenableBuilder(
+          listenable: _swipeDismiss,
+          builder: (context, child) => Transform.translate(
+            offset: Offset(0, _swipeDismiss.offset),
+            child: Transform.scale(
+              scale: 1 - _swipeDismiss.progress * 0.15,
+              child: child,
+            ),
+          ),
+          child: PageView.builder(
+            controller: _pageController,
+            itemCount: widget.images.length,
+            onPageChanged: _onPageChanged,
+            itemBuilder: (context, index) {
+              final data = widget.images[index];
+              final heroTag =
+                  widget.heroTagPrefix != null && index == _currentIndex
+                  ? '${widget.heroTagPrefix}_${data.identifier}'
+                  : null;
+              final transformationController = _transformationControllers
+                  .putIfAbsent(data.identifier, TransformationController.new);
+              return DetailImagePage(
+                key: ValueKey(data.identifier),
+                data: data,
+                heroTag: heroTag,
+                transformationController: transformationController,
+                onTouchTap: () =>
+                    setState(() => _showControls = !_showControls),
+                onDismissDragUpdate: _swipeDismiss.update,
+                onDismissDragEnd: (velocity) =>
+                    _swipeDismiss.end(velocity, reduceMotion: reduceMotion),
+              );
+            },
+          ),
         ),
 
         // 顶部控制栏
-        AnimatedPositioned(
-          duration: MediaQuery.disableAnimationsOf(context)
-              ? Duration.zero
-              : const Duration(milliseconds: 200),
-          top: _showControls ? 0 : -100,
+        Positioned(
+          top: 0,
           left: 0,
           right: 0,
-          child: DetailTopBar(
-            currentIndex: _currentIndex,
-            totalImages: widget.images.length,
-            currentImage: _currentImage,
-            onClose: () => _requestClose('top-bar-close'),
-            onShowMetadata: showMetadataAction ? _showMetadataPanel : null,
-            onReuseMetadata:
-                !useSeedAction && callbacks?.onReuseMetadata != null
-                ? () => _handleReuseMetadata(context)
-                : null,
-            onReuseSeed: useSeedAction
-                ? () => callbacks!.onReuseSeed!(_currentImage)
-                : null,
-            onFavoriteToggle: widget.callbacks?.onFavoriteToggle != null
-                ? () => widget.callbacks!.onFavoriteToggle!(_currentImage)
-                : null,
-            onSave: widget.callbacks?.onSave != null
-                ? () => widget.callbacks!.onSave!(_currentImage)
-                : null,
-            onCopyImage: _currentImage.showCopyButton
-                ? () => _copyImageToClipboard(context)
-                : null,
-            onShare: PlatformCapabilities.current.supportsNativeShare
-                ? () => _shareImage(context)
-                : null,
-            onWatermark: () => _openWatermarkEditor(context),
-            onMosaic: () => _openMosaicEditor(context),
-            onSendToImg2Img: widget.callbacks?.onSendToImg2Img != null
-                ? () => widget.callbacks!.onSendToImg2Img!(_currentImage)
-                : null,
-            onSendToReversePrompt:
-                widget.callbacks?.onSendToReversePrompt != null
-                ? () => widget.callbacks!.onSendToReversePrompt!(_currentImage)
-                : null,
+          child: _HideableBar(
+            visible: _showControls,
+            hiddenOffset: const Offset(0, -1),
+            dismiss: _swipeDismiss,
+            child: DetailTopBar(
+              currentIndex: _currentIndex,
+              totalImages: widget.images.length,
+              currentImage: _currentImage,
+              onClose: () => _requestClose('top-bar-close'),
+              onShowMetadata: showMetadataAction ? _showMetadataPanel : null,
+              onReuseMetadata:
+                  !parametersAreCurrent && callbacks?.onReuseMetadata != null
+                  ? () => _handleReuseMetadata(context)
+                  : null,
+              onReuseSeed: callbacks?.onReuseSeed != null
+                  ? () => callbacks!.onReuseSeed!(_currentImage)
+                  : null,
+              onFavoriteToggle: widget.callbacks?.onFavoriteToggle != null
+                  ? () => widget.callbacks!.onFavoriteToggle!(_currentImage)
+                  : null,
+              onSave: widget.callbacks?.onSave != null
+                  ? () => widget.callbacks!.onSave!(_currentImage)
+                  : null,
+              onCopyImage: _currentImage.showCopyButton
+                  ? () => _copyImageToClipboard(context)
+                  : null,
+              onShare: PlatformCapabilities.current.supportsNativeShare
+                  ? () => _shareImage(context)
+                  : null,
+              onWatermark: () => _openWatermarkEditor(context),
+              onMosaic: () => _openMosaicEditor(context),
+              onSendToImg2Img: widget.callbacks?.onSendToImg2Img != null
+                  ? () => widget.callbacks!.onSendToImg2Img!(_currentImage)
+                  : null,
+              onSendToReversePrompt:
+                  widget.callbacks?.onSendToReversePrompt != null
+                  ? () =>
+                        widget.callbacks!.onSendToReversePrompt!(_currentImage)
+                  : null,
+            ),
           ),
         ),
 
         // 底部缩略图栏
         if (showThumbnails)
-          AnimatedPositioned(
-            duration: MediaQuery.disableAnimationsOf(context)
-                ? Duration.zero
-                : const Duration(milliseconds: 200),
-            bottom: _showControls ? 0 : -100,
+          Positioned(
+            bottom: 0,
             left: 0,
             right: 0,
-            child: _buildBottomBar(),
+            child: _HideableBar(
+              visible: _showControls,
+              hiddenOffset: const Offset(0, 1),
+              dismiss: _swipeDismiss,
+              child: _buildBottomBar(),
+            ),
           ),
 
         // 左右导航按钮：触屏直接左右滑动切图，按钮只会遮挡画面
@@ -815,6 +854,7 @@ class _ImageDetailViewerState extends ConsumerState<ImageDetailViewer> {
 
   @override
   void dispose() {
+    _swipeDismiss.dispose();
     _metadataPanelWidthController.dispose();
     for (final controller in _transformationControllers.values) {
       controller.dispose();
@@ -845,6 +885,71 @@ class _NavigationButton extends StatelessWidget {
         child: Padding(
           padding: const EdgeInsets.all(12),
           child: Icon(icon, color: Colors.white, size: 32),
+        ),
+      ),
+    );
+  }
+}
+
+/// Paints the viewer backdrop; it fades while the image is swiped down so the
+/// page underneath shows through.
+class _SwipeDismissBackdrop extends StatelessWidget {
+  const _SwipeDismissBackdrop({
+    required this.controller,
+    required this.canFade,
+    required this.child,
+  });
+
+  final DetailSwipeDismissController controller;
+  final bool canFade;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) => ListenableBuilder(
+    listenable: controller,
+    builder: (context, child) => ColoredBox(
+      color: ImageViewportSurface.background.withValues(
+        alpha: canFade ? 1 - controller.progress : 1,
+      ),
+      child: child,
+    ),
+    child: child,
+  );
+}
+
+/// A top or bottom bar that slides out when the controls are hidden and fades
+/// while the image is swiped down.
+class _HideableBar extends StatelessWidget {
+  const _HideableBar({
+    required this.visible,
+    required this.hiddenOffset,
+    required this.dismiss,
+    required this.child,
+  });
+
+  final bool visible;
+  final Offset hiddenOffset;
+  final DetailSwipeDismissController dismiss;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    final duration = MediaQuery.disableAnimationsOf(context)
+        ? Duration.zero
+        : const Duration(milliseconds: 200);
+    return IgnorePointer(
+      ignoring: !visible,
+      child: AnimatedSlide(
+        offset: visible ? Offset.zero : hiddenOffset,
+        duration: duration,
+        curve: Curves.easeOut,
+        child: ListenableBuilder(
+          listenable: dismiss,
+          builder: (context, child) => Opacity(
+            opacity: (1 - dismiss.progress * 4).clamp(0.0, 1.0),
+            child: child,
+          ),
+          child: child,
         ),
       ),
     );

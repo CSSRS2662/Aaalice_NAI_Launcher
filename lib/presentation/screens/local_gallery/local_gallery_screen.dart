@@ -251,8 +251,10 @@ class _LocalGalleryShell extends ConsumerWidget {
               )
             : null,
         body: _buildBody(context, ref),
+        // 手机上滚动到底自动加载下一页，不显示分页条。
         footer:
-            !gallery.isIndexing &&
+            !PlatformCapabilities.current.prefersContinuousLibraryScrolling &&
+                !gallery.isIndexing &&
                 gallery.currentImages.isNotEmpty &&
                 gallery.totalPages > 0
             ? PaginationBar(

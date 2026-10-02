@@ -105,6 +105,12 @@ class AppLocalizationsZh extends AppLocalizations {
   String get common_delete => '删除';
 
   @override
+  String get common_decrease => '减小';
+
+  @override
+  String get common_increase => '增大';
+
+  @override
   String get common_edit => '编辑';
 
   @override
@@ -10703,14 +10709,13 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
-  String get toast_favorited => '已收藏';
-
-  @override
-  String get toast_unfavorited => '已取消收藏';
-
-  @override
   String toast_favoriteUpdateFailed(Object error) {
     return '收藏状态更新失败: $error';
+  }
+
+  @override
+  String toast_seedReused(Object seed) {
+    return '已复用种子 $seed';
   }
 
   @override
@@ -12474,6 +12479,9 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get autocomplete_relatedTagsSubtitleTouch => '选中补全后自动推荐相关标签';
+
+  @override
+  String get autocomplete_relatedTagsAction => '相关标签';
 
   @override
   String get autocomplete_danbooruApi => 'Danbooru 在线补充';
@@ -14890,6 +14898,11 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
+  String mobileWorkbench_selectSize(Object size) {
+    return '尺寸 $size，点按切换';
+  }
+
+  @override
   String get mobileWorkbench_queue => '生成队列';
 
   @override
@@ -15100,6 +15113,12 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get common_delete => '刪除';
+
+  @override
+  String get common_decrease => '減小';
+
+  @override
+  String get common_increase => '增大';
 
   @override
   String get common_edit => '編輯';
@@ -25700,14 +25719,13 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   }
 
   @override
-  String get toast_favorited => '已收藏';
-
-  @override
-  String get toast_unfavorited => '已取消收藏';
-
-  @override
   String toast_favoriteUpdateFailed(Object error) {
     return '收藏狀態更新失敗: $error';
+  }
+
+  @override
+  String toast_seedReused(Object seed) {
+    return '已複用種子 $seed';
   }
 
   @override
@@ -27471,6 +27489,9 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get autocomplete_relatedTagsSubtitleTouch => '選中補全後自動推薦相關標籤';
+
+  @override
+  String get autocomplete_relatedTagsAction => '相關標籤';
 
   @override
   String get autocomplete_danbooruApi => 'Danbooru 線上補充';
@@ -29885,6 +29906,11 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   @override
   String mobileWorkbench_selectModel(Object model) {
     return '模型 $model，點按切換';
+  }
+
+  @override
+  String mobileWorkbench_selectSize(Object size) {
+    return '尺寸 $size，點按切換';
   }
 
   @override

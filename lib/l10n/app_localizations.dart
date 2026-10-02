@@ -281,6 +281,18 @@ abstract class AppLocalizations {
   /// **'Delete'**
   String get common_delete;
 
+  /// No description provided for @common_decrease.
+  ///
+  /// In en, this message translates to:
+  /// **'Decrease'**
+  String get common_decrease;
+
+  /// No description provided for @common_increase.
+  ///
+  /// In en, this message translates to:
+  /// **'Increase'**
+  String get common_increase;
+
   /// No description provided for @common_edit.
   ///
   /// In en, this message translates to:
@@ -19512,23 +19524,17 @@ abstract class AppLocalizations {
   /// **'Added {added} tags, skipped {skipped} duplicate tags'**
   String toast_addedTagsSkippedDuplicates(Object added, Object skipped);
 
-  /// No description provided for @toast_favorited.
-  ///
-  /// In en, this message translates to:
-  /// **'Favorited'**
-  String get toast_favorited;
-
-  /// No description provided for @toast_unfavorited.
-  ///
-  /// In en, this message translates to:
-  /// **'Unfavorited'**
-  String get toast_unfavorited;
-
   /// No description provided for @toast_favoriteUpdateFailed.
   ///
   /// In en, this message translates to:
   /// **'Failed to update favorite state: {error}'**
   String toast_favoriteUpdateFailed(Object error);
+
+  /// No description provided for @toast_seedReused.
+  ///
+  /// In en, this message translates to:
+  /// **'Seed {seed} reused'**
+  String toast_seedReused(Object seed);
 
   /// No description provided for @toast_packFailedWithError.
   ///
@@ -22643,6 +22649,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Suggest related tags after accepting a tag'**
   String get autocomplete_relatedTagsSubtitleTouch;
+
+  /// No description provided for @autocomplete_relatedTagsAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Related tags'**
+  String get autocomplete_relatedTagsAction;
 
   /// No description provided for @autocomplete_danbooruApi.
   ///
@@ -27075,6 +27087,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Model {model}, tap to switch'**
   String mobileWorkbench_selectModel(Object model);
+
+  /// No description provided for @mobileWorkbench_selectSize.
+  ///
+  /// In en, this message translates to:
+  /// **'Size {size}, tap to switch'**
+  String mobileWorkbench_selectSize(Object size);
 
   /// No description provided for @mobileWorkbench_queue.
   ///

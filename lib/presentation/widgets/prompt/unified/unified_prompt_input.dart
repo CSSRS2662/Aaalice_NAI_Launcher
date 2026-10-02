@@ -19,6 +19,7 @@ import '../../../adaptive/interaction_policy.dart';
 import '../../../providers/generation/generation_settings_notifiers.dart';
 import '../../../providers/tag_library_page_provider.dart';
 import '../../../screens/tag_library_page/widgets/entry_add_dialog.dart';
+import '../../autocomplete/autocomplete_overlay_handle.dart';
 import '../../autocomplete/autocomplete_wrapper.dart';
 import '../../common/app_toast.dart';
 import '../../common/weight_adjust_toolbar.dart';
@@ -158,6 +159,8 @@ class _UnifiedPromptInputState extends ConsumerState<UnifiedPromptInput> {
   /// 焦点节点
   FocusNode? _internalFocusNode;
   final FocusNode _tagFocusNode = FocusNode();
+  final AutocompleteOverlayHandle _autocompleteHandle =
+      AutocompleteOverlayHandle();
   // Opening search reparents the input under a Column. Keep its editing session
   // and viewport instead of recreating the text/tag mode container.
   final GlobalKey _inputStackKey = GlobalKey();
@@ -368,6 +371,7 @@ class _UnifiedPromptInputState extends ConsumerState<UnifiedPromptInput> {
     _syntaxController?.dispose();
     _internalFocusNode?.dispose();
     _tagFocusNode.dispose();
+    _autocompleteHandle.dispose();
     _searchController.dispose();
     _searchFocusNode.dispose();
     _replaceController.dispose();
@@ -1062,6 +1066,21 @@ class _UnifiedPromptInputState extends ConsumerState<UnifiedPromptInput> {
       );
     }
 
+    // 相关标签的菜单入口：桌面的 Ctrl+Shift+Space / Ctrl+单击在触屏上没有等价操作。
+    if (widget.config.enableAutocomplete &&
+        _autocompleteHandle.canShowRelated) {
+      buttonItems.insert(
+        0,
+        ContextMenuButtonItem(
+          onPressed: () {
+            editableTextState.hideToolbar();
+            _autocompleteHandle.showRelated();
+          },
+          label: context.l10n.autocomplete_relatedTagsAction,
+        ),
+      );
+    }
+
     // 如果有选中文本，添加"保存到词库"选项
     if (hasSelection) {
       buttonItems.insert(
@@ -1529,6 +1548,7 @@ class _UnifiedPromptInputState extends ConsumerState<UnifiedPromptInput> {
       result = AutocompleteWrapper(
         controller: _textFieldController,
         focusNode: _effectiveFocusNode,
+        overlayHandle: _autocompleteHandle,
         config: widget.config.autocompleteConfig,
         enabled: !widget.config.readOnly && !_tagMode,
         onChanged: (_) => _handleTextChanged(_effectiveController.text),

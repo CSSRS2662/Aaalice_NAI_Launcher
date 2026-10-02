@@ -8,6 +8,7 @@ import '../../../../core/utils/nai_resolution_adapter.dart';
 import '../../../../data/models/image/resolution_preset.dart';
 import '../../../widgets/common/app_toast.dart';
 import '../../../widgets/common/themed_dropdown.dart';
+import 'saved_resolution_presets.dart';
 
 /// 尺寸选择器 (带分组预设和自定义输入)
 ///
@@ -56,21 +57,8 @@ class _SizeSelectorState extends State<SizeSelector> {
     _updateSelectedPreset();
   }
 
-  List<CustomResolutionPreset> _loadSavedCustomPresets() {
-    final uniquePresets = <CustomResolutionPreset>{};
-    for (final value in _storage.getCustomResolutionPresets()) {
-      final preset = CustomResolutionPreset.fromStorageValue(value);
-      if (preset != null &&
-          NaiResolutionAdapter.validateGenerationResolution(
-                preset.width,
-                preset.height,
-              ) ==
-              null) {
-        uniquePresets.add(preset);
-      }
-    }
-    return uniquePresets.toList(growable: false);
-  }
+  List<CustomResolutionPreset> _loadSavedCustomPresets() =>
+      loadSavedResolutionPresets(_storage);
 
   @override
   void didUpdateWidget(covariant SizeSelector oldWidget) {

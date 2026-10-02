@@ -7,6 +7,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../core/services/android_media_store_service.dart';
 import '../../core/utils/app_logger.dart';
+import '../../core/utils/image_save_utils.dart';
 import '../../core/utils/localization_extension.dart';
 import '../../core/utils/nai_resolution_adapter.dart';
 import '../../data/models/gallery/nai_image_metadata.dart';
@@ -27,6 +28,7 @@ import '../widgets/common/precise_reference_type_dialog.dart';
 import '../widgets/discord_share/discord_share_dialog.dart';
 import '../widgets/gallery/local_image_context_menu.dart';
 import 'image_metadata_import_workflow.dart';
+import 'image_seed_reuse.dart';
 import 'image_workflow_launcher.dart';
 
 /// Dispatches the reusable "send image to..." actions shared by image menus.
@@ -51,6 +53,9 @@ class ImageSendActionDispatcher {
         case LocalImageContextAction.sendToTextToImage:
         case LocalImageContextAction.importMetadata:
           await _importMetadata(context, ref, bytes);
+        case LocalImageContextAction.reuseSeed:
+          final seed = await ImageSaveUtils.resolveSeed(bytes: bytes);
+          if (context.mounted) reuseImageSeed(context, ref, seed);
         case LocalImageContextAction.sendToImg2Img:
           ImageWorkflowLauncher.openImageToImage(ref, bytes);
           context.go(AppRoutes.home);

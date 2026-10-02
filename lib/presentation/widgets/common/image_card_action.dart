@@ -179,11 +179,6 @@ List<ImageCardAction> orderedImageCardActions(
     visible.map((a) => a.id).toSet().length == visible.length,
     'A card must define each action only once.',
   );
-  assert(
-    !visible.any((a) => a.id == ImageCardActionId.reuseParameters) ||
-        !visible.any((a) => a.id == ImageCardActionId.reuseSeed),
-    'An image menu must expose either reuse parameters or reuse seed, not both.',
-  );
   const primaryMenuOrder = [
     ImageCardActionId.save,
     ImageCardActionId.reuseParameters,

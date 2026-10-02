@@ -42,6 +42,7 @@ class GalleryDetailDialogLabels {
     required this.downloadOriginal,
     required this.saveImage,
     required this.reuseParameters,
+    this.reuseSeed = '',
     this.downloadAndWatermark = '',
     required this.previousImage,
     required this.nextImage,
@@ -92,6 +93,7 @@ class GalleryDetailDialogLabels {
   final String downloadOriginal;
   final String saveImage;
   final String reuseParameters;
+  final String reuseSeed;
   final String downloadAndWatermark;
   final String previousImage;
   final String nextImage;
@@ -185,6 +187,7 @@ class GalleryDetailActions {
     required this.showTagMenu,
     this.downloadAll,
     this.sendToReverse,
+    this.reuseSeed,
   });
 
   final VoidCallback close;
@@ -202,6 +205,9 @@ class GalleryDetailActions {
   final void Function(String tag, Offset globalPosition) showTagMenu;
   final Future<void> Function(List<GalleryMedia> media)? downloadAll;
   final Future<void> Function(GalleryMedia media)? sendToReverse;
+
+  /// Writes a seed from the image's generation info into the parameters.
+  final ValueChanged<int>? reuseSeed;
 }
 
 bool galleryMediaHasOriginal(GalleryMedia media) {

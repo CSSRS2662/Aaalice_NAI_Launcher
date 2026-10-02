@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/cache/online_gallery_prefetch_coordinator.dart';
 import '../../../data/models/online_gallery/gallery_item.dart';
 import '../../providers/online_gallery_output_filter_provider.dart';
+import '../../services/image_seed_reuse.dart';
 import 'gallery_detail_controller.dart';
 import 'gallery_detail_dialog_view.dart';
 import 'gallery_detail_models.dart';
@@ -175,6 +176,7 @@ class _GalleryDetailDialogState extends ConsumerState<GalleryDetailDialog> {
           ? null
           : (media) =>
                 _controller.sendToReverse(() => widget.onSendToReverse!(media)),
+      reuseSeed: (seed) => reuseImageSeed(context, ref, seed),
     );
     return GalleryDetailDialogView(
       controller: _controller,

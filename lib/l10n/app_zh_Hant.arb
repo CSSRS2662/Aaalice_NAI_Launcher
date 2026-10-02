@@ -50,6 +50,8 @@
   "common_deselectAll": "全不選",
   "common_save": "儲存",
   "common_delete": "刪除",
+  "common_decrease": "減小",
+  "common_increase": "增大",
   "common_edit": "編輯",
   "common_close": "關閉",
   "common_clear": "清除",
@@ -5232,12 +5234,16 @@
       "skipped": {}
     }
   },
-  "toast_favorited": "已收藏",
-  "toast_unfavorited": "已取消收藏",
   "toast_favoriteUpdateFailed": "收藏狀態更新失敗: {error}",
   "@toast_favoriteUpdateFailed": {
     "placeholders": {
       "error": {}
+    }
+  },
+  "toast_seedReused": "已複用種子 {seed}",
+  "@toast_seedReused": {
+    "placeholders": {
+      "seed": {}
     }
   },
   "toast_packFailedWithError": "打包失敗: {error}",
@@ -6590,6 +6596,7 @@
   "autocomplete_relatedTagsTitle": "共現與相關標籤推薦",
   "autocomplete_relatedTagsSubtitle": "選中補全後自動推薦；也可在標籤上按 Ctrl+Shift+Space 或 Ctrl+單擊",
   "autocomplete_relatedTagsSubtitleTouch": "選中補全後自動推薦相關標籤",
+  "autocomplete_relatedTagsAction": "相關標籤",
   "autocomplete_danbooruApi": "Danbooru 線上補充",
   "autocomplete_danbooruPrivacy": "僅傳送當前英文標籤，不會上傳完整提示詞",
   "autocomplete_llmTranslation": "使用 Prompt Assistant 補譯缺失漢化",
@@ -7500,6 +7507,12 @@
   "@mobileWorkbench_selectModel": {
     "placeholders": {
       "model": {}
+    }
+  },
+  "mobileWorkbench_selectSize": "尺寸 {size}，點按切換",
+  "@mobileWorkbench_selectSize": {
+    "placeholders": {
+      "size": {}
     }
   },
   "mobileWorkbench_queue": "生成佇列",

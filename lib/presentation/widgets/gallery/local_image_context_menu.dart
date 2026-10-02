@@ -8,6 +8,7 @@ enum LocalImageContextAction {
   addToAgent,
   moveToCategory,
   sendToTextToImage,
+  reuseSeed,
   sendToImg2Img,
   sendToReversePrompt,
   sendToStyleTransfer,
@@ -37,6 +38,7 @@ class LocalImageContextMenu {
     LocalImageContextAction.moveToCategory => ImageCardActionId.classify,
     LocalImageContextAction.sendToTextToImage =>
       ImageCardActionId.reuseParameters,
+    LocalImageContextAction.reuseSeed => ImageCardActionId.reuseSeed,
     LocalImageContextAction.sendToImg2Img => ImageCardActionId.imageToImage,
     LocalImageContextAction.sendToReversePrompt =>
       ImageCardActionId.reversePrompt,
@@ -113,6 +115,7 @@ class LocalImageContextMenu {
         context,
         onAction: onAction,
         isKritaConnected: isKritaConnected,
+        hasSeed: hasSeed,
       ),
       action(
         value: LocalImageContextAction.addToAgent,
@@ -180,10 +183,13 @@ class LocalImageContextMenu {
     ];
   }
 
+  /// [hasSeed] null means the seed is unknown until the image is read; the
+  /// seed action is offered and reports a missing seed when used.
   static List<ImageCardAction> buildSendActions(
     BuildContext context, {
     required Future<void> Function(LocalImageContextAction) onAction,
     required bool isKritaConnected,
+    bool? hasSeed,
     bool watermarkEnabled = false,
     bool isWatermarkDerivative = false,
     bool mosaicEnabled = false,
@@ -197,6 +203,12 @@ class LocalImageContextMenu {
         label: context.l10n.onlineGallery_sendToTextToImage,
         menuLabel: context.l10n.shortcut_action_reuse_params,
       ),
+      if (hasSeed ?? true)
+        action(
+          value: LocalImageContextAction.reuseSeed,
+          icon: Icons.eco_outlined,
+          label: context.l10n.shortcut_action_reuse_seed,
+        ),
       action(
         value: LocalImageContextAction.sendToImg2Img,
         icon: Icons.image_outlined,

@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:flutter_riverpod/flutter_riverpod.dart' show WidgetRef;
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
@@ -17,6 +18,7 @@ import '../../data/services/gallery/gallery_stream_scanner.dart';
 import '../../data/services/gallery/scan_state_manager.dart';
 import '../../data/services/gallery/unified_gallery_service.dart';
 import '../../l10n/app_localizations.dart';
+import 'image_favorite_status_provider.dart';
 
 part 'local_gallery_provider.freezed.dart';
 part 'local_gallery_provider.g.dart';
@@ -150,6 +152,12 @@ class LocalGalleryNotifier extends _$LocalGalleryNotifier {
   LocalGalleryService? _service;
   Future<void>? _initialization;
   Future<int>? _favoriteCountLoad;
+  final Set<String> _favoriteStatusLoads = {};
+
+  /// First page of the range built by [loadMore]; null while one page shows.
+  int? _windowStartPage;
+  int _pagingGeneration = 0;
+  bool _loadingMore = false;
   DateTime? _lastSynchronizedAt;
   int _filterRequestSerial = 0;
   final Map<String, String> _deferredAdmissions = {};
@@ -383,6 +391,15 @@ class LocalGalleryNotifier extends _$LocalGalleryNotifier {
     }
 
     final requestedPage = page < 0 ? 0 : page;
+    // Reloading the current page keeps every page [loadMore] appended (after
+    // a delete, refresh or favorite change); moving to another page drops it.
+    final windowStart = _windowStartPage;
+    final keepWindow =
+        windowStart != null &&
+        requestedPage == state.currentPage &&
+        requestedPage > windowStart;
+    if (!keepWindow) _windowStartPage = null;
+    final generation = ++_pagingGeneration;
 
     if (showLoading) {
       _setState(state.copyWith(isLoading: true, currentPage: requestedPage));
@@ -398,11 +415,16 @@ class LocalGalleryNotifier extends _$LocalGalleryNotifier {
       final totalPages = (totalItems / state.pageSize).ceil();
       final maxPage = totalPages > 0 ? totalPages - 1 : 0;
       var normalizedPage = requestedPage > maxPage ? maxPage : requestedPage;
+      final firstPage = keepWindow && windowStart < normalizedPage
+          ? windowStart
+          : normalizedPage;
 
-      var records = await service.getPage(
-        normalizedPage,
-        pageSize: state.pageSize,
-      );
+      var records = <LocalImageRecord>[
+        for (var loaded = firstPage; loaded <= normalizedPage; loaded++)
+          ...await service.getPage(loaded, pageSize: state.pageSize),
+      ];
+      if (generation != _pagingGeneration) return;
+      _windowStartPage = firstPage < normalizedPage ? firstPage : null;
 
       // 防御性兜底：如果页码在边界变化后落入空页，自动回退到末页。
       if (records.isEmpty && normalizedPage > 0 && totalPages > 0) {
@@ -460,6 +482,51 @@ class LocalGalleryNotifier extends _$LocalGalleryNotifier {
     } catch (e) {
       AppLogger.e('Failed to load page $page', e, null, 'LocalGalleryNotifier');
       _setState(state.copyWith(isLoading: false, isPageLoading: false));
+    }
+  }
+
+  /// Appends the next page for continuous scrolling; reloads of the current
+  /// page then keep every appended page (see [loadPage]).
+  Future<void> loadMore() async {
+    if (_loadingMore ||
+        !state.isInitialized ||
+        state.isLoading ||
+        state.isGroupedView ||
+        !state.canLoadMore) {
+      return;
+    }
+    _loadingMore = true;
+    final generation = _pagingGeneration;
+    final criteria = state.filterCriteria;
+    final currentPage = state.currentPage;
+    try {
+      final service = await getService();
+      final records = await service.getPage(
+        currentPage + 1,
+        pageSize: state.pageSize,
+      );
+      if (generation != _pagingGeneration ||
+          criteria != state.filterCriteria ||
+          currentPage != state.currentPage ||
+          records.isEmpty) {
+        return;
+      }
+      _windowStartPage ??= currentPage;
+      _setState(
+        state.copyWith(
+          currentImages: [...state.currentImages, ...records],
+          currentPage: currentPage + 1,
+        ),
+      );
+    } catch (e) {
+      AppLogger.e(
+        'Failed to load more images',
+        e,
+        null,
+        'LocalGalleryNotifier',
+      );
+    } finally {
+      _loadingMore = false;
     }
   }
 
@@ -1082,6 +1149,7 @@ class LocalGalleryNotifier extends _$LocalGalleryNotifier {
       }).toList();
 
       _setState(state.copyWith(currentImages: updatedImages));
+      ref.read(imageFavoriteStatusProvider.notifier).record(filePath, isFav);
 
       // 如果启用了收藏过滤，收藏/取消收藏都要重新应用，保证收藏栏即时增删。
       if (state.filterCriteria.showFavoritesOnly) {
@@ -1110,10 +1178,29 @@ class LocalGalleryNotifier extends _$LocalGalleryNotifier {
   Future<bool> isFavorite(String filePath) async {
     try {
       final service = await getService();
-      return await service.isFavorite(filePath);
+      final favorite = await service.isFavorite(filePath);
+      ref.read(imageFavoriteStatusProvider.notifier).record(filePath, favorite);
+      return favorite;
     } catch (e) {
       AppLogger.e('Check favorite failed', e, null, 'LocalGalleryNotifier');
       return false;
+    }
+  }
+
+  /// Loads [filePath]'s state into [imageFavoriteStatusProvider] once, for
+  /// an image shown outside the loaded page. A failed load is not recorded,
+  /// so the next request retries.
+  Future<void> loadFavoriteStatus(String filePath) async {
+    final key = galleryFilePathKey(filePath);
+    if (!_favoriteStatusLoads.add(key)) return;
+    try {
+      final service = await getService();
+      final favorite = await service.isFavorite(filePath);
+      ref.read(imageFavoriteStatusProvider.notifier).record(filePath, favorite);
+    } catch (e) {
+      AppLogger.d('Favorite status unavailable: $e', 'LocalGalleryNotifier');
+    } finally {
+      _favoriteStatusLoads.remove(key);
     }
   }
 
@@ -1357,4 +1444,43 @@ class LocalGalleryNotifier extends _$LocalGalleryNotifier {
 
     return true;
   }
+}
+
+/// Watches whether the saved image at [filePath] is a favorite, loading its
+/// state on first use; until then it reports [fallback]. Unsaved images
+/// ([filePath] null) report [fallback] too.
+bool watchImageFavorite(
+  WidgetRef ref,
+  String? filePath, {
+  bool fallback = false,
+}) {
+  if (filePath == null || filePath.isEmpty) return fallback;
+  final key = galleryFilePathKey(filePath);
+  final known = ref.watch(
+    imageFavoriteStatusProvider.select((status) => status[key]),
+  );
+  return _favoriteOrLoad(ref, known, filePath) ?? fallback;
+}
+
+/// Like [watchImageFavorite] for lazily built lists: the caller watches
+/// [imageFavoriteStatusProvider] once and passes the map as [status].
+bool readImageFavorite(
+  WidgetRef ref,
+  Map<String, bool> status,
+  String? filePath,
+) {
+  if (filePath == null || filePath.isEmpty) return false;
+  return _favoriteOrLoad(ref, status[galleryFilePathKey(filePath)], filePath) ??
+      false;
+}
+
+bool? _favoriteOrLoad(WidgetRef ref, bool? known, String filePath) {
+  if (known == null) {
+    unawaited(
+      ref
+          .read(localGalleryNotifierProvider.notifier)
+          .loadFavoriteStatus(filePath),
+    );
+  }
+  return known;
 }

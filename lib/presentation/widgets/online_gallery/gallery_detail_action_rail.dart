@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../data/models/online_gallery/ai_tag_generation_info.dart';
 import '../common/image_card_action.dart';
 import '../common/image_card_context_menu.dart';
 import 'gallery_detail_models.dart';
@@ -138,8 +139,28 @@ class _GalleryDetailActionRailState extends State<GalleryDetailActionRail> {
               ? null
               : () => actions.downloadAll!(viewModel.media),
         ),
+      if (_seedEntry() case final seedEntry?) seedEntry,
     ];
     return entries;
+  }
+
+  /// Images that carry generation info (AI TAG) can hand their seed over
+  /// directly; other sources have none.
+  _RailActionEntry? _seedEntry() {
+    final media = widget.viewModel.currentMedia;
+    final reuseSeed = widget.actions.reuseSeed;
+    if (media == null || reuseSeed == null) return null;
+    final seed = AiTagGenerationInfo.tryFromMediaMetadata(media.metadata)?.seed;
+    if (seed == null || seed < 0) return null;
+    return _RailActionEntry(
+      id: 'reuse-seed',
+      actionId: ImageCardActionId.reuseSeed,
+      icon: Icons.eco_outlined,
+      label: widget.viewModel.labels.reuseSeed,
+      onPressed: widget.viewModel.canUseGenerationActions
+          ? () => reuseSeed(seed)
+          : null,
+    );
   }
 
   List<_RailActionEntry> _overflowEntries(List<_RailActionEntry> railEntries) {

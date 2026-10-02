@@ -6,6 +6,7 @@ import '../../../core/cache/local_image_aspect_ratio_cache.dart';
 import '../../../core/utils/localization_extension.dart';
 import '../../../data/models/gallery/local_image_record.dart';
 import '../../screens/online_gallery/online_gallery_masonry_layout.dart';
+import '../../selection/card_drag_select.dart';
 import 'draggable_image_card.dart';
 import 'local_image_card_3d.dart';
 import 'local_image_context_menu.dart';
@@ -231,51 +232,55 @@ class _GalleryGridState extends State<GalleryGrid> {
             final isVisible = _visibleIndices.contains(index);
             final priority = _getPriority(index);
 
-            return VisibilityDetector(
-              key: ValueKey('v_${record.path}'),
-              onVisibilityChanged: (info) {
-                // 检查 mounted 避免 dispose 后调用 setState
-                if (!mounted) return;
+            return CardDragSelectTarget(
+              id: record.path,
+              child: VisibilityDetector(
+                key: ValueKey('v_${record.path}'),
+                onVisibilityChanged: (info) {
+                  // 检查 mounted 避免 dispose 后调用 setState
+                  if (!mounted) return;
 
-                final isNowVisible = info.visibleFraction > 0.05;
-                final wasVisible = _visibleIndices.contains(index);
+                  final isNowVisible = info.visibleFraction > 0.05;
+                  final wasVisible = _visibleIndices.contains(index);
 
-                if (isNowVisible != wasVisible) {
-                  setState(() {
-                    if (isNowVisible) {
-                      _visibleIndices.add(index);
-                    } else {
-                      _visibleIndices.remove(index);
-                    }
-                  });
-                  if (isNowVisible) _updatePreloadRange(index);
-                }
-              },
-              child: RepaintBoundary(
-                child: _GalleryImageCard(
-                  key: ValueKey(record.path),
-                  record: record,
-                  width: actualItemWidth,
-                  height: layout.placementFor(index).mainAxisExtent,
-                  isSelected: isSelected,
-                  isVisible: isVisible,
-                  priority: priority,
-                  enableDrag: widget.enableDrag,
-                  onTap: () => widget.onTap?.call(record, index),
-                  onDoubleTap: widget.onDoubleTap == null
-                      ? null
-                      : () => widget.onDoubleTap!(record, index),
-                  onLongPress: () => widget.onLongPress?.call(record, index),
-                  onSecondaryTapUp: (details) =>
-                      widget.onSecondaryTapUp?.call(record, index, details),
-                  onFavoriteToggle: widget.onFavoriteToggle != null
-                      ? () => widget.onFavoriteToggle!(record, index)
-                      : null,
-                  onSendAction: widget.onSendAction != null
-                      ? (action) => widget.onSendAction!(record, index, action)
-                      : null,
-                  enableAddToAgent: widget.enableDrag,
-                  isKritaConnected: widget.isKritaConnected,
+                  if (isNowVisible != wasVisible) {
+                    setState(() {
+                      if (isNowVisible) {
+                        _visibleIndices.add(index);
+                      } else {
+                        _visibleIndices.remove(index);
+                      }
+                    });
+                    if (isNowVisible) _updatePreloadRange(index);
+                  }
+                },
+                child: RepaintBoundary(
+                  child: _GalleryImageCard(
+                    key: ValueKey(record.path),
+                    record: record,
+                    width: actualItemWidth,
+                    height: layout.placementFor(index).mainAxisExtent,
+                    isSelected: isSelected,
+                    isVisible: isVisible,
+                    priority: priority,
+                    enableDrag: widget.enableDrag,
+                    onTap: () => widget.onTap?.call(record, index),
+                    onDoubleTap: widget.onDoubleTap == null
+                        ? null
+                        : () => widget.onDoubleTap!(record, index),
+                    onLongPress: () => widget.onLongPress?.call(record, index),
+                    onSecondaryTapUp: (details) =>
+                        widget.onSecondaryTapUp?.call(record, index, details),
+                    onFavoriteToggle: widget.onFavoriteToggle != null
+                        ? () => widget.onFavoriteToggle!(record, index)
+                        : null,
+                    onSendAction: widget.onSendAction != null
+                        ? (action) =>
+                              widget.onSendAction!(record, index, action)
+                        : null,
+                    enableAddToAgent: widget.enableDrag,
+                    isKritaConnected: widget.isKritaConnected,
+                  ),
                 ),
               ),
             );
