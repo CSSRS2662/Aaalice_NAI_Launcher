@@ -58,6 +58,11 @@ class ZhDictionaryService extends ChangeNotifier
 
   ZhDictionaryState get state => _state;
 
+  /// The installed dictionary file for read-only consumers that open their
+  /// own connection (the lexical index build); null when none is installed.
+  String? get installedDatabasePath =>
+      _state.isInstalled ? _databasePath : null;
+
   // A resolved path does not mean the installed database has been validated.
   // Startup lookups and editor hints must wait for the same installed state.
   Future<void> initialize() =>

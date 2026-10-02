@@ -17,6 +17,8 @@ class CompletionOrchestrator extends ChangeNotifier {
     List<CompletionSource> tagLookupSources = const [],
     CompletionSource? libraryAliases,
     CompletionSource? semanticSource,
+    List<SupplementalCompletionSource> supplementalSources = const [],
+    CompletionRankingSignals? rankingSignals,
     Duration llmDebounceDuration = const Duration(milliseconds: 400),
   }) : _localSources = localSources,
        _tagLookupSources = tagLookupSources,
@@ -27,6 +29,8 @@ class CompletionOrchestrator extends ChangeNotifier {
        _danbooru = danbooru,
        _libraryAliases = libraryAliases,
        _semanticSource = semanticSource,
+       _supplementalSources = supplementalSources,
+       _rankingSignals = rankingSignals,
        _llmDebounceDuration = llmDebounceDuration;
 
   final List<CompletionSource> _localSources;
@@ -36,7 +40,14 @@ class CompletionOrchestrator extends ChangeNotifier {
   final DanbooruCompletionSource _danbooru;
   final CompletionSource? _libraryAliases;
   final CompletionSource? _semanticSource;
+  final List<SupplementalCompletionSource> _supplementalSources;
+  final CompletionRankingSignals? _rankingSignals;
   Timer? _semanticDebounce;
+
+  /// Context and habit boosts of the current query, used by every merge.
+  Map<String, double> _boosts = const {};
+  bool _semanticPending = false;
+  bool _supplementPending = false;
   final Duration _llmDebounceDuration;
 
   CompletionState _state = const CompletionState();
@@ -74,6 +85,9 @@ class CompletionOrchestrator extends ChangeNotifier {
     _cancelPendingLlmTranslation();
     _remoteDebounce?.cancel();
     _danbooru.cancelPending();
+    _boosts = const {};
+    _semanticPending = false;
+    _supplementPending = false;
     final requestedRelatedQuery =
         query.relatedTag != null && query.token.isEmpty;
     if (!settings.enabled ||
@@ -127,6 +141,9 @@ class CompletionOrchestrator extends ChangeNotifier {
             limit: CompletionResultLimits.initialRelatedTags,
           )
         : effectiveQuery;
+    final boosts = isLibraryAlias || isRelatedQuery
+        ? Future.value(const <String, double>{})
+        : _rankingBoosts(effectiveQuery);
     final localResults = await Future.wait(
       activeLocalSources.map((source) async {
         try {
@@ -146,7 +163,9 @@ class CompletionOrchestrator extends ChangeNotifier {
         .map((result) => result.error)
         .whereType<String>()
         .toList(growable: false);
+    final resolvedBoosts = await boosts;
     if (!_isCurrent(sequence)) return;
+    _boosts = resolvedBoosts;
     var candidates = isLibraryAlias
         ? localBatches
               .expand((batch) => batch)
@@ -155,6 +174,7 @@ class CompletionOrchestrator extends ChangeNotifier {
         : CompletionRanker.mergeAndSort(
             localBatches.expand((batch) => batch),
             query: initialQuery,
+            boosts: _boosts,
           );
     if (isRelatedQuery) {
       candidates = candidates
@@ -182,16 +202,29 @@ class CompletionOrchestrator extends ChangeNotifier {
         (effectiveQuery.categoryFilter == null ||
             effectiveQuery.categoryFilter == TagCategory.general) &&
         _semanticSource != null;
+    final canSupplement =
+        !isLibraryAlias &&
+        !isRelatedQuery &&
+        effectiveQuery.token.trim().isNotEmpty &&
+        _supplementalSources.isNotEmpty;
+    _semanticPending = canLoadSemantic;
+    _supplementPending = canSupplement;
     _emit(
       _state.copyWith(
         candidates: candidates,
-        isLocalLoading: expandsRelatedResults || canLoadSemantic,
+        isLocalLoading:
+            expandsRelatedResults || canLoadSemantic || canSupplement,
         localError: localErrors.isEmpty ? null : localErrors.join('\n'),
         clearLocalError: localErrors.isEmpty,
         isRemoteLoading: canLoadRemote,
       ),
     );
     _scheduleLlmTranslations(initialQuery, sequence, settings);
+    if (canSupplement) {
+      unawaited(
+        _loadSupplements(effectiveQuery, sequence, settings, candidates),
+      );
+    }
     if (canLoadSemantic) {
       _semanticDebounce = Timer(const Duration(milliseconds: 250), () {
         unawaited(_loadSemantic(effectiveQuery, sequence, settings));
@@ -228,21 +261,24 @@ class CompletionOrchestrator extends ChangeNotifier {
         settings,
       );
       if (!_isCurrent(sequence)) return;
+      _semanticPending = false;
       _emit(
         _state.copyWith(
-          isLocalLoading: false,
-          candidates: CompletionRanker.mergeAndSort([
-            ..._state.candidates,
-            ...rows,
-          ], query: query),
+          isLocalLoading: _supplementPending,
+          candidates: CompletionRanker.mergeAndSort(
+            [..._state.candidates, ...rows],
+            query: query,
+            boosts: _boosts,
+          ),
         ),
       );
     } catch (error) {
       if (_isCurrent(sequence)) {
+        _semanticPending = false;
         final existing = _state.localError;
         _emit(
           _state.copyWith(
-            isLocalLoading: false,
+            isLocalLoading: _supplementPending,
             localError: [
               if (existing != null) existing,
               'E5: $error',
@@ -251,6 +287,60 @@ class CompletionOrchestrator extends ChangeNotifier {
         );
       }
     }
+  }
+
+  Future<Map<String, double>> _rankingBoosts(CompletionQuery query) async {
+    final signals = _rankingSignals;
+    if (signals == null) return const {};
+    try {
+      return await signals.boosts(query);
+    } catch (_) {
+      return const {};
+    }
+  }
+
+  /// Pinyin, approximate, cross-lingual and spelling fallbacks: they see the
+  /// literal results first and add rows ranked below them.
+  Future<void> _loadSupplements(
+    CompletionQuery query,
+    int sequence,
+    AutocompleteSettings settings,
+    List<CompletionCandidate> primary,
+  ) async {
+    final errors = <String>[];
+    final batches = await Future.wait(
+      _supplementalSources.map((source) async {
+        try {
+          return await source.supplement(query, primary);
+        } catch (error) {
+          errors.add('${source.runtimeType}: $error');
+          return const <CompletionCandidate>[];
+        }
+      }),
+    );
+    if (!_isCurrent(sequence)) return;
+    var rows = batches.expand((batch) => batch).toList(growable: false);
+    rows = await _applyDictionaryTranslations(rows, query, sequence, settings);
+    rows = await _applyCachedLlmTranslations(rows, query, sequence, settings);
+    if (!_isCurrent(sequence)) return;
+    _supplementPending = false;
+    final existing = _state.localError;
+    _emit(
+      _state.copyWith(
+        isLocalLoading: _semanticPending,
+        candidates: rows.isEmpty
+            ? _state.candidates
+            : CompletionRanker.mergeAndSort(
+                [..._state.candidates, ...rows],
+                query: query,
+                boosts: _boosts,
+              ),
+        localError: errors.isEmpty
+            ? existing
+            : [if (existing != null) existing, ...errors].join('\n'),
+      ),
+    );
+    if (rows.isNotEmpty) _scheduleLlmTranslations(query, sequence, settings);
   }
 
   Future<_RelatedTagResolution?> _resolveRelatedTag(
@@ -480,10 +570,11 @@ class CompletionOrchestrator extends ChangeNotifier {
       (row) => row.semanticScore != null,
     );
     if (semantic.isNotEmpty) {
-      merged = CompletionRanker.mergeAndSort([
-        ...merged,
-        ...semantic,
-      ], query: query);
+      merged = CompletionRanker.mergeAndSort(
+        [...merged, ...semantic],
+        query: query,
+        boosts: _boosts,
+      );
     }
     final remoteError = _danbooru.lastError;
     _emit(
@@ -530,6 +621,7 @@ class CompletionOrchestrator extends ChangeNotifier {
       [...local, ...remote],
       query: query,
       limit: local.length + remote.length,
+      boosts: _boosts,
     );
     final byId = {
       for (final candidate in mergedPool) candidate.stableId: candidate,

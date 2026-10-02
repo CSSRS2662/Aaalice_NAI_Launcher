@@ -3,6 +3,7 @@ import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import '../database/asset_database_manager.dart';
 import 'completion_models.dart';
 import 'chinese_query_variants.dart';
+import 'lexical/english_words.dart';
 
 enum BundledTranslationMode {
   missing(0),
@@ -362,6 +363,54 @@ class TagCatalogRepository implements CompletionSource {
       );
     }
     return candidates;
+  }
+
+  /// General tags whose name or alias matches every group: a group matches
+  /// when any of its words does (by stem prefix; `a_b` as a phrase). Most
+  /// used first. Used to search Chinese words translated to tag tokens.
+  Future<List<TagCatalogRecord>> searchTokenGroups(
+    List<List<String>> groups, {
+    int limit = 300,
+  }) async {
+    final clauses = <String>[];
+    for (final group in groups) {
+      final terms = <String>{};
+      for (final candidate in group) {
+        final words = candidate
+            .toLowerCase()
+            .split(_nonAlphanumeric)
+            .where((word) => word.isNotEmpty)
+            .toList(growable: false);
+        if (words.length > 1) {
+          terms.add('"${words.join(' ')}"');
+        } else if (words.length == 1) {
+          terms.add('"${EnglishWords.stem(words.single)}"*');
+        }
+      }
+      if (terms.isEmpty) return const [];
+      clauses.add('(${terms.join(' OR ')})');
+    }
+    if (clauses.isEmpty) return const [];
+    await initialize();
+    final rows = await _database!.rawQuery(
+      '''
+      SELECT DISTINCT t.name, t.category, t.post_count
+      FROM tag_search f
+      JOIN tags t ON t.id = f.tag_id
+      WHERE tag_search MATCH ? AND t.category IN (0, 7)
+      ORDER BY t.post_count DESC
+      LIMIT ?
+      ''',
+      [clauses.join(' AND '), limit],
+    );
+    return [
+      for (final row in rows)
+        TagCatalogRecord(
+          canonicalTag: row['name'] as String,
+          category: TagCategory.general,
+          postCount: (row['post_count'] as num).toInt(),
+        ),
+    ];
   }
 
   Future<Map<String, String>> metadata() async {

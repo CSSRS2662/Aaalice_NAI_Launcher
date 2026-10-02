@@ -67,6 +67,8 @@ class AutocompleteServices {
     this.tagLookupSources = const [],
     this.libraryAliases,
     this.semanticSource,
+    this.supplementalSources = const [],
+    this.rankingSignals,
   });
 
   final List<CompletionSource> localSources;
@@ -77,6 +79,12 @@ class AutocompleteServices {
   final CompletionSource? libraryAliases;
   final CompletionSource? semanticSource;
 
+  /// Pinyin, approximate, cross-lingual and spelling fallbacks.
+  final List<SupplementalCompletionSource> supplementalSources;
+
+  /// Context and habit boosts.
+  final CompletionRankingSignals? rankingSignals;
+
   CompletionOrchestrator createOrchestrator() => CompletionOrchestrator(
     localSources: localSources,
     tagLookupSources: tagLookupSources,
@@ -85,6 +93,8 @@ class AutocompleteServices {
     danbooru: danbooru,
     libraryAliases: libraryAliases,
     semanticSource: semanticSource,
+    supplementalSources: supplementalSources,
+    rankingSignals: rankingSignals,
   );
 }
 

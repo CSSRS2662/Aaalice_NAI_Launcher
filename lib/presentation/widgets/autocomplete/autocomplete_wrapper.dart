@@ -13,6 +13,7 @@ import '../../../core/autocomplete/autocomplete_settings.dart';
 import '../../../core/autocomplete/cooccurrence_data_pack_provider.dart';
 import '../../../core/autocomplete/completion_models.dart';
 import '../../../core/autocomplete/completion_orchestrator.dart';
+import '../../../core/autocomplete/lexical/lexical_search_providers.dart';
 import '../../../core/autocomplete/prompt_token_parser.dart';
 import '../../../core/utils/app_logger.dart';
 import '../../../core/utils/localization_extension.dart';
@@ -758,6 +759,9 @@ class _AutocompleteWrapperState extends ConsumerState<AutocompleteWrapper> {
     _scheduleCursorMetricsUpdate();
     widget.onChanged?.call(applied.text);
     widget.onSuggestionSelected?.call(applied.text);
+    if (completedTag != null && settings.personalRankingEnabled) {
+      unawaited(ref.read(tagUsageHistoryProvider).record(completedTag));
+    }
     _selectedId = null;
     _dismissOverlay();
     final nextRelatedTag = _pinnedRelatedTag ?? completedTag;

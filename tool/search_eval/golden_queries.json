@@ -1,0 +1,24 @@
+{
+  "description": "Non-AI tag search golden queries. 'expect' lists acceptable tags; the best rank counts. 'via' names the stage meant to find it.",
+  "queries": [
+    {"query": "衬衫", "expect": ["shirt"], "via": "literal"},
+    {"query": "双马尾", "expect": ["twintails"], "via": "literal"},
+    {"query": "shirt", "expect": ["shirt"], "via": "literal"},
+    {"query": "陈山", "expect": ["shirt"], "via": "homophone"},
+    {"query": "城山", "expect": ["shirt"], "via": "fuzzyPinyin"},
+    {"query": "chenshan", "expect": ["shirt"], "via": "pinyin"},
+    {"query": "shuangmawei", "expect": ["twintails"], "via": "pinyin"},
+    {"query": "ifuj", "expect": ["shirt"], "via": "shuangpin"},
+    {"query": "udmawz", "expect": ["twintails"], "via": "shuangpin"},
+    {"query": "smw", "expect": ["twintails"], "via": "pinyinInitials"},
+    {"query": "umw", "expect": ["twintails"], "via": "pinyinInitials (ziranma sh=u)"},
+    {"query": "拨起头发", "expect": ["hair_flip"], "via": "approximate / crossLingual"},
+    {"query": "坐在椅子上", "expect": ["sitting_on_chair"], "via": "crossLingual"},
+    {"query": "拿着雨伞", "expect": ["holding_umbrella"], "via": "crossLingual"},
+    {"query": "躺在床上", "expect": ["lying_on_bed", "on_bed"], "via": "crossLingual"},
+    {"query": "shrit", "expect": ["shirt"], "via": "spellCorrected"},
+    {"query": "sokcs", "expect": ["socks"], "via": "spellCorrected"},
+    {"query": "umbrela", "expect": ["umbrella"], "via": "spellCorrected"},
+    {"query": "twintail", "expect": ["twintails"], "via": "literal prefix"}
+  ]
+}

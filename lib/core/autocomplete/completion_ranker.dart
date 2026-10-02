@@ -3,10 +3,13 @@ import 'completion_models.dart';
 class CompletionRanker {
   const CompletionRanker._();
 
+  /// Merges rows of the same tag and sorts them. [boosts] (context and
+  /// habit, by stable id) reorder rows within a match kind, never across.
   static List<CompletionCandidate> mergeAndSort(
     Iterable<CompletionCandidate> candidates, {
     required CompletionQuery query,
     int? limit,
+    Map<String, double> boosts = const {},
   }) {
     final merged = <String, CompletionCandidate>{};
     for (final incoming in candidates) {
@@ -16,6 +19,7 @@ class CompletionRanker {
         merged[key] = _score(
           incoming.copyWith(isExisting: query.existingTags.contains(key)),
           query,
+          boosts,
         );
         continue;
       }
@@ -31,11 +35,12 @@ class CompletionRanker {
         ...existing.sources,
         ...incoming.sources,
       };
-      final matchKind =
+      final incomingWins =
           _matchPriority(incoming.matchKind) <
-              _matchPriority(existing.matchKind)
-          ? incoming.matchKind
-          : existing.matchKind;
+              _matchPriority(existing.matchKind) ||
+          (incoming.matchKind == existing.matchKind &&
+              incoming.matchQuality > existing.matchQuality);
+      final matchKind = incomingWins ? incoming.matchKind : existing.matchKind;
       final translation = existing.translation?.trim().isNotEmpty == true
           ? existing.translation
           : incoming.translation;
@@ -63,8 +68,12 @@ class CompletionRanker {
           existing.semanticScore,
           incoming.semanticScore,
         ),
+        matchHint: incomingWins ? incoming.matchHint : existing.matchHint,
+        matchQuality: incomingWins
+            ? incoming.matchQuality
+            : existing.matchQuality,
       );
-      merged[key] = _score(mergedCandidate, query);
+      merged[key] = _score(mergedCandidate, query, boosts);
     }
 
     final results = merged.values.toList()
@@ -92,14 +101,20 @@ class CompletionRanker {
   static CompletionCandidate _score(
     CompletionCandidate candidate,
     CompletionQuery query,
+    Map<String, double> boosts,
   ) {
     final priority = _matchPriority(candidate.matchKind);
     // Preserve exact/prefix/contains lexical matches. For fuzzy fallback rows,
     // cosine order must not be overwritten by tag popularity or source boosts.
+    // Semantic rows sit in the full-text band, below every lexical kind.
     if (candidate.matchKind == CompletionMatchKind.fullText &&
         candidate.semanticScore != null) {
       return candidate.copyWith(
-        score: 210000 + candidate.semanticScore!.clamp(-1, 1) * 80000,
+        score:
+            1000000.0 -
+            priority * 100000.0 +
+            10000 +
+            candidate.semanticScore!.clamp(-1, 1) * 80000,
       );
     }
     final sourceBoost = candidate.sources.contains(CompletionSourceKind.base)
@@ -111,12 +126,18 @@ class CompletionRanker {
         ? 0.0
         : candidate.postCount.toString().length * 10.0;
     final existingPenalty = candidate.isExisting ? 100000.0 : 0.0;
+    // Quality spans 40000 so exact rows of a kind stay above prefix rows; the
+    // context and habit boost (at most 6000) then reorders within those.
+    final quality = candidate.matchQuality.clamp(0.0, 1.0) * 40000.0;
+    final boost = (boosts[candidate.stableId] ?? 0).clamp(0.0, 6000.0);
     return candidate.copyWith(
       score:
           1000000.0 -
           priority * 100000.0 +
+          quality +
           sourceBoost +
-          popularity -
+          popularity +
+          boost -
           existingPenalty,
     );
   }
@@ -135,7 +156,16 @@ class CompletionRanker {
     CompletionMatchKind.chineseExact => 4,
     CompletionMatchKind.chinesePrefix => 5,
     CompletionMatchKind.chineseContains => 6,
-    CompletionMatchKind.related => 7,
-    CompletionMatchKind.fullText => 8,
+    CompletionMatchKind.homophone => 7,
+    CompletionMatchKind.spellCorrected => 8,
+    CompletionMatchKind.englishVariant => 9,
+    CompletionMatchKind.pinyin => 10,
+    CompletionMatchKind.shuangpin => 11,
+    CompletionMatchKind.crossLingual => 12,
+    CompletionMatchKind.approximate => 13,
+    CompletionMatchKind.fuzzyPinyin => 14,
+    CompletionMatchKind.pinyinInitials => 15,
+    CompletionMatchKind.related => 16,
+    CompletionMatchKind.fullText => 17,
   };
 }

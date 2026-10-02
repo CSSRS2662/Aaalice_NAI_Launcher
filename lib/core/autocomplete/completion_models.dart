@@ -74,6 +74,33 @@ enum CompletionMatchKind {
   chineseContains,
   related,
   fullText,
+
+  /// A Chinese label that reads the same as the Chinese query (陈山 → 衬衫).
+  homophone,
+
+  /// An English query with a typo, matched after correcting it.
+  spellCorrected,
+
+  /// An English query matched through another form of its word (socks/sock).
+  englishVariant,
+
+  /// Letters read as full pinyin (chenshan → 衬衫).
+  pinyin,
+
+  /// Letters read as Ziranma double pinyin (ifuj → 衬衫).
+  shuangpin,
+
+  /// A Chinese query split into words and searched as English tag tokens.
+  crossLingual,
+
+  /// A Chinese label sharing most characters, in order, with the query.
+  approximate,
+
+  /// A label that sounds alike under the enabled fuzzy-sound pairs.
+  fuzzyPinyin,
+
+  /// Letters read as syllable initials (cs → 衬衫).
+  pinyinInitials,
 }
 
 class TextReplacementRange {
@@ -160,6 +187,8 @@ class CompletionCandidate {
     this.cooccurrenceCount,
     this.score = 0,
     this.semanticScore,
+    this.matchHint,
+    this.matchQuality = 0,
   });
 
   final String canonicalTag;
@@ -183,6 +212,14 @@ class CompletionCandidate {
   /// Cosine similarity from the optional local E5 source, preserved on merge.
   final double? semanticScore;
 
+  /// What a non-literal match went through: the corrected word, or the
+  /// Chinese words a cross-lingual query was split into.
+  final String? matchHint;
+
+  /// 0..1 closeness within the match kind (exact over prefix over contains);
+  /// orders rows of the same kind before popularity.
+  final double matchQuality;
+
   String get stableId => canonicalTag.toLowerCase();
 
   CompletionCandidate copyWith({
@@ -200,6 +237,8 @@ class CompletionCandidate {
     int? cooccurrenceCount,
     double? score,
     double? semanticScore,
+    String? matchHint,
+    double? matchQuality,
   }) {
     return CompletionCandidate(
       canonicalTag: canonicalTag,
@@ -216,12 +255,28 @@ class CompletionCandidate {
       cooccurrenceCount: cooccurrenceCount ?? this.cooccurrenceCount,
       score: score ?? this.score,
       semanticScore: semanticScore ?? this.semanticScore,
+      matchHint: matchHint ?? this.matchHint,
+      matchQuality: matchQuality ?? this.matchQuality,
     );
   }
 }
 
 abstract interface class CompletionSource {
   Future<List<CompletionCandidate>> search(CompletionQuery query);
+}
+
+/// Adds rows after the primary sources answered, knowing what they found;
+/// used for fallbacks that only make sense when literal matches are scarce.
+abstract interface class SupplementalCompletionSource {
+  Future<List<CompletionCandidate>> supplement(
+    CompletionQuery query,
+    List<CompletionCandidate> primary,
+  );
+}
+
+/// Score boosts per candidate stable id from context and habits.
+abstract interface class CompletionRankingSignals {
+  Future<Map<String, double>> boosts(CompletionQuery query);
 }
 
 abstract interface class TranslationResolver {

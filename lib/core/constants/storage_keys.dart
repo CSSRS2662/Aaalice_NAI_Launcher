@@ -182,6 +182,25 @@ class StorageKeys {
       'autocomplete_llm_translation_enabled';
   static const String autocompleteZhInstallPromptDismissed =
       'autocomplete_zh_install_prompt_dismissed';
+  static const String autocompletePinyinSearch = 'autocomplete_pinyin_search';
+  static const String autocompletePinyinFull = 'autocomplete_pinyin_full';
+  static const String autocompletePinyinZiranma = 'autocomplete_pinyin_ziranma';
+  static const String autocompleteFuzzyPinyin = 'autocomplete_fuzzy_pinyin';
+  static const String autocompleteApproximateMatch =
+      'autocomplete_approximate_match';
+  static const String autocompleteCrossLingual = 'autocomplete_cross_lingual';
+  static const String autocompleteSpellCorrection =
+      'autocomplete_spell_correction';
+  static const String autocompleteContextRanking =
+      'autocomplete_context_ranking';
+  static const String autocompletePersonalRanking =
+      'autocomplete_personal_ranking';
+  static const String autocompleteShowMatchNotes =
+      'autocomplete_show_match_notes';
+
+  /// Device-local record of accepted completions; never synced.
+  static const String autocompleteTagUsageHistory =
+      'autocomplete_tag_usage_history';
   static const String autocompleteMigrationVersion =
       'autocomplete_migration_version';
   static const String autoFormatPrompt = 'auto_format_prompt';
