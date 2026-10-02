@@ -99,6 +99,14 @@ class ThemeComposer {
         space: 1,
       ),
 
+      // 内容滚到顶栏下方时不切换色面：Material 3 默认改用 surfaceContainer，
+      // 会与栏内同色的控件糊成一片，看起来像整条栏异常变色。
+      appBarTheme: AppBarTheme(
+        backgroundColor: colorScheme.surface,
+        surfaceTintColor: Colors.transparent,
+        scrolledUnderElevation: 0,
+      ),
+
       // 普通卡片依靠语义色面区分层级，不叠加常驻描边和阴影。
       cardTheme: CardThemeData(
         shape: _borderless(shape.cardShape),

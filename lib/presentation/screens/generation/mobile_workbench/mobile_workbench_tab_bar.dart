@@ -228,9 +228,12 @@ class _Segment extends StatelessWidget {
       excludeSemantics: true,
       child: Material(
         type: MaterialType.transparency,
+        // 选中底的滑动已经回应点按，不再叠一层水波纹。
         child: InkWell(
           key: ValueKey('mobile-workbench-tab-${tab.name}'),
           onTap: onTap,
+          splashFactory: NoSplash.splashFactory,
+          highlightColor: Colors.transparent,
           borderRadius: BorderRadius.circular(radius),
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 4),
