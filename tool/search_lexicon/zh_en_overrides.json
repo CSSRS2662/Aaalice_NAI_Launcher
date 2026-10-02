@@ -1,0 +1,500 @@
+{
+  "note": "Reviewed by hand. 'drop' words carry no tag meaning in a Chinese query (particles, positions, measure words); 'map' replaces the dictionary candidates of a word with tag-name tokens.",
+  "drop": [
+    "的",
+    "地",
+    "得",
+    "了",
+    "着",
+    "过",
+    "和",
+    "与",
+    "跟",
+    "及",
+    "并",
+    "而",
+    "或",
+    "在",
+    "于",
+    "从",
+    "向",
+    "往",
+    "对",
+    "把",
+    "被",
+    "让",
+    "给",
+    "将",
+    "正在",
+    "正",
+    "上",
+    "上面",
+    "之上",
+    "下",
+    "下面",
+    "里",
+    "里面",
+    "中",
+    "之中",
+    "内",
+    "外",
+    "旁",
+    "旁边",
+    "边",
+    "一个",
+    "一只",
+    "一位",
+    "一名",
+    "一条",
+    "一件",
+    "一双",
+    "一对",
+    "个",
+    "只",
+    "位",
+    "名",
+    "条",
+    "件",
+    "很",
+    "非常",
+    "十分",
+    "有点",
+    "有些",
+    "比较",
+    "稍微",
+    "微微",
+    "一点",
+    "一些",
+    "些",
+    "穿",
+    "穿着",
+    "身穿",
+    "戴",
+    "戴着",
+    "带着",
+    "有",
+    "是",
+    "着装",
+    "这",
+    "那",
+    "这个",
+    "那个",
+    "其",
+    "她",
+    "他",
+    "它",
+    "她的",
+    "他的",
+    "自己"
+  ],
+  "map": {
+    "没有": [
+      "no"
+    ],
+    "没": [
+      "no"
+    ],
+    "无": [
+      "no"
+    ],
+    "不": [
+      "no"
+    ],
+    "未": [
+      "no"
+    ],
+    "不穿": [
+      "no"
+    ],
+    "没穿": [
+      "no"
+    ],
+    "拿": [
+      "holding"
+    ],
+    "拿着": [
+      "holding"
+    ],
+    "手持": [
+      "holding"
+    ],
+    "握": [
+      "holding"
+    ],
+    "握着": [
+      "holding"
+    ],
+    "持": [
+      "holding"
+    ],
+    "举着": [
+      "holding"
+    ],
+    "坐": [
+      "sitting"
+    ],
+    "坐着": [
+      "sitting"
+    ],
+    "坐在": [
+      "sitting"
+    ],
+    "坐姿": [
+      "sitting"
+    ],
+    "站": [
+      "standing"
+    ],
+    "站着": [
+      "standing"
+    ],
+    "站在": [
+      "standing"
+    ],
+    "站立": [
+      "standing"
+    ],
+    "躺": [
+      "lying"
+    ],
+    "躺着": [
+      "lying"
+    ],
+    "躺在": [
+      "lying"
+    ],
+    "卧": [
+      "lying"
+    ],
+    "跪": [
+      "kneeling"
+    ],
+    "跪着": [
+      "kneeling"
+    ],
+    "跪坐": [
+      "seiza",
+      "kneeling"
+    ],
+    "蹲": [
+      "squatting"
+    ],
+    "蹲着": [
+      "squatting"
+    ],
+    "趴": [
+      "lying",
+      "on_stomach"
+    ],
+    "趴着": [
+      "lying",
+      "on_stomach"
+    ],
+    "靠": [
+      "leaning"
+    ],
+    "靠着": [
+      "leaning"
+    ],
+    "倚靠": [
+      "leaning"
+    ],
+    "看": [
+      "looking"
+    ],
+    "看着": [
+      "looking"
+    ],
+    "看向": [
+      "looking"
+    ],
+    "注视": [
+      "looking"
+    ],
+    "盯着": [
+      "looking",
+      "staring"
+    ],
+    "抱": [
+      "hug",
+      "hugging",
+      "holding"
+    ],
+    "抱着": [
+      "hug",
+      "hugging",
+      "holding"
+    ],
+    "拥抱": [
+      "hug",
+      "hugging"
+    ],
+    "舔": [
+      "licking"
+    ],
+    "咬": [
+      "biting"
+    ],
+    "吃": [
+      "eating"
+    ],
+    "喝": [
+      "drinking"
+    ],
+    "睡": [
+      "sleeping"
+    ],
+    "睡觉": [
+      "sleeping"
+    ],
+    "跑": [
+      "running"
+    ],
+    "走": [
+      "walking"
+    ],
+    "跳": [
+      "jumping"
+    ],
+    "飞": [
+      "flying"
+    ],
+    "游泳": [
+      "swimming"
+    ],
+    "笑": [
+      "smile",
+      "laughing"
+    ],
+    "微笑": [
+      "smile"
+    ],
+    "哭": [
+      "crying",
+      "tears"
+    ],
+    "脸红": [
+      "blush"
+    ],
+    "举起": [
+      "raised",
+      "up"
+    ],
+    "抬起": [
+      "raised",
+      "up"
+    ],
+    "伸出": [
+      "outstretched",
+      "reaching"
+    ],
+    "张开": [
+      "open",
+      "spread"
+    ],
+    "左": [
+      "left"
+    ],
+    "右": [
+      "right"
+    ],
+    "左边": [
+      "left"
+    ],
+    "右边": [
+      "right"
+    ],
+    "女孩": [
+      "girl"
+    ],
+    "少女": [
+      "girl"
+    ],
+    "女生": [
+      "girl"
+    ],
+    "女人": [
+      "woman",
+      "female"
+    ],
+    "女性": [
+      "female",
+      "woman"
+    ],
+    "男孩": [
+      "boy"
+    ],
+    "少年": [
+      "boy"
+    ],
+    "男生": [
+      "boy"
+    ],
+    "男人": [
+      "man",
+      "male"
+    ],
+    "男性": [
+      "male",
+      "man"
+    ],
+    "头发": [
+      "hair"
+    ],
+    "发": [
+      "hair"
+    ],
+    "眼睛": [
+      "eyes"
+    ],
+    "眼": [
+      "eyes"
+    ],
+    "手": [
+      "hand",
+      "hands"
+    ],
+    "脚": [
+      "feet",
+      "foot"
+    ],
+    "腿": [
+      "legs",
+      "leg"
+    ],
+    "椅子": [
+      "chair"
+    ],
+    "床": [
+      "bed"
+    ],
+    "地板": [
+      "floor"
+    ],
+    "沙发": [
+      "couch",
+      "sofa"
+    ],
+    "桌子": [
+      "table",
+      "desk"
+    ],
+    "白色": [
+      "white"
+    ],
+    "黑色": [
+      "black"
+    ],
+    "红色": [
+      "red"
+    ],
+    "蓝色": [
+      "blue"
+    ],
+    "绿色": [
+      "green"
+    ],
+    "黄色": [
+      "yellow"
+    ],
+    "紫色": [
+      "purple"
+    ],
+    "粉色": [
+      "pink"
+    ],
+    "粉红色": [
+      "pink"
+    ],
+    "橙色": [
+      "orange"
+    ],
+    "灰色": [
+      "grey",
+      "gray"
+    ],
+    "棕色": [
+      "brown"
+    ],
+    "银色": [
+      "silver"
+    ],
+    "金色": [
+      "gold",
+      "blonde"
+    ],
+    "白": [
+      "white"
+    ],
+    "黑": [
+      "black"
+    ],
+    "红": [
+      "red"
+    ],
+    "蓝": [
+      "blue"
+    ],
+    "绿": [
+      "green"
+    ],
+    "黄": [
+      "yellow"
+    ],
+    "紫": [
+      "purple"
+    ],
+    "粉": [
+      "pink"
+    ],
+    "长": [
+      "long"
+    ],
+    "短": [
+      "short"
+    ],
+    "大": [
+      "large",
+      "big",
+      "huge"
+    ],
+    "小": [
+      "small",
+      "petite"
+    ],
+    "衬衣": [
+      "shirt"
+    ],
+    "拨": [
+      "flip",
+      "tuck"
+    ],
+    "撩": [
+      "flip",
+      "lifting"
+    ],
+    "撩起": [
+      "lifting",
+      "lifted"
+    ],
+    "白丝": [
+      "white_pantyhose",
+      "white_thighhighs"
+    ],
+    "黑丝": [
+      "black_pantyhose",
+      "black_thighhighs"
+    ],
+    "丝袜": [
+      "pantyhose",
+      "thighhighs",
+      "stockings"
+    ],
+    "制服": [
+      "uniform"
+    ],
+    "女仆": [
+      "maid"
+    ]
+  }
+}

@@ -1,0 +1,45 @@
+{
+  "note": "Hashes are of the raw GitHub bytes. Files are stored under tool/.tmp/search-lexicon/source as <source>.<path>.",
+  "sources": {
+    "pinyin-data": {
+      "repository": "https://github.com/mozillazg/pinyin-data",
+      "raw_base": "https://raw.githubusercontent.com/mozillazg/pinyin-data",
+      "commit": "923b108dc5d45dee061324c011b478fb649f8b73",
+      "license": "MIT",
+      "copyright": "Copyright (c) 2016 mozillazg",
+      "usage": "Unihan-derived readings: kTGHZ2013 (all readings of the 8105 standard characters) ordered by kMandarin (most common reading); kMandarin alone for other characters. The merged pinyin.txt is not used because it also folds in CC-CEDICT.",
+      "files": {
+        "LICENSE": {
+          "bytes": 1076,
+          "sha256": "9c048697be2502a16e8bcb282d5d465a07295b2def0ffb05a269c5d39dbe1586"
+        },
+        "kTGHZ2013.txt": {
+          "bytes": 166509,
+          "sha256": "83be5ecdfe0b8fcc1202ae45882a2f983c013db87ba68369d94a4dad775382bb"
+        },
+        "kMandarin.txt": {
+          "bytes": 925579,
+          "sha256": "9ff1798ff0a69d5a501fd23c371d2faed019832a9f2cdb0de36cf9c11a5cd9e6"
+        }
+      }
+    },
+    "ecdict": {
+      "repository": "https://github.com/skywind3000/ECDICT",
+      "raw_base": "https://raw.githubusercontent.com/skywind3000/ECDICT",
+      "commit": "bc015ed2e24a7abef49fc6dbbb7fe32c1dadaf8b",
+      "license": "MIT",
+      "copyright": "Copyright (c) 2025 Linwei",
+      "usage": "Chinese glosses of English words that occur in tag names, reversed into a Chinese-to-English word list.",
+      "files": {
+        "LICENSE": {
+          "bytes": 1063,
+          "sha256": "f8552dd246f61a4e064569eae6194a01c6b3d63b03bf27c6ca863593c549ed0f"
+        },
+        "ecdict.csv": {
+          "bytes": 65933428,
+          "sha256": "1a6947e04785db63613a92e14903cdae7954f7e84860b10e68e5c7cbb3f9c3cf"
+        }
+      }
+    }
+  }
+}

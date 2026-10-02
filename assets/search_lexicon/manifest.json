@@ -1,0 +1,38 @@
+{
+  "sources": {
+    "pinyin-data": {
+      "repository": "https://github.com/mozillazg/pinyin-data",
+      "commit": "923b108dc5d45dee061324c011b478fb649f8b73",
+      "license": "MIT",
+      "copyright": "Copyright (c) 2016 mozillazg"
+    },
+    "ecdict": {
+      "repository": "https://github.com/skywind3000/ECDICT",
+      "commit": "bc015ed2e24a7abef49fc6dbbb7fe32c1dadaf8b",
+      "license": "MIT",
+      "copyright": "Copyright (c) 2025 Linwei"
+    }
+  },
+  "overrides_sha256": "0a7471ef476d79b673e8717aec4056af233cd2a0fdeff0503fd33e6ae5a1fb3e",
+  "ame_lexicon_sha256": "24426a90082f4793978ad8e6a05a95f2e0ffd3b76b08e73d56196324b036698e",
+  "catalog_sha256": "9b9693af5f6cfafda2ed8d85488b0a6c3741b0c589da935291b20dff439a2288",
+  "pinyin_characters": 26710,
+  "zh_en": {
+    "tag_tokens": 86641,
+    "ame_words": 7220,
+    "ecdict_rows": 26793,
+    "overrides": 124,
+    "drop": 85,
+    "words": 48465
+  },
+  "files": {
+    "hanzi_pinyin.json.gz": {
+      "bytes": 101666,
+      "sha256": "b0dee8354cd65bb6dcdc927b07d539103a9f0afeb29c22f8fbe39f34fdb25b96"
+    },
+    "zh_en_lexicon.json.gz": {
+      "bytes": 474642,
+      "sha256": "688267a0f7f53dc4a3e7a53b78e4e9fff24702f44eb367c37fd7ac3d1686f027"
+    }
+  }
+}
