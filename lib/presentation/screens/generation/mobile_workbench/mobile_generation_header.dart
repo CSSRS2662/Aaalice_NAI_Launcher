@@ -45,12 +45,13 @@ class MobileGenerationHeader extends StatelessWidget
       automaticallyImplyLeading: false,
       toolbarHeight: toolbarHeight,
       titleSpacing: 0,
-      // The quota at the end has no surface of its own: its last digits, not
-      // its padding, line up with the 12 dp margin of the pills at the start.
+      // The quota at the end has no surface of its own: its last digit sits
+      // as far from the edge as the model label's first letter (screen
+      // margin plus the pill's inner padding).
       title: Padding(
         padding: const EdgeInsetsDirectional.only(
           start: 12,
-          end: 12 - MobileQuotaPill.trailingInset,
+          end: 12 + _HeaderPill._start - MobileQuotaPill.trailingInset,
         ),
         child: MediaQuery.withClampedTextScaling(
           maxScaleFactor: maxTextScale,
