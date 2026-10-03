@@ -6,6 +6,7 @@ import 'package:intl/intl.dart';
 import '../../../core/utils/localization_extension.dart';
 import '../../providers/cost_estimate_provider.dart';
 import '../../providers/subscription_provider.dart';
+import 'anlas_icon.dart';
 
 /// Anlas 余额显示芯片
 ///
@@ -18,11 +19,22 @@ class AnlasBalanceChip extends ConsumerWidget {
   /// keep their own tint.
   final bool embedded;
 
+  /// Overrides the number's size and family (color and weight stay).
+  final TextStyle? textStyle;
+
   const AnlasBalanceChip({
     super.key,
     this.compact = false,
     this.embedded = false,
+    this.textStyle,
   });
+
+  TextStyle _numberStyle(Color color) =>
+      (textStyle ?? TextStyle(fontSize: compact ? 12 : 14)).copyWith(
+        color: color,
+        fontWeight: FontWeight.w600,
+        fontFeatures: const [FontFeature.tabularFigures()],
+      );
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -58,14 +70,7 @@ class AnlasBalanceChip extends ConsumerWidget {
         children: [
           _buildIcon(theme, null),
           const SizedBox(width: 4),
-          Text(
-            '--',
-            style: TextStyle(
-              color: theme.colorScheme.onSurfaceVariant,
-              fontWeight: FontWeight.w600,
-              fontSize: compact ? 12 : 14,
-            ),
-          ),
+          Text('--', style: _numberStyle(theme.colorScheme.onSurfaceVariant)),
         ],
       ),
     );
@@ -133,14 +138,7 @@ class AnlasBalanceChip extends ConsumerWidget {
           children: [
             _buildIcon(theme, isInsufficient),
             const SizedBox(width: 4),
-            Text(
-              formatter.format(balance),
-              style: TextStyle(
-                color: textColor,
-                fontWeight: FontWeight.w600,
-                fontSize: compact ? 12 : 14,
-              ),
-            ),
+            Text(formatter.format(balance), style: _numberStyle(textColor)),
           ],
         ),
       ),
@@ -175,14 +173,7 @@ class AnlasBalanceChip extends ConsumerWidget {
                 color: theme.colorScheme.error,
               ),
               const SizedBox(width: 4),
-              Text(
-                '--',
-                style: TextStyle(
-                  color: theme.colorScheme.error,
-                  fontWeight: FontWeight.w600,
-                  fontSize: compact ? 12 : 14,
-                ),
-              ),
+              Text('--', style: _numberStyle(theme.colorScheme.error)),
             ],
           ),
         ),
@@ -191,8 +182,7 @@ class AnlasBalanceChip extends ConsumerWidget {
   }
 
   Widget _buildIcon(ThemeData theme, bool? isWarning) {
-    return Icon(
-      Icons.diamond_outlined,
+    return AnlasIcon(
       size: compact ? 14 : 16,
       color: isWarning == true
           ? theme.colorScheme.error
@@ -217,11 +207,12 @@ class _ChipContainer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final vertical = compact ? 4.0 : 6.0;
 
     return Container(
       padding: EdgeInsets.symmetric(
         horizontal: compact ? 8 : 12,
-        vertical: compact ? 4 : 6,
+        vertical: vertical,
       ),
       decoration: BoxDecoration(
         color:
@@ -229,7 +220,13 @@ class _ChipContainer extends StatelessWidget {
             (embedded ? null : theme.colorScheme.surfaceContainerHigh),
         borderRadius: BorderRadius.circular(8),
       ),
-      child: child,
+      // Inside another surface the whole row height is the touch target.
+      child: embedded
+          ? ConstrainedBox(
+              constraints: BoxConstraints(minHeight: 44 - vertical * 2),
+              child: child,
+            )
+          : child,
     );
   }
 }

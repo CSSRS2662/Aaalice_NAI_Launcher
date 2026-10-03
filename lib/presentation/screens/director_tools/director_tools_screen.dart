@@ -11,6 +11,7 @@ import '../../adaptive/adaptive_layout.dart';
 import '../../adaptive/interaction_policy.dart';
 import '../../providers/director_tools_notifier.dart';
 import '../../providers/subscription_provider.dart';
+import '../../widgets/anlas/anlas_icon.dart';
 import '../../widgets/common/app_toast.dart';
 import '../../widgets/common/themed_confirm_dialog.dart';
 import 'widgets/pixel_snap_panel.dart';
@@ -490,11 +491,7 @@ class _DirectorToolsScreenState extends ConsumerState<DirectorToolsScreen> {
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(
-                      Icons.diamond_outlined,
-                      size: 14,
-                      color: theme.colorScheme.primary,
-                    ),
+                    AnlasIcon(size: 14, color: theme.colorScheme.primary),
                     const SizedBox(width: 4),
                     Text(
                       cost == 0 ? 'Free' : '$cost',

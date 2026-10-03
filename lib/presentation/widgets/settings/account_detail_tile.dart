@@ -7,6 +7,7 @@ import '../../../data/models/user/user_subscription.dart';
 import '../../../data/services/auth_provider.dart';
 import '../../../data/services/account_manager_provider.dart';
 import '../../providers/subscription_provider.dart';
+import '../anlas/anlas_icon.dart';
 import '../auth/account_avatar.dart';
 
 /// 账号信息设置项
@@ -169,11 +170,7 @@ class AccountDetailTile extends ConsumerWidget {
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(
-                    Icons.diamond_outlined,
-                    size: 12,
-                    color: theme.colorScheme.tertiary,
-                  ),
+                  AnlasIcon(size: 12, color: theme.colorScheme.tertiary),
                   const SizedBox(width: 4),
                   Text(
                     _formatNumber(subscription.anlasBalance),
