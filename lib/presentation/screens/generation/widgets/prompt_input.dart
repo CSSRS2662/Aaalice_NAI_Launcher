@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -135,16 +137,39 @@ class _PromptInputWidgetState extends ConsumerState<PromptInputWidget> {
     final params = ref.read(generationParamsNotifierProvider);
     final restorePositive =
         request.restorePositive &&
-        params.prompt == request.snapshot.positivePrompt;
+        PromptGroupRestoreRequest.samePromptTags(
+          params.prompt,
+          request.snapshot.positivePrompt,
+        );
     final restoreNegative =
         request.restoreNegative &&
-        params.negativePrompt == request.snapshot.negativePrompt;
+        PromptGroupRestoreRequest.samePromptTags(
+          params.negativePrompt,
+          request.snapshot.negativePrompt,
+        );
     if (!restorePositive && !restoreNegative) return;
     _controller.restoreGroupSnapshot(
       request.snapshot,
       restorePositive: restorePositive,
       restoreNegative: restoreNegative,
     );
+    // The imported text was rebuilt; keep the generation prompt identical to
+    // the restored partitions so the next result records them again.
+    final notifier = ref.read(generationParamsNotifierProvider.notifier);
+    final positive = _controller.promptController.text;
+    final negative = _controller.negativeController.text;
+    if (restorePositive && params.prompt != positive) {
+      notifier.updatePrompt(positive);
+    }
+    if (restoreNegative && params.negativePrompt != negative) {
+      notifier.updateNegativePrompt(negative);
+    }
+    // Consumed: a later mount must not undo edits that keep the same tags.
+    scheduleMicrotask(() {
+      if (!mounted) return;
+      final pending = ref.read(promptGroupRestoreRequestProvider.notifier);
+      if (identical(pending.state, request)) pending.state = null;
+    });
   }
 
   @override

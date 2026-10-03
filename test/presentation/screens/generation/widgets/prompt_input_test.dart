@@ -11,6 +11,7 @@ import 'package:nai_launcher/core/platform/platform_capabilities.dart';
 import 'package:nai_launcher/core/services/prompt_token_counter_service.dart';
 import 'package:nai_launcher/core/storage/local_storage_service.dart';
 import 'package:nai_launcher/data/models/character/character_prompt.dart';
+import 'package:nai_launcher/data/models/gallery/prompt_group_snapshot.dart';
 import 'package:nai_launcher/l10n/app_localizations.dart';
 import 'package:nai_launcher/presentation/adaptive/interaction_policy.dart';
 import 'package:nai_launcher/presentation/prompt_assistant/providers/prompt_assistant_history_provider.dart';
@@ -19,6 +20,7 @@ import 'package:nai_launcher/presentation/prompt_assistant/widgets/prompt_assist
 import 'package:nai_launcher/presentation/providers/character_position_canvas_provider.dart';
 import 'package:nai_launcher/presentation/providers/character_prompt_provider.dart';
 import 'package:nai_launcher/presentation/providers/generation/generation_params_notifier.dart';
+import 'package:nai_launcher/presentation/providers/prompt_group_state_provider.dart';
 import 'package:nai_launcher/presentation/providers/prompt_token_counter_provider.dart';
 import 'package:nai_launcher/presentation/screens/generation/widgets/prompt_input.dart';
 import 'package:nai_launcher/presentation/themes/core/input_surface_style.dart';
@@ -673,6 +675,101 @@ void main() {
     expect(
       container.read(generationParamsNotifierProvider).prompt,
       'school_uniform',
+    );
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('复用参数按标签恢复分区：导入的提示词被重新拼接也不会挤进一个词框', (tester) async {
+    tester.view.devicePixelRatio = 1;
+    tester.view.physicalSize = const Size(400, 800);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    addTearDown(tester.view.resetPhysicalSize);
+
+    final container = await _pumpMobilePromptHarness(
+      tester,
+      defaultModel: 'nai-diffusion-5-curated',
+    );
+    const snapshot = PromptGroupSnapshot(
+      groupedMode: true,
+      positiveSections: [
+        PromptGroupSectionSnapshot(id: 'a', text: '1girl,School_Uniform'),
+        PromptGroupSectionSnapshot(id: 'b', text: 'smile,\noutdoors,'),
+        PromptGroupSectionSnapshot(id: 'c', text: 'rain', enabled: false),
+      ],
+      negativeSections: [],
+    );
+
+    // What reuse writes: fixed/quality tags stripped and tags rejoined.
+    final params = container.read(generationParamsNotifierProvider.notifier);
+    params.updatePrompt('1girl, school_uniform, smile, outdoors');
+    await tester.pump();
+    container
+        .read(promptGroupRestoreRequestProvider.notifier)
+        .state = const PromptGroupRestoreRequest(
+      snapshot: snapshot,
+      restorePositive: true,
+      restoreNegative: false,
+    );
+    await tester.pump();
+    await tester.pump();
+
+    final groups = find.byKey(
+      const ValueKey('generation_positive_prompt_groups'),
+    );
+    expect(groups, findsOneWidget);
+    final texts = tester
+        .widgetList<EditableText>(
+          find.descendant(of: groups, matching: find.byType(EditableText)),
+        )
+        .map((field) => field.controller.text)
+        .toList();
+    expect(texts, ['1girl,School_Uniform', 'smile,\noutdoors,', 'rain']);
+    // The generation prompt now matches the partitions exactly, so the next
+    // result records them again.
+    expect(
+      container.read(generationParamsNotifierProvider).prompt,
+      snapshot.positivePrompt,
+    );
+    expect(container.read(promptGroupRestoreRequestProvider), isNull);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('复用参数的标签与分区不同时保持导入的提示词', (tester) async {
+    tester.view.devicePixelRatio = 1;
+    tester.view.physicalSize = const Size(400, 800);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    addTearDown(tester.view.resetPhysicalSize);
+
+    final container = await _pumpMobilePromptHarness(
+      tester,
+      defaultModel: 'nai-diffusion-5-curated',
+    );
+    container
+        .read(generationParamsNotifierProvider.notifier)
+        .updatePrompt('1girl, beach');
+    await tester.pump();
+    container
+        .read(promptGroupRestoreRequestProvider.notifier)
+        .state = const PromptGroupRestoreRequest(
+      snapshot: PromptGroupSnapshot(
+        groupedMode: true,
+        positiveSections: [
+          PromptGroupSectionSnapshot(id: 'a', text: '1girl'),
+          PromptGroupSectionSnapshot(id: 'b', text: 'school_uniform'),
+        ],
+        negativeSections: [],
+      ),
+      restorePositive: true,
+      restoreNegative: false,
+    );
+    await tester.pump();
+    expect(
+      container.read(generationParamsNotifierProvider).prompt,
+      '1girl, beach',
+    );
+    expect(
+      find.byKey(const ValueKey('generation_positive_prompt_groups')),
+      findsNothing,
     );
     expect(tester.takeException(), isNull);
   });
