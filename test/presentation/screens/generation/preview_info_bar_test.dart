@@ -188,6 +188,11 @@ void main() {
 
     expect(toggle, findsOneWidget);
     expect(find.text('透明背景'), findsOneWidget);
+    // Same front icon as the prompt-page switch used to have.
+    expect(
+      find.descendant(of: toggle, matching: find.byIcon(Icons.blur_on_rounded)),
+      findsOneWidget,
+    );
     expect(
       tester.getRect(toggle).left,
       greaterThanOrEqualTo(tester.getRect(seedText).right),

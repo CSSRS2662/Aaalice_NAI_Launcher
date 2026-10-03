@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/autocomplete/autocomplete_settings.dart'
     as completion_settings;
-import '../../../../core/constants/model_capabilities.dart';
 import '../../../../core/platform/platform_capabilities.dart';
 import '../../../../core/utils/localization_extension.dart';
 import '../../../adaptive/interaction_policy.dart';
@@ -19,7 +18,6 @@ import '../../../widgets/prompt/uc_preset_selector.dart';
 import 'prompt_group_controller.dart';
 import 'prompt_input_controller.dart';
 import 'prompt_editor_mode_switch.dart';
-import 'prompt_input_footer.dart';
 import 'prompt_input_models.dart';
 import '../../../widgets/prompt/prompt_footer_style.dart';
 import 'prompt_type_switch.dart';
@@ -516,78 +514,24 @@ class _MobileFullscreenToolbar extends StatelessWidget {
     return LayoutBuilder(
       key: const ValueKey('generation_prompt_mobile_workbench'),
       builder: (context, constraints) {
+        // One 44 dp row of icon controls; the transparent-background switch
+        // lives on the image tab (and the parameter page) instead.
         final scaledLabelHeight = MediaQuery.textScalerOf(context).scale(14);
-        final controlRowHeight = (scaledLabelHeight * 1.25 + 28).clamp(
-          48.0,
+        final controlRowHeight = (scaledLabelHeight * 1.25 + 24).clamp(
+          44.0,
           88.0,
         );
-        final effectiveTextScale = (scaledLabelHeight / 14).clamp(1.0, 3.0);
-        final actionExtent = 52 + (effectiveTextScale - 1) * 16;
-        final typeSwitchWidth = (124 * effectiveTextScale).clamp(124.0, 300.0);
-        final showTransparent = ModelCapabilityRegistry.of(
-          model,
-        ).supportsTransparentBackground;
-        final transparentWidth = showTransparent
-            ? (128 + (effectiveTextScale - 1) * 54).clamp(128.0, 240.0)
-            : 0.0;
+        final textGrowth = (scaledLabelHeight / 14).clamp(1.0, 3.0) - 1;
+        final actionExtent = 48 + textGrowth * 16;
+        final typeSwitchWidth = 84 + textGrowth * 24;
+        const gap = 4.0;
         final typeSwitch = PromptTypeSwitch(
           controller: controller,
           commands: commands,
           compact: true,
           toggleOnly: true,
+          iconOnly: true,
         );
-        Widget buildTopControls() {
-          final grouped = controller.isGroupedMode;
-          final addGroup = SizedBox.square(
-            dimension: 48,
-            child: PromptAddGroupButton(controller: controller, iconOnly: true),
-          );
-          final modeSwitch = SizedBox.square(
-            dimension: 48,
-            child: PromptEditorModeSwitch(
-              controller: controller,
-              commands: commands,
-              iconOnly: true,
-            ),
-          );
-          final addGroupExtent = grouped
-              ? 48.0 + (showTransparent ? 8.0 : 0.0)
-              : 0.0;
-          final trailingGap =
-              (constraints.maxWidth - transparentWidth - addGroupExtent - 48)
-                  .clamp(8.0, double.infinity);
-          final rowWidth = transparentWidth + addGroupExtent + trailingGap + 48;
-          return SizedBox(
-            key: const ValueKey('generation_prompt_mobile_top_controls'),
-            height: controlRowHeight,
-            child: SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child: SizedBox(
-                width: rowWidth,
-                height: controlRowHeight,
-                child: Row(
-                  children: [
-                    if (showTransparent)
-                      SizedBox(
-                        width: transparentWidth,
-                        height: controlRowHeight,
-                        child: const PromptTransparentBackgroundToggle(
-                          switchStyle: true,
-                          compact: true,
-                        ),
-                      ),
-                    if (grouped) ...[
-                      if (showTransparent) const SizedBox(width: 8),
-                      addGroup,
-                    ],
-                    SizedBox(width: trailingGap),
-                    modeSwitch,
-                  ],
-                ),
-              ),
-            ),
-          );
-        }
 
         final roleActionsWidth = actionExtent * 3 + 2;
         Widget buildPromptRoleActions() => SizedBox(
@@ -625,26 +569,49 @@ class _MobileFullscreenToolbar extends StatelessWidget {
           ),
         );
 
-        Widget buildPrimaryControls() {
+        Widget buildControls() {
+          final grouped = controller.isGroupedMode;
+          final leadingWidth =
+              typeSwitchWidth + (grouped ? gap + controlRowHeight : 0);
+          final trailingWidth = roleActionsWidth + gap + controlRowHeight;
           final middleGap =
-              (constraints.maxWidth - typeSwitchWidth - roleActionsWidth).clamp(
-                8.0,
+              (constraints.maxWidth - leadingWidth - trailingWidth).clamp(
+                gap,
                 double.infinity,
               );
-          final rowWidth = typeSwitchWidth + middleGap + roleActionsWidth;
           return SizedBox(
-            key: const ValueKey('generation_prompt_mobile_primary_row'),
+            key: const ValueKey('generation_prompt_mobile_controls'),
             height: controlRowHeight,
+            // Wider than the pane only with very large text: scroll, not clip.
             child: SingleChildScrollView(
               scrollDirection: Axis.horizontal,
               child: SizedBox(
-                width: rowWidth,
+                width: leadingWidth + middleGap + trailingWidth,
                 height: controlRowHeight,
                 child: Row(
                   children: [
                     SizedBox(width: typeSwitchWidth, child: typeSwitch),
+                    if (grouped) ...[
+                      const SizedBox(width: gap),
+                      SizedBox.square(
+                        dimension: controlRowHeight,
+                        child: PromptAddGroupButton(
+                          controller: controller,
+                          iconOnly: true,
+                        ),
+                      ),
+                    ],
                     SizedBox(width: middleGap),
                     buildPromptRoleActions(),
+                    const SizedBox(width: gap),
+                    SizedBox.square(
+                      dimension: controlRowHeight,
+                      child: PromptEditorModeSwitch(
+                        controller: controller,
+                        commands: commands,
+                        iconOnly: true,
+                      ),
+                    ),
                   ],
                 ),
               ),
@@ -655,9 +622,7 @@ class _MobileFullscreenToolbar extends StatelessWidget {
         Widget buildWorkbench() => Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            buildTopControls(),
-            const SizedBox(height: 8),
-            buildPrimaryControls(),
+            buildControls(),
             const SizedBox(height: 8),
             Expanded(child: editor),
             footer,

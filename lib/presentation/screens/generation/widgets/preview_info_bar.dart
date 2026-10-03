@@ -11,13 +11,13 @@ import '../../../providers/image_generation_provider.dart';
 import '../../../providers/preview_transparency_provider.dart';
 import '../../../widgets/common/transparency_background.dart';
 import '../../../widgets/image_editor/widgets/color_picker.dart';
-import 'generation_toggle_button.dart';
+import 'prompt_input_footer.dart';
 
 /// 预览图下方的信息条（对齐官网结果区底部的 display/save 工具条）
 ///
 /// 自左向右：分辨率胶囊 → 透明底色入口 → 可选对比开关 → 种子胶囊。
 /// 透明底色入口向上弹出档位浮层；触屏设备在支持的模型下把生成用的
-/// 透明背景开关固定在最右侧，避免用户必须进入提示词编辑页。
+/// 透明背景开关（图标 + 文字 + 开关）固定在最右侧，提示词页不再重复。
 class PreviewInfoBar extends ConsumerWidget {
   final GeneratedImage image;
   final bool comparisonEnabled;
@@ -42,6 +42,11 @@ class PreviewInfoBar extends ConsumerWidget {
   static const double _comparisonResolutionMinWidth = 400;
   static const double _transparentToggleResolutionMinWidth = 400;
 
+  /// Below these widths the transparent toggle drops its switch, then its
+  /// name, so the seed stays readable.
+  static const double _transparentSwitchMinWidth = 340;
+  static const double _transparentLabelMinWidth = 260;
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     // 种子要等 PNG 元数据解析完才知道，解析期间先不占位
@@ -49,17 +54,13 @@ class PreviewInfoBar extends ConsumerWidget {
         .watch(generatedImageMetadataProvider(image))
         .valueOrNull
         ?.seed;
-    final transparentBackground = ref.watch(
+    final transparentSupported = ref.watch(
       generationParamsNotifierProvider.select(
-        (params) => (
-          supported: params.capabilities.supportsTransparentBackground,
-          enabled: params.transparentBackground,
-        ),
+        (params) => params.capabilities.supportsTransparentBackground,
       ),
     );
     final showTransparentBackground =
-        context.interactionPolicy.touchAvailable &&
-        transparentBackground.supported;
+        context.interactionPolicy.touchAvailable && transparentSupported;
 
     return SizedBox(
       height: heightFor(context),
@@ -125,22 +126,15 @@ class PreviewInfoBar extends ConsumerWidget {
             children: [
               Expanded(child: info),
               const SizedBox(width: 6),
-              Semantics(
-                button: true,
-                toggled: transparentBackground.enabled,
-                label: context.l10n.generation_transparentBackground,
-                child: ConstrainedBox(
-                  constraints: const BoxConstraints(minHeight: barHeight),
-                  child: GenerationToggleButton(
-                    key: const ValueKey(
-                      'generation_preview_transparent_background_toggle',
-                    ),
-                    label: context.l10n.generation_transparentBackground,
-                    isEnabled: transparentBackground.enabled,
-                    onChanged: (value) => ref
-                        .read(generationParamsNotifierProvider.notifier)
-                        .updateTransparentBackground(value),
-                  ),
+              PromptTransparentBackgroundToggle(
+                switchStyle: true,
+                compact: true,
+                shrinkWrap: true,
+                minHeight: barHeight,
+                showSwitch: constraints.maxWidth >= _transparentSwitchMinWidth,
+                showLabel: constraints.maxWidth >= _transparentLabelMinWidth,
+                toggleKey: const ValueKey(
+                  'generation_preview_transparent_background_toggle',
                 ),
               ),
             ],

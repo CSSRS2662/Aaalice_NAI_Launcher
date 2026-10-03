@@ -99,10 +99,30 @@ class PromptTransparentBackgroundToggle extends ConsumerWidget {
     super.key,
     this.switchStyle = false,
     this.compact = false,
+    this.toggleKey = const ValueKey('generation_transparent_background_toggle'),
+    this.minHeight = 48,
+    this.shrinkWrap = false,
+    this.showLabel = true,
+    this.showSwitch = true,
   });
 
   final bool switchStyle;
   final bool compact;
+
+  /// Key of the tappable surface, for each place the toggle appears.
+  final Key toggleKey;
+
+  /// Switch style only: the tappable height.
+  final double minHeight;
+
+  /// Switch style only: size to the content instead of filling the width
+  /// (for rows and wraps that give unbounded width).
+  final bool shrinkWrap;
+
+  /// Switch style only: tight rows may drop the switch, then the name; the
+  /// tint always shows the state and the name stays for screen readers.
+  final bool showLabel;
+  final bool showSwitch;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -122,6 +142,19 @@ class PromptTransparentBackgroundToggle extends ConsumerWidget {
         .read(generationParamsNotifierProvider.notifier)
         .updateTransparentBackground(!state.enabled);
 
+    final label = Text(
+      context.l10n.generation_transparentBackground,
+      maxLines: shrinkWrap ? 1 : 2,
+      softWrap: !shrinkWrap,
+      textAlign: TextAlign.center,
+      style:
+          (compact ? theme.textTheme.labelMedium : theme.textTheme.labelLarge)
+              ?.copyWith(
+                color: state.enabled ? colors.primary : colors.onSurface,
+                fontWeight: FontWeight.w600,
+                height: 1.08,
+              ),
+    );
     final Widget button;
     if (switchStyle) {
       final backgroundColor = compact && state.enabled
@@ -136,18 +169,25 @@ class PromptTransparentBackgroundToggle extends ConsumerWidget {
           borderRadius: BorderRadius.circular(theme.appTheme.controlRadius),
           clipBehavior: Clip.antiAlias,
           child: InkWell(
-            key: const ValueKey('generation_transparent_background_toggle'),
+            key: toggleKey,
             onTap: toggle,
             child: ConstrainedBox(
-              constraints: const BoxConstraints(minHeight: 48),
+              constraints: BoxConstraints(minHeight: minHeight, minWidth: 44),
               child: Padding(
                 padding: EdgeInsets.fromLTRB(
                   compact ? 8 : 6,
                   4,
-                  compact ? 6 : 2,
+                  !showSwitch
+                      ? 8
+                      : compact
+                      ? 6
+                      : 2,
                   4,
                 ),
                 child: Row(
+                  mainAxisSize: shrinkWrap
+                      ? MainAxisSize.min
+                      : MainAxisSize.max,
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Icon(
@@ -157,32 +197,17 @@ class PromptTransparentBackgroundToggle extends ConsumerWidget {
                           ? colors.primary
                           : colors.onSurfaceVariant,
                     ),
-                    SizedBox(width: compact ? 6 : 4),
-                    Flexible(
-                      child: Text(
-                        context.l10n.generation_transparentBackground,
-                        maxLines: 2,
-                        textAlign: TextAlign.center,
-                        style:
-                            (compact
-                                    ? theme.textTheme.labelMedium
-                                    : theme.textTheme.labelLarge)
-                                ?.copyWith(
-                                  color: state.enabled
-                                      ? colors.primary
-                                      : colors.onSurface,
-                                  fontWeight: FontWeight.w600,
-                                  height: 1.08,
-                                ),
-                      ),
-                    ),
-                    SizedBox(width: compact ? 6 : 0),
-                    if (compact)
+                    if (showLabel) ...[
+                      SizedBox(width: compact ? 6 : 4),
+                      if (shrinkWrap) label else Flexible(child: label),
+                    ],
+                    if (showSwitch) SizedBox(width: compact ? 6 : 0),
+                    if (showSwitch && compact)
                       _CompactSwitchIndicator(
                         enabled: state.enabled,
                         color: colors.primary,
                       )
-                    else
+                    else if (showSwitch)
                       IgnorePointer(
                         child: ExcludeSemantics(
                           child: Transform.scale(

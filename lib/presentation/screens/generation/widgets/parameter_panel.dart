@@ -2,12 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/utils/localization_extension.dart';
+import '../../../adaptive/interaction_policy.dart';
 import '../../../providers/image_generation_provider.dart';
 import '../../../widgets/character/inline_character_section.dart';
 import '../../../widgets/common/draggable_number_input.dart';
 import '../../../widgets/generation/auto_save_toggle_chip.dart';
 import 'generation_controls/batch_settings_button.dart';
 import 'generation_param_sections.dart';
+import 'prompt_input_footer.dart';
 import 'variety_plus_section.dart';
 import 'img2img_panel.dart';
 import 'precise_reference_panel.dart';
@@ -198,6 +200,18 @@ class _GenerationOutputSettingsSection extends ConsumerWidget {
             ),
             const BatchSettingsButton(showLabel: true),
             const AutoSaveToggleChip(),
+            // Touch layouts have no prompt-footer switch; this one is there
+            // before the first image, when the image tab has no info bar.
+            if (context.interactionPolicy.touchAvailable)
+              const PromptTransparentBackgroundToggle(
+                switchStyle: true,
+                compact: true,
+                shrinkWrap: true,
+                minHeight: 44,
+                toggleKey: ValueKey(
+                  'generation_params_transparent_background_toggle',
+                ),
+              ),
           ],
         ),
       ],

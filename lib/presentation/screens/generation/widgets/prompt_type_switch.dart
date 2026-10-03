@@ -26,6 +26,7 @@ class PromptTypeSwitch extends ConsumerWidget {
     this.expand = false,
     this.compact = false,
     this.toggleOnly = false,
+    this.iconOnly = false,
   });
 
   final PromptInputController controller;
@@ -33,6 +34,9 @@ class PromptTypeSwitch extends ConsumerWidget {
   final bool expand;
   final bool compact;
   final bool toggleOnly;
+
+  /// With [toggleOnly]: icon, count and swap mark; the name is the tooltip.
+  final bool iconOnly;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -124,6 +128,7 @@ class PromptTypeSwitch extends ConsumerWidget {
                   ? theme.promptSemanticColors.negativePrompt
                   : theme.promptSemanticColors.positivePrompt,
               compact: true,
+              showLabel: !iconOnly,
               trailingIcon: Icons.swap_vert_rounded,
               onTap: () => commands.setNegativeMode(!controller.isNegativeMode),
               tooltipBuilder: controller.isNegativeMode
@@ -178,6 +183,7 @@ class PromptTypeButton extends StatefulWidget {
     required this.color,
     required this.onTap,
     this.compact = false,
+    this.showLabel = true,
     this.trailingIcon,
     this.tooltipBuilder,
   });
@@ -189,6 +195,9 @@ class PromptTypeButton extends StatefulWidget {
   final Color color;
   final VoidCallback onTap;
   final bool compact;
+
+  /// False keeps the name for the tooltip and screen readers only.
+  final bool showLabel;
   final IconData? trailingIcon;
   final Widget Function(ThemeData theme)? tooltipBuilder;
 
@@ -237,8 +246,10 @@ class _PromptTypeButtonState extends State<PromptTypeButton> {
                   padding: EdgeInsets.all(widget.compact ? 2 : 4),
                   child: Icon(widget.icon, size: 16, color: colors.accent),
                 ),
-                SizedBox(width: widget.compact ? 4 : 8),
-                if (fillsAvailableWidth) Flexible(child: label) else label,
+                if (widget.showLabel) ...[
+                  SizedBox(width: widget.compact ? 4 : 8),
+                  if (fillsAvailableWidth) Flexible(child: label) else label,
+                ],
                 SizedBox(width: widget.compact ? 3 : 6),
                 PromptTagCountBadge(
                   count: widget.count,

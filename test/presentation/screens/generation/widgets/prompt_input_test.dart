@@ -338,7 +338,7 @@ void main() {
     expect(surfaceRect.right - editableRect.right, closeTo(13, 0.1));
   });
 
-  testWidgets('手机最大化提示词工作台使用紧凑的顶部控制区', (tester) async {
+  testWidgets('手机最大化提示词工作台的控制区压成一行纯图标', (tester) async {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
@@ -384,16 +384,13 @@ void main() {
     final typeSwitch = find.byKey(
       const ValueKey('generation_prompt_type_switch'),
     );
-    final topControls = find.byKey(
-      const ValueKey('generation_prompt_mobile_top_controls'),
+    final controls = find.byKey(
+      const ValueKey('generation_prompt_mobile_controls'),
     );
-    final primaryRow = find.byKey(
-      const ValueKey('generation_prompt_mobile_primary_row'),
+    final modeSwitch = find.byKey(
+      const ValueKey('generation_prompt_editor_mode_switch'),
     );
-    final transparent = find.byKey(
-      const ValueKey('generation_transparent_background_toggle'),
-    );
-    final secondaryActions = [
+    final roleActions = [
       find.byKey(const ValueKey('generation_prompt_mobile_character_action')),
       find.byKey(const ValueKey('generation_prompt_mobile_fixed_tags_action')),
       find.byKey(const ValueKey('generation_prompt_mobile_quality_action')),
@@ -401,40 +398,47 @@ void main() {
     final editor = find.byKey(
       const ValueKey('generation_prompt_positive_input'),
     );
+    final l10n = AppLocalizations.of(tester.element(controls))!;
 
     expect(typeSwitch, findsOneWidget);
-    expect(topControls, findsOneWidget);
-    expect(primaryRow, findsOneWidget);
-    expect(transparent, findsOneWidget);
+    expect(controls, findsOneWidget);
+    expect(tester.getSize(controls).height, 44);
+    // The transparent-background switch lives on the image tab now.
     expect(
-      find.byKey(const ValueKey('generation_prompt_mobile_context_bar')),
+      find.byKey(const ValueKey('generation_transparent_background_toggle')),
       findsNothing,
     );
-    for (final action in secondaryActions) {
-      expect(action, findsOneWidget);
-      expect(tester.getSize(action).height, 48);
-      expect(tester.getSize(action).width, 52);
-      expect(
-        tester.getCenter(action).dy,
-        closeTo(tester.getCenter(secondaryActions.first).dy, 0.1),
-      );
-      expect(action.hitTestable(), findsOneWidget);
-    }
-    expect(tester.getRect(transparent).left, tester.getRect(topControls).left);
-    expect(tester.getSize(transparent).width, lessThan(160));
+    // Icons only: the positive/negative name is the tooltip.
     expect(
       find.descendant(
-        of: find.byKey(const ValueKey('generation_prompt_editor_mode_switch')),
+        of: typeSwitch,
+        matching: find.text(l10n.prompt_positive),
+      ),
+      findsNothing,
+    );
+    final rowCenter = tester.getCenter(controls).dy;
+    for (final control in [typeSwitch, ...roleActions, modeSwitch]) {
+      expect(control, findsOneWidget);
+      expect(tester.getSize(control).height, 44);
+      expect(tester.getCenter(control).dy, closeTo(rowCenter, 0.1));
+      expect(control.hitTestable(), findsOneWidget);
+    }
+    for (final action in roleActions) {
+      expect(tester.getSize(action).width, 48);
+    }
+    expect(
+      tester.getRect(modeSwitch).right,
+      closeTo(tester.getRect(controls).right, 0.1),
+    );
+    expect(
+      find.descendant(
+        of: modeSwitch,
         matching: find.byIcon(Icons.subject_rounded),
       ),
       findsOneWidget,
     );
     expect(
-      tester.getBottomLeft(topControls).dy,
-      lessThan(tester.getTopLeft(primaryRow).dy),
-    );
-    expect(
-      tester.getBottomLeft(primaryRow).dy,
+      tester.getBottomLeft(controls).dy,
       lessThan(tester.getTopLeft(editor).dy),
     );
     final bottomActions = find.byKey(
@@ -518,16 +522,19 @@ void main() {
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 50));
 
-    final topControls = find.byKey(
-      const ValueKey('generation_prompt_mobile_top_controls'),
+    final controls = find.byKey(
+      const ValueKey('generation_prompt_mobile_controls'),
     );
-    final primaryRow = find.byKey(
-      const ValueKey('generation_prompt_mobile_primary_row'),
-    );
-    expect(topControls, findsOneWidget);
-    expect(primaryRow, findsOneWidget);
-    expect(tester.getSize(topControls).height, greaterThan(48));
-    expect(tester.getSize(primaryRow).height, greaterThan(48));
+    expect(controls, findsOneWidget);
+    expect(tester.getSize(controls).height, greaterThan(48));
+    // Too wide for 320 at 3x: the row scrolls and keeps every control.
+    for (final key in [
+      'generation_prompt_type_switch',
+      'generation_prompt_mobile_quality_action',
+      'generation_prompt_editor_mode_switch',
+    ]) {
+      expect(find.byKey(ValueKey(key)), findsOneWidget, reason: key);
+    }
     expect(tester.takeException(), isNull);
   });
 
@@ -557,11 +564,11 @@ void main() {
     );
     expect(find.text(l10n.prompt_groupedEditorMode), findsNothing);
 
-    final topControls = find.byKey(
-      const ValueKey('generation_prompt_mobile_top_controls'),
+    final controls = find.byKey(
+      const ValueKey('generation_prompt_mobile_controls'),
     );
-    final transparent = find.byKey(
-      const ValueKey('generation_transparent_background_toggle'),
+    final typeSwitch = find.byKey(
+      const ValueKey('generation_prompt_type_switch'),
     );
     final addGroup = find.byKey(const ValueKey('add_positive_prompt_group'));
     expect(
@@ -571,12 +578,17 @@ void main() {
       ),
       findsOneWidget,
     );
-    expect(tester.getRect(transparent).left, tester.getRect(topControls).left);
+    // One row: positive/negative, add group … role segments, mode switch.
+    expect(tester.getRect(typeSwitch).left, tester.getRect(controls).left);
     expect(
       tester.getRect(addGroup).left,
-      greaterThan(tester.getRect(transparent).right),
+      greaterThan(tester.getRect(typeSwitch).right),
     );
-    expect(tester.getRect(modeSwitch).right, tester.getRect(topControls).right);
+    expect(
+      tester.getCenter(addGroup).dy,
+      closeTo(tester.getCenter(modeSwitch).dy, 0.1),
+    );
+    expect(tester.getRect(modeSwitch).right, tester.getRect(controls).right);
     expect(find.text(l10n.prompt_addGroup), findsNothing);
 
     final groups = find.byKey(
@@ -1577,13 +1589,15 @@ void main() {
     ];
     for (final action in narrowToolbarActions) {
       expect(action, findsOneWidget);
-      expect(tester.getSize(action).height, 48);
+      expect(tester.getSize(action).height, 44);
       await tester.ensureVisible(action);
       await tester.pump();
       expect(action.hitTestable(), findsOneWidget);
     }
-    final transparent = find.byKey(
-      const ValueKey('generation_transparent_background_toggle'),
+    // On touch the transparent switch is on the image tab, not here.
+    expect(
+      find.byKey(const ValueKey('generation_transparent_background_toggle')),
+      findsNothing,
     );
     final footer = find.byKey(const ValueKey('generation_prompt_footer'));
     final count = find.byKey(const ValueKey('generation_prompt_footer_count'));
@@ -1601,7 +1615,6 @@ void main() {
       find.descendant(of: input, matching: find.byType(TextField)).first,
     );
 
-    expect(transparent, findsOneWidget);
     expect(count, findsOneWidget);
     expect(find.text('259 / 1471'), findsOneWidget);
     expect(
@@ -1626,10 +1639,6 @@ void main() {
       findsOneWidget,
     );
     expect(
-      tester.getRect(transparent).top,
-      lessThan(tester.getRect(input).top),
-    );
-    expect(
       tester.getRect(count).top,
       greaterThanOrEqualTo(tester.getRect(input).bottom),
     );
@@ -1641,9 +1650,6 @@ void main() {
       find.byKey(const ValueKey('generation_prompt_footer_actions_scroll')),
       findsOneWidget,
     );
-    await tester.ensureVisible(transparent);
-    await tester.pump();
-    expect(transparent.hitTestable(), findsOneWidget);
     expect(
       tester.getRect(count).top - tester.getRect(assistant).bottom,
       greaterThanOrEqualTo(0),
@@ -1670,7 +1676,6 @@ void main() {
       ),
       findsNothing,
     );
-    expect(transparent, findsOneWidget);
     expect(assistant, findsOneWidget);
     expect(tester.getSize(footer).height, collapsedFooterHeight);
     expect(
@@ -1728,7 +1733,6 @@ void main() {
       ),
       findsOneWidget,
     );
-    expect(transparent, findsOneWidget);
     expect(tester.getSize(footer).height, collapsedFooterHeight);
     expect(
       tester.getRect(count).top - tester.getRect(assistant).bottom,

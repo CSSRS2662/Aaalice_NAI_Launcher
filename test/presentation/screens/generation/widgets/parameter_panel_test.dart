@@ -16,6 +16,7 @@ import 'package:nai_launcher/data/datasources/remote/nai_image_enhancement_api_s
 import 'package:nai_launcher/data/models/vibe/vibe_library_entry.dart';
 import 'package:nai_launcher/data/services/vibe_library_storage_service.dart';
 import 'package:nai_launcher/l10n/app_localizations.dart';
+import 'package:nai_launcher/presentation/adaptive/interaction_policy.dart';
 import 'package:nai_launcher/presentation/providers/generation/generation_params_notifier.dart';
 import 'package:nai_launcher/presentation/providers/krita/krita_bridge_notifier.dart';
 import 'package:nai_launcher/presentation/screens/generation/widgets/generation_param_sections.dart';
@@ -269,6 +270,78 @@ void main() {
       await tester.pumpAndSettle();
       expect(sections().whereType<ModelSection>(), isEmpty);
       expect(sections().whereType<SizeSection>(), hasLength(1));
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('触屏参数页提供透明背景开关，精确指针下仍只在提示词页', (tester) async {
+      Widget buildSubject(InteractionPolicy policy) => ProviderScope(
+        overrides: [
+          localStorageServiceProvider.overrideWith(
+            (ref) =>
+                _TestLocalStorageService(defaultModel: 'nai-diffusion-5-full'),
+          ),
+          vibeLibraryStorageServiceProvider.overrideWithValue(
+            _TestVibeLibraryStorageService(),
+          ),
+          kritaBridgeNotifierProvider.overrideWith(
+            (ref) => _TestKritaBridgeNotifier(),
+          ),
+        ],
+        child: MaterialApp(
+          locale: const Locale('zh'),
+          supportedLocales: AppLocalizations.supportedLocales,
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          home: Scaffold(
+            body: InteractionPolicyScope(
+              initialPolicy: policy,
+              child: const SizedBox(
+                width: 360,
+                height: 600,
+                child: ParameterPanel(
+                  content: ParameterPanelContent.generation,
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+      final toggle = find.byKey(
+        const ValueKey('generation_params_transparent_background_toggle'),
+      );
+
+      await tester.pumpWidget(
+        buildSubject(
+          const InteractionPolicy(
+            modality: InteractionModality.touch,
+            touchAvailable: true,
+            precisePointerAvailable: false,
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(toggle, findsOneWidget);
+      expect(tester.getSize(toggle).height, greaterThanOrEqualTo(44));
+      final container = ProviderScope.containerOf(tester.element(toggle));
+      await tester.ensureVisible(toggle);
+      await tester.pumpAndSettle();
+      await tester.tap(toggle);
+      await tester.pump();
+      expect(
+        container.read(generationParamsNotifierProvider).transparentBackground,
+        isTrue,
+      );
+
+      await tester.pumpWidget(
+        buildSubject(
+          const InteractionPolicy(
+            modality: InteractionModality.pointer,
+            touchAvailable: false,
+            precisePointerAvailable: true,
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(toggle, findsNothing);
       expect(tester.takeException(), isNull);
     });
 
@@ -581,6 +654,9 @@ class _FakeFilePicker extends FilePicker {
 }
 
 class _TestLocalStorageService extends LocalStorageService {
+  _TestLocalStorageService({this.defaultModel = 'nai-diffusion-4-5-full'});
+
+  final String defaultModel;
   final Map<String, Object?> _settings = {};
 
   @override
@@ -601,7 +677,7 @@ class _TestLocalStorageService extends LocalStorageService {
   String getLastNegativePrompt() => '';
 
   @override
-  String getDefaultModel() => 'nai-diffusion-4-5-full';
+  String getDefaultModel() => defaultModel;
 
   @override
   String getDefaultSampler() => 'k_euler_ancestral';
