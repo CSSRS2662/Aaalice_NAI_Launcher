@@ -123,9 +123,8 @@ separate base tag CSV is not used by this application.
 
 The optional `tag.sqlite` Chinese dictionary is not bundled or redistributed.
 After explicit user confirmation, the application downloads it directly from
-[ffdkj/ComfyUI_Danbooru_Tag_Assistant](https://github.com/ffdkj/ComfyUI_Danbooru_Tag_Assistant).
-That upstream repository did not declare a license when this integration was
-implemented.
+[ffdkj/ffdkj-Danbooru_Tag-Chinese-English-Translation-Table](https://github.com/ffdkj/ffdkj-Danbooru_Tag-Chinese-English-Translation-Table),
+which is distributed under the MIT License.
 
 ## NovelAI QuickTagCloud Codex Content
 
@@ -155,6 +154,42 @@ Chinese ffdkj dictionary with `TSCharacters.txt` from
 `025f371dc76b598d77384fbdab90c937471844d8`. The mapping and its license are
 bundled under `assets/data/opencc/`. OpenCC is licensed under the Apache License
 2.0; the complete license text is included alongside the mapping.
+
+## Aaalice Pocket Bundled Search Data
+
+The Aaalice Pocket Android branch bundles the following offline search data in
+the application package. Every source is MIT-licensed; each complete license
+text ships next to the data in the same asset folder, and source revisions and
+file hashes are pinned in that folder's `manifest.json`.
+
+- **multilingual-e5-small** by Microsoft
+  ([intfloat/multilingual-e5-small](https://huggingface.co/intfloat/multilingual-e5-small),
+  revision `614241f622f53c4eeff9890bdc4f31cfecc418b3`): the quantized ONNX
+  model and tokenizer in `assets/semantic_search/`, used only for on-device
+  semantic tag completion. License: `assets/semantic_search/LICENSE.e5.txt`.
+- **ffdkj Chinese-English tag table**
+  ([ffdkj/ffdkj-Danbooru_Tag-Chinese-English-Translation-Table](https://github.com/ffdkj/ffdkj-Danbooru_Tag-Chinese-English-Translation-Table)):
+  Chinese labels embedded in the semantic search documents. License:
+  `assets/semantic_search/LICENSE.ffdkj.txt`. The full dictionary itself is
+  still downloaded only on request, as described above.
+- **amenorira/danbooru-tags-data-zh**
+  ([repository](https://github.com/amenorira/danbooru-tags-data-zh), commit
+  `5805e4700f52dbe66567b84a157e29a41b3a5bcc`): Chinese names, aliases, and
+  notes in `assets/zh_lexicon/` and in the extra semantic search views.
+  License: `assets/zh_lexicon/LICENSE.amenorira.txt` and
+  `assets/semantic_search/LICENSE.amenorira.txt`.
+- **mozillazg/pinyin-data**
+  ([repository](https://github.com/mozillazg/pinyin-data), commit
+  `923b108dc5d45dee061324c011b478fb649f8b73`): the character-to-pinyin table
+  `assets/search_lexicon/hanzi_pinyin.json.gz`. License:
+  `assets/search_lexicon/LICENSE.pinyin-data.txt`.
+- **ECDICT** ([skywind3000/ECDICT](https://github.com/skywind3000/ECDICT),
+  commit `bc015ed2e24a7abef49fc6dbbb7fe32c1dadaf8b`): English-Chinese word pairs
+  used to build `assets/search_lexicon/zh_en_lexicon.json.gz`. License:
+  `assets/search_lexicon/LICENSE.ecdict.txt`.
+
+DanbooruSearchOnline data (GPL-3.0) was used only as a local evaluation
+reference and is not bundled or redistributed.
 
 ## Pica
 
