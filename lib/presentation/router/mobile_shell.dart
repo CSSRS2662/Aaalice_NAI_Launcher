@@ -41,7 +41,6 @@ class MobileShell extends ConsumerWidget {
     final queueCount = ref.watch(
       replicationQueueNotifierProvider.select((state) => state.count),
     );
-    final keyboardVisible = MediaQuery.viewInsetsOf(context).bottom > 0;
     final shellOverlayActive = ref.watch(
       mobileShellOverlayNotifierProvider.select(
         (overlays) => overlays.isNotEmpty,
@@ -92,64 +91,66 @@ class MobileShell extends ConsumerWidget {
           ),
         ),
       ),
-      bottomNavigationBar: keyboardVisible || shellOverlayActive
+      bottomNavigationBar: shellOverlayActive
           ? null
-          : SafeArea(
-              top: false,
-              child: NavigationBar(
-                height: _navigationBarHeight(context),
-                selectedIndex: activePanel != null
-                    ? mobileMoreNavigationIndex
-                    : mobileNavigationIndexForBranch(
-                        navigationShell.currentIndex,
+          : _HiddenWhileTyping(
+              child: SafeArea(
+                top: false,
+                child: NavigationBar(
+                  height: _navigationBarHeight(context),
+                  selectedIndex: activePanel != null
+                      ? mobileMoreNavigationIndex
+                      : mobileNavigationIndexForBranch(
+                          navigationShell.currentIndex,
+                        ),
+                  onDestinationSelected: (index) =>
+                      _onNavigate(context, index, ref),
+                  destinations: [
+                    NavigationDestination(
+                      icon: const Icon(Icons.auto_awesome_outlined),
+                      selectedIcon: const Icon(Icons.auto_awesome),
+                      label: context.l10n.nav_generate,
+                    ),
+                    NavigationDestination(
+                      icon: const Icon(Icons.photo_library_outlined),
+                      selectedIcon: const Icon(Icons.photo_library),
+                      label: context.l10n.nav_gallery,
+                    ),
+                    NavigationDestination(
+                      icon: const Icon(Icons.travel_explore_outlined),
+                      selectedIcon: const Icon(Icons.travel_explore),
+                      label: context.l10n.nav_explore,
+                    ),
+                    NavigationDestination(
+                      icon: const Icon(Icons.library_books_outlined),
+                      selectedIcon: const Icon(Icons.library_books),
+                      label: context.l10n.nav_dictionary,
+                    ),
+                    NavigationDestination(
+                      icon: Badge(
+                        isLabelVisible: queueCount > 0,
+                        label: queueCount > 0
+                            ? Text(
+                                queueCount > 99 ? '99+' : queueCount.toString(),
+                              )
+                            : null,
+                        smallSize: 7,
+                        child: const Icon(Icons.apps_outlined),
                       ),
-                onDestinationSelected: (index) =>
-                    _onNavigate(context, index, ref),
-                destinations: [
-                  NavigationDestination(
-                    icon: const Icon(Icons.auto_awesome_outlined),
-                    selectedIcon: const Icon(Icons.auto_awesome),
-                    label: context.l10n.nav_generate,
-                  ),
-                  NavigationDestination(
-                    icon: const Icon(Icons.photo_library_outlined),
-                    selectedIcon: const Icon(Icons.photo_library),
-                    label: context.l10n.nav_gallery,
-                  ),
-                  NavigationDestination(
-                    icon: const Icon(Icons.travel_explore_outlined),
-                    selectedIcon: const Icon(Icons.travel_explore),
-                    label: context.l10n.nav_explore,
-                  ),
-                  NavigationDestination(
-                    icon: const Icon(Icons.library_books_outlined),
-                    selectedIcon: const Icon(Icons.library_books),
-                    label: context.l10n.nav_dictionary,
-                  ),
-                  NavigationDestination(
-                    icon: Badge(
-                      isLabelVisible: queueCount > 0,
-                      label: queueCount > 0
-                          ? Text(
-                              queueCount > 99 ? '99+' : queueCount.toString(),
-                            )
-                          : null,
-                      smallSize: 7,
-                      child: const Icon(Icons.apps_outlined),
+                      selectedIcon: Badge(
+                        isLabelVisible: queueCount > 0,
+                        label: queueCount > 0
+                            ? Text(
+                                queueCount > 99 ? '99+' : queueCount.toString(),
+                              )
+                            : null,
+                        smallSize: 7,
+                        child: const Icon(Icons.apps),
+                      ),
+                      label: context.l10n.nav_more,
                     ),
-                    selectedIcon: Badge(
-                      isLabelVisible: queueCount > 0,
-                      label: queueCount > 0
-                          ? Text(
-                              queueCount > 99 ? '99+' : queueCount.toString(),
-                            )
-                          : null,
-                      smallSize: 7,
-                      child: const Icon(Icons.apps),
-                    ),
-                    label: context.l10n.nav_more,
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
     );
@@ -201,4 +202,19 @@ class MobileShell extends ConsumerWidget {
     }
     navigationShell.goBranch(mobileNavigationBranches[mobileIndex].index);
   }
+}
+
+/// Hides the navigation bar while the keyboard is up. Only this widget reads
+/// the inset, so the keyboard animation does not rebuild the whole shell on
+/// every frame.
+class _HiddenWhileTyping extends StatelessWidget {
+  const _HiddenWhileTyping({required this.child});
+
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) =>
+      MediaQuery.viewInsetsOf(context).bottom > 0
+      ? const SizedBox.shrink()
+      : child;
 }

@@ -25,6 +25,7 @@ class MobileGenerationController extends ChangeNotifier
         mobileShellOverlayNotifierProvider.notifier,
       ) {
     WidgetsBinding.instance.addObserver(this);
+    keyboardVisible = _viewKeyboardVisible();
   }
 
   final WidgetRef ref;
@@ -38,14 +39,25 @@ class MobileGenerationController extends ChangeNotifier
   bool keyboardVisible = false;
   bool _disposed = false;
 
+  /// Metrics change on every frame of the keyboard animation; the page only
+  /// cares when the keyboard appears or goes away. Rebuilding on each frame
+  /// rebuilt the whole workbench 60-120 times a second.
   @override
   void didChangeMetrics() {
-    if (!_disposed) notifyListeners();
+    if (_disposed) return;
+    final visible = _viewKeyboardVisible();
+    if (visible == keyboardVisible) return;
+    keyboardVisible = visible;
+    notifyListeners();
   }
 
-  void updateKeyboardVisibility(bool visible) {
-    keyboardVisible = visible;
-  }
+  /// Read from the window itself: an outer Scaffold may already have removed
+  /// the inset from this page's MediaQuery.
+  static bool _viewKeyboardVisible() => WidgetsBinding
+      .instance
+      .platformDispatcher
+      .views
+      .any((view) => view.viewInsets.bottom > 0);
 
   void selectTab(MobileWorkbenchTab tab) {
     FocusManager.instance.primaryFocus?.unfocus();

@@ -99,12 +99,9 @@ class _MobileGenerationLayoutState
     return AnimatedBuilder(
       animation: _controller,
       builder: (context, _) {
-        // The outer navigation Scaffold may consume the descendant MediaQuery
-        // inset, so IME visibility intentionally uses both sources.
-        final keyboardVisible =
-            MediaQuery.viewInsetsOf(context).bottom > 0 ||
-            View.of(context).viewInsets.bottom > 0;
-        _controller.updateKeyboardVisibility(keyboardVisible);
+        // The controller reports only show/hide changes, not every frame of
+        // the keyboard animation.
+        final keyboardVisible = _controller.keyboardVisible;
         final isLauncherGenerating = batchStatus.isGenerating;
         final isGenerating = isLauncherGenerating || isKritaGenerating;
         final data = MobileGenerationViewData(
