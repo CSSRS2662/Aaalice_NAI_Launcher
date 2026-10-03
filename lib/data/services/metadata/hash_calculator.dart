@@ -5,6 +5,9 @@ import 'dart:typed_data';
 import 'package:crypto/crypto.dart';
 
 import '../../../core/utils/app_logger.dart';
+import '../../../core/utils/isolate_pool.dart';
+
+String _sha256Hex(Uint8List bytes) => sha256.convert(bytes).toString();
 
 /// 文件哈希计算器
 ///
@@ -18,9 +21,14 @@ class FileHashCalculator {
   factory FileHashCalculator() => _instance;
   FileHashCalculator._internal();
 
+  /// 小于此大小的缓冲区同步计算，起 isolate 的开销比哈希本身更大。
+  static const int backgroundHashThresholdBytes = 64 * 1024;
+
   final _pathToHashMap = <String, String>{};
   final _hashToPathsMap = <String, Set<String>>{};
   final _pendingHashFutures = <String, Future<String>>{};
+  final _bytesHashes = Expando<String>('contentHash');
+  final _pendingBytesHashes = Expando<Future<String>>('pendingContentHash');
   final _semaphore = _Semaphore(3);
 
   int _hashComputeCount = 0;
@@ -54,8 +62,36 @@ class FileHashCalculator {
   }
 
   /// 从字节数据计算哈希（同步）
+  ///
+  /// 结果按缓冲区实例缓存：出图后保存、分区记录和元数据解析拿到的是同一份
+  /// 字节，只算一次。调用方不得在取哈希后原地改写缓冲区。
   String calculateFromBytes(Uint8List bytes) {
-    return sha256.convert(bytes).toString();
+    final cached = _bytesHashes[bytes];
+    if (cached != null) return cached;
+    final hash = _sha256Hex(bytes);
+    _bytesHashes[bytes] = hash;
+    return hash;
+  }
+
+  /// 在后台 isolate 计算字节哈希。整张 PNG 的 SHA-256 在手机上要占一到两帧，
+  /// 不能放在 UI 线程；小缓冲区直接同步计算。同一缓冲区的并发请求共享一次计算。
+  Future<String> calculateFromBytesAsync(Uint8List bytes) {
+    final cached = _bytesHashes[bytes];
+    if (cached != null) return Future.value(cached);
+    if (bytes.length < backgroundHashThresholdBytes) {
+      return Future.value(calculateFromBytes(bytes));
+    }
+    final pending = _pendingBytesHashes[bytes];
+    if (pending != null) return pending;
+    final future = ComputeGate()
+        .runCompute(_sha256Hex, bytes, debugLabel: 'content_hash')
+        .then((hash) {
+          _bytesHashes[bytes] = hash;
+          return hash;
+        })
+        .whenComplete(() => _pendingBytesHashes[bytes] = null);
+    _pendingBytesHashes[bytes] = future;
+    return future;
   }
 
   /// 注册路径到哈希的映射
@@ -122,7 +158,7 @@ class FileHashCalculator {
     try {
       final file = File(filePath);
       final bytes = await file.readAsBytes();
-      final hash = sha256.convert(bytes).toString();
+      final hash = await calculateFromBytesAsync(bytes);
 
       // 更新映射
       _pathToHashMap[filePath] = hash;

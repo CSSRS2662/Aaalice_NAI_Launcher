@@ -88,8 +88,8 @@ class FixedTagUsageRecordStore {
     final calculator = FileHashCalculator();
     try {
       await copy(
-        fromHash: calculator.calculateFromBytes(sourceBytes),
-        toHash: calculator.calculateFromBytes(outputBytes),
+        fromHash: await calculator.calculateFromBytesAsync(sourceBytes),
+        toHash: await calculator.calculateFromBytesAsync(outputBytes),
       );
     } catch (error, stack) {
       AppLogger.e(

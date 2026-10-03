@@ -76,7 +76,7 @@ class PromptGroupRecordStore {
     for (final bytes in images) {
       try {
         await record(
-          contentHash: hashes.calculateFromBytes(bytes),
+          contentHash: await hashes.calculateFromBytesAsync(bytes),
           snapshot: snapshot,
         );
       } catch (error, stack) {

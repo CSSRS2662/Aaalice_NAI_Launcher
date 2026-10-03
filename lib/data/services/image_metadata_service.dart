@@ -405,7 +405,7 @@ class ImageMetadataService {
 
   /// 从字节数组获取元数据
   Future<NaiImageMetadata?> getMetadataFromBytes(Uint8List bytes) async {
-    final hash = _hashCalculator.calculateFromBytes(bytes);
+    final hash = await _hashCalculator.calculateFromBytesAsync(bytes);
     return _withRecordedFixedTags(
       hash,
       await _resolveMetadataFromBytes(bytes, hash: hash),
@@ -467,7 +467,7 @@ class ImageMetadataService {
   Future<MetadataParseResult> getMetadataParseResultFromBytes(
     Uint8List bytes,
   ) async {
-    final hash = _hashCalculator.calculateFromBytes(bytes);
+    final hash = await _hashCalculator.calculateFromBytesAsync(bytes);
     final cached =
         _cacheManager.getFromMemory(hash) ??
         _cacheManager.getFromPersistent(hash);
@@ -797,7 +797,15 @@ class ImageMetadataService {
         return null;
       }
 
-      final result = UnifiedMetadataParser.parseFromImage(bytes);
+      // 整张图可能要走隐写解码，大图与 getMetadataParseResultFromBytes 一样放后台。
+      final result =
+          bytes.length < FileHashCalculator.backgroundHashThresholdBytes
+          ? UnifiedMetadataParser.parseFromImage(bytes)
+          : await ComputeGate().runCompute(
+              UnifiedMetadataParser.parseFromImage,
+              bytes,
+              debugLabel: 'image_metadata_from_bytes',
+            );
       final metadata = result.success ? result.metadata : null;
 
       if (metadata != null && metadata.hasData) {
