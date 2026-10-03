@@ -9,7 +9,11 @@ import 'package:nai_launcher/core/storage/local_storage_service.dart';
 import 'package:nai_launcher/data/models/image/image_params.dart';
 import 'package:nai_launcher/l10n/app_localizations.dart';
 import 'package:nai_launcher/presentation/providers/image_generation_provider.dart';
+import 'package:nai_launcher/data/models/user/user_subscription.dart';
+import 'package:nai_launcher/presentation/providers/cost_estimate_provider.dart';
+import 'package:nai_launcher/presentation/providers/subscription_provider.dart';
 import 'package:nai_launcher/presentation/screens/generation/mobile_workbench/mobile_generation_header.dart';
+import 'package:nai_launcher/presentation/widgets/anlas/anlas_icon.dart';
 import 'package:nai_launcher/presentation/themes/app_theme.dart';
 
 import '../../../helpers/memory_local_storage.dart';
@@ -162,67 +166,83 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('模型与尺寸并排：空间够时完整显示，窄屏与 3 倍字号下一起收缩不溢出', (tester) async {
+  testWidgets('顶栏：模型与尺寸相邻在左，额度胶囊贴右；放不下时先去箭头再横向滚动', (tester) async {
     final container = ProviderContainer(
       overrides: [
         generationParamsNotifierProvider.overrideWith(
           _FakeGenerationParamsNotifier.new,
         ),
         localStorageServiceProvider.overrideWithValue(MemoryLocalStorage()),
+        subscriptionNotifierProvider.overrideWith(
+          _FakeSubscriptionNotifier.new,
+        ),
+        estimatedCostProvider.overrideWith((ref) => 0),
       ],
     );
     addTearDown(container.dispose);
+    final model = find.byKey(const ValueKey('generation-mobile-model-action'));
+    final size = find.byKey(const ValueKey('generation-mobile-size-action'));
+    final quota = find.byKey(const ValueKey('generation-mobile-quota'));
+    final scroll = find.byKey(
+      const ValueKey('generation-mobile-header-scroll'),
+    );
 
-    for (final (width, scale) in [
-      (360.0, 1.0),
-      (200.0, 1.0),
-      (140.0, 1.0),
-      (360.0, 3.0),
-      (200.0, 3.0),
-    ]) {
+    Future<void> pump(double width, double scale) async {
       await tester.pumpWidget(
         UncontrolledProviderScope(
           container: container,
           child: _app(
-            SizedBox(width: width, child: const MobileGenerationHeaderMenus()),
+            SizedBox(
+              width: width,
+              child: MediaQuery.withClampedTextScaling(
+                maxScaleFactor: MobileGenerationHeader.maxTextScale,
+                child: const MobileGenerationHeaderBar(),
+              ),
+            ),
             textScale: scale,
           ),
         ),
       );
       await tester.pumpAndSettle();
-      final model = find.byKey(
-        const ValueKey('generation-mobile-model-action'),
-      );
-      final size = find.byKey(const ValueKey('generation-mobile-size-action'));
-      expect(model, findsOne, reason: '$width@$scale');
-      expect(size, findsOne, reason: '$width@$scale');
-      expect(
-        tester.getRect(size).right,
-        lessThanOrEqualTo(width + 0.01),
-        reason: '$width@$scale',
-      );
-      expect(
-        tester.getRect(model).right,
-        lessThanOrEqualTo(tester.getRect(size).left),
-        reason: '$width@$scale',
-      );
-      expect(tester.takeException(), isNull, reason: '$width@$scale');
     }
 
-    // With room for both, neither label is cut.
-    await tester.pumpWidget(
-      UncontrolledProviderScope(
-        container: container,
-        child: _app(
-          const SizedBox(width: 360, child: MobileGenerationHeaderMenus()),
-        ),
-      ),
+    // The test font draws every glyph one em wide, so these widths are wider
+    // than a phone needs. Roomy: everything in full, quota at the far end.
+    await pump(520, 1);
+    expect(scroll, findsNothing);
+    expect(
+      tester.getRect(size).left - tester.getRect(model).right,
+      closeTo(6, 0.1),
     );
-    await tester.pumpAndSettle();
-    for (final label in ['V5 Full', '832×1216']) {
-      final paragraph = tester.renderObject<RenderParagraph>(find.text(label));
-      expect(paragraph.didExceedMaxLines, isFalse, reason: label);
+    expect(tester.getRect(quota).right, closeTo(520, 0.1));
+    expect(find.byIcon(Icons.expand_more_rounded), findsNWidgets(2));
+    for (final text in ['V5 Full', '832×1216', '93%', '9,993']) {
+      final paragraph = tester.renderObject<RenderParagraph>(find.text(text));
+      expect(paragraph.didExceedMaxLines, isFalse, reason: text);
     }
+    expect(
+      find.descendant(of: quota, matching: find.byType(AnlasIcon)),
+      findsOne,
+    );
+    for (final pill in [model, size, quota]) {
+      expect(tester.getSize(pill).height, 44);
+    }
+    expect(tester.takeException(), isNull);
+
+    // Tighter: chevrons go first, the row still fits.
+    await pump(470, 1);
+    expect(scroll, findsNothing);
+    expect(find.byIcon(Icons.expand_more_rounded), findsNothing);
+    expect(tester.getRect(quota).right, closeTo(470, 0.1));
+    expect(tester.takeException(), isNull);
+
+    // Large text: the row scrolls instead of cutting labels.
+    await pump(320, 3);
+    expect(scroll, findsOne);
+    for (final pill in [model, size, quota]) {
+      expect(tester.getSize(pill).height, 44);
+    }
+    expect(tester.takeException(), isNull);
   });
 }
 
@@ -264,4 +284,20 @@ class _FakeGenerationParamsNotifier extends GenerationParamsNotifier {
   }) {
     state = state.copyWith(model: model);
   }
+}
+
+class _FakeSubscriptionNotifier extends SubscriptionNotifier {
+  @override
+  SubscriptionState build() => const SubscriptionState.loaded(
+    UserSubscription(
+      tier: 3,
+      active: true,
+      trainingStepsLeft: TrainingStepsInfo(fixedTrainingStepsLeft: 9993),
+      usage: OpusUsageInfo(
+        percent: 93,
+        isNegative: false,
+        timeUntilNextPercent: 600,
+      ),
+    ),
+  );
 }

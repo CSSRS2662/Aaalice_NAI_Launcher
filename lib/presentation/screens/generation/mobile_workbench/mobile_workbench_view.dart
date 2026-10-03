@@ -25,7 +25,7 @@ class MobileWorkbenchView extends StatefulWidget {
     this.swipeEnabled = true,
     this.referenceCount = 0,
     this.hasUnseenResult = false,
-    this.tabBarPadding = const EdgeInsets.fromLTRB(12, 4, 12, 8),
+    this.tabBarPadding = const EdgeInsets.fromLTRB(12, 2, 12, 8),
   });
 
   final List<MobileWorkbenchTab> tabs;

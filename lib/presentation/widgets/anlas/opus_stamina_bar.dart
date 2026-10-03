@@ -47,10 +47,23 @@ OpusUsageInfo? watchVisibleOpusUsage(WidgetRef ref) {
   return limited ? usage : null;
 }
 
-/// 生成按钮上方的体力读数：闪电图标、轨道与剩余百分比，点按打开详情。
+/// 剩余体力的文字读数，“耗尽”时为状态文字。
+String opusStaminaPercentText(BuildContext context, OpusStaminaLevel level) =>
+    level.exhausted
+    ? context.l10n.stamina_stateExhausted
+    : '${level.percent.round()}%';
+
+/// 主界面的体力读数：闪电图标与剩余百分比，不画轨道；点按打开详情。
 /// 不显示时（非 Opus、无额度数据或模型不受限）不占空间。
-class OpusStaminaBar extends ConsumerWidget {
-  const OpusStaminaBar({super.key});
+class OpusStaminaIndicator extends ConsumerWidget {
+  const OpusStaminaIndicator({super.key, this.textStyle});
+
+  /// Size and family of the percent; color and weight follow the level.
+  final TextStyle? textStyle;
+
+  static const double iconSize = 16;
+  static const double iconGap = 2;
+  static const double horizontalPadding = 10;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -59,10 +72,8 @@ class OpusStaminaBar extends ConsumerWidget {
     final level = OpusStaminaLevel.from(usage);
     final theme = Theme.of(context);
     final colors = theme.colorScheme;
-    final percentText = level.exhausted
-        ? context.l10n.stamina_stateExhausted
-        : '${level.percent.round()}%';
-    final accent = level.exhausted || level.low ? colors.error : colors.primary;
+    final percentText = opusStaminaPercentText(context, level);
+    final warning = level.exhausted || level.low;
     return Semantics(
       button: true,
       label: context.l10n.stamina_barSemantics(percentText),
@@ -75,20 +86,24 @@ class OpusStaminaBar extends ConsumerWidget {
         child: ConstrainedBox(
           constraints: const BoxConstraints(minHeight: 44),
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 4),
+            padding: const EdgeInsets.symmetric(horizontal: horizontalPadding),
             child: Row(
+              mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(Icons.bolt_rounded, size: 18, color: accent),
-                const SizedBox(width: 6),
-                Expanded(child: OpusStaminaTrack(level: level, height: 6)),
-                const SizedBox(width: 10),
+                Icon(
+                  Icons.bolt_rounded,
+                  size: iconSize,
+                  color: warning ? colors.error : colors.primary,
+                ),
+                const SizedBox(width: iconGap),
                 Text(
                   percentText,
                   key: const ValueKey('opus-stamina-percent'),
                   maxLines: 1,
-                  style: theme.textTheme.labelLarge?.copyWith(
+                  softWrap: false,
+                  style: (textStyle ?? theme.textTheme.labelLarge)?.copyWith(
                     color: level.exhausted ? colors.error : colors.onSurface,
-                    fontWeight: FontWeight.w700,
+                    fontWeight: FontWeight.w600,
                     fontFeatures: const [FontFeature.tabularFigures()],
                   ),
                 ),

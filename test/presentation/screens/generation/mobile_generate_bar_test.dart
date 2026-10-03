@@ -17,26 +17,19 @@ void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
   GoogleFonts.config.allowRuntimeFetching = false;
 
-  final strip = find.byKey(const ValueKey('generation-mobile-status-strip'));
   final generate = find.byKey(const ValueKey('generation-mobile-generate'));
+  final bar = find.byKey(const ValueKey('generation-mobile-bottom-bar'));
 
-  testWidgets('额度条含体力百分比与余额；智能体、队列在生成按钮左侧', (tester) async {
+  testWidgets('底栏只有一行：智能体、队列在生成按钮左侧，额度不在底栏', (tester) async {
     for (final (width, scale) in [(390.0, 1.0), (320.0, 1.0), (320.0, 3.0)]) {
       await tester.binding.setSurfaceSize(Size(width, 800));
       await tester.pumpWidget(_subject(textScale: scale));
       await tester.pump();
       final reason = '$width@$scale';
 
-      expect(
-        find.descendant(of: strip, matching: find.text('86%')),
-        findsOne,
-        reason: reason,
-      );
-      expect(
-        find.descendant(of: strip, matching: find.text('9,993')),
-        findsOne,
-        reason: reason,
-      );
+      // Stamina and balance moved to the header.
+      expect(find.byKey(const ValueKey('opus-stamina-bar')), findsNothing);
+      expect(find.text('9,993'), findsNothing);
 
       final generateRect = tester.getRect(generate);
       var previousRight = 0.0;
@@ -53,19 +46,14 @@ void main() {
         previousRight = rect.right;
       }
       expect(generateRect.right, lessThanOrEqualTo(width));
+      expect(
+        tester.getRect(bar).height - generateRect.height,
+        lessThanOrEqualTo(18 + 0.1),
+        reason: 'only padding around the one action row',
+      );
       expect(tester.takeException(), isNull, reason: reason);
     }
     await tester.binding.setSurfaceSize(null);
-  });
-
-  testWidgets('非 V5 时额度条只显示余额', (tester) async {
-    await tester.binding.setSurfaceSize(const Size(390, 800));
-    addTearDown(() => tester.binding.setSurfaceSize(null));
-    await tester.pumpWidget(_subject(model: ImageModels.animeDiffusionV45Full));
-    await tester.pump();
-    expect(find.byKey(const ValueKey('opus-stamina-bar')), findsNothing);
-    expect(find.descendant(of: strip, matching: find.text('9,993')), findsOne);
-    expect(tester.takeException(), isNull);
   });
 }
 

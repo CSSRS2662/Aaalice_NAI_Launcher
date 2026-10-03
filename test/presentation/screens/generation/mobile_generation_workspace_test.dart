@@ -39,10 +39,16 @@ void main() {
     for (final label in ['图像', '提示词', '参数', '参考', '历史']) {
       expect(find.text(label), findsOneWidget);
     }
+    // Same height as the header pills; each tab is a full-height target.
     expect(
-      tester.getSize(find.byKey(const ValueKey('mobile-workbench-tab-bar'))),
-      isA<Size>().having((size) => size.height, 'height', greaterThan(44)),
+      tester
+          .getSize(find.byKey(const ValueKey('mobile-workbench-tab-bar')))
+          .height,
+      44,
     );
+    for (final tab in MobileWorkbenchTab.values) {
+      expect(tester.getSize(tabFinder(tab)).height, 44);
+    }
     for (final tab in MobileWorkbenchTab.values) {
       await tester.tap(tabFinder(tab));
     }
@@ -83,8 +89,10 @@ void main() {
             for (final tab in MobileWorkbenchTab.values)
               tester.getRect(tabFinder(tab)),
           ];
-          expect(segments.first.left, closeTo(bar.left + 4, 0.5));
-          expect(segments.last.right, closeTo(bar.right - 4, 0.5));
+          // Tabs span the whole track; only the thumb is inset.
+          expect(segments.first.left, closeTo(bar.left, 0.5));
+          expect(segments.last.right, closeTo(bar.right, 0.5));
+          expect(bar.height, 44);
           for (final segment in segments) {
             expect(segment.width, closeTo(segments.first.width, 0.01));
           }

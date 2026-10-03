@@ -41,7 +41,9 @@ class MobileWorkbenchTabBar extends StatelessWidget {
   /// [selected] 并以动画过渡。
   final ValueListenable<double>? position;
 
-  static const double _padding = 4;
+  /// Gap between the track edge and the selected thumb. Taps land on the
+  /// whole track height, so each tab stays a 44 dp target.
+  static const double _thumbInset = 4;
 
   static String label(BuildContext context, MobileWorkbenchTab tab) {
     final l10n = context.l10n;
@@ -68,7 +70,8 @@ class MobileWorkbenchTabBar extends StatelessWidget {
     final appTheme = theme.appTheme;
     final scaler = MediaQuery.textScalerOf(context);
     final selectedIndex = tabs.indexOf(selected).clamp(0, tabs.length - 1);
-    final segmentHeight = (scaler.scale(14) * 1.4 + 16).clamp(44.0, 64.0);
+    // 44 dp up to the 1.6x text cap, the same height as the header pills.
+    final segmentHeight = (scaler.scale(14) * 1.4 + 12).clamp(44.0, 64.0);
     final light = colors.brightness == Brightness.light;
     final radius = appTheme.controlRadius;
     final thumb = DecoratedBox(
@@ -94,10 +97,9 @@ class MobileWorkbenchTabBar extends StatelessWidget {
       label: context.l10n.mobileWorkbench_tabsLabel,
       child: Container(
         key: const ValueKey('mobile-workbench-tab-bar'),
-        padding: const EdgeInsets.all(_padding),
         decoration: BoxDecoration(
           color: controlSurfaceColor(colors),
-          borderRadius: BorderRadius.circular(radius + _padding),
+          borderRadius: BorderRadius.circular(radius + _thumbInset),
         ),
         child: SizedBox(
           height: segmentHeight,
@@ -111,7 +113,10 @@ class MobileWorkbenchTabBar extends StatelessWidget {
                     selectedIndex: selectedIndex,
                     segmentWidth: segmentWidth,
                     lastIndex: tabs.length - 1,
-                    child: thumb,
+                    child: Padding(
+                      padding: const EdgeInsets.all(_thumbInset),
+                      child: thumb,
+                    ),
                   ),
                   Row(
                     children: [

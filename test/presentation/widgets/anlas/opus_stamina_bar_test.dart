@@ -30,7 +30,7 @@ void main() {
     }
   });
 
-  testWidgets('主界面显示体力条与剩余百分比，命中区不小于 44', (tester) async {
+  testWidgets('主界面只显示闪电与剩余百分比，不画轨道，命中区不小于 44', (tester) async {
     await tester.pumpWidget(_subject(_subscription(tier: 3, percent: 86)));
     await tester.pump();
 
@@ -40,10 +40,11 @@ void main() {
       findsOneWidget,
     );
     expect(find.descendant(of: bar, matching: find.text('86%')), findsOne);
-    final fill = tester.widget<FractionallySizedBox>(
-      find.byKey(const ValueKey('opus-stamina-fill')),
+    expect(
+      find.descendant(of: bar, matching: find.byIcon(Icons.bolt_rounded)),
+      findsOne,
     );
-    expect(fill.widthFactor, closeTo(0.86, 1e-9));
+    expect(find.byKey(const ValueKey('opus-stamina-fill')), findsNothing);
     expect(
       tester.getSemantics(bar),
       isSemantics(
@@ -55,16 +56,25 @@ void main() {
     expect(tester.getSize(bar).height, greaterThanOrEqualTo(44));
   });
 
-  testWidgets('超出上限时填满轨道并在 100% 处画分界线', (tester) async {
+  testWidgets('超出上限时显示实际百分比，详情轨道在 100% 处画分界线', (tester) async {
+    await tester.binding.setSurfaceSize(const Size(390, 844));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
     await tester.pumpWidget(_subject(_subscription(tier: 3, percent: 130)));
     await tester.pump();
+    expect(find.descendant(of: bar, matching: find.text('130%')), findsOne);
 
+    await tester.tap(bar);
+    await tester.pumpAndSettle();
+    final details = find.byKey(const ValueKey('opus-stamina-details'));
     final fill = tester.widget<FractionallySizedBox>(
-      find.byKey(const ValueKey('opus-stamina-fill')),
+      find.descendant(
+        of: details,
+        matching: find.byKey(const ValueKey('opus-stamina-fill')),
+      ),
     );
     expect(fill.widthFactor, 1);
     final capLine = find.descendant(
-      of: bar,
+      of: details,
       matching: find.byWidgetPredicate(
         (widget) => widget is SizedBox && widget.width == 2,
       ),
@@ -105,10 +115,6 @@ void main() {
     );
     await tester.pump();
 
-    final fill = tester.widget<FractionallySizedBox>(
-      find.byKey(const ValueKey('opus-stamina-fill')),
-    );
-    expect(fill.widthFactor, 0);
     expect(find.descendant(of: bar, matching: find.text('已耗尽')), findsOne);
     expect(
       tester.getSemantics(bar),
@@ -121,6 +127,10 @@ void main() {
 
     await tester.tap(bar);
     await tester.pumpAndSettle();
+    final fill = tester.widget<FractionallySizedBox>(
+      find.byKey(const ValueKey('opus-stamina-fill')),
+    );
+    expect(fill.widthFactor, 0);
     expect(find.text('0%'), findsOneWidget);
     expect(find.text('体力已耗尽，V5 生成改按 Anlas 计费；体力自动回充后恢复免费生成。'), findsOneWidget);
     expect(find.text('30 Anlas'), findsOneWidget);
@@ -170,7 +180,10 @@ Widget _subject(
     home: const Scaffold(
       body: Align(
         alignment: Alignment.bottomCenter,
-        child: Padding(padding: EdgeInsets.all(16), child: OpusStaminaBar()),
+        child: Padding(
+          padding: EdgeInsets.all(16),
+          child: OpusStaminaIndicator(),
+        ),
       ),
     ),
   ),

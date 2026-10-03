@@ -10,16 +10,24 @@ import '../../../themes/core/layered_surface_style.dart';
 import '../../../themes/theme_extension.dart';
 import '../../../widgets/common/model_family_icon.dart';
 import '../widgets/saved_resolution_presets.dart';
+import 'mobile_quota_pill.dart';
 
-/// 生成页顶栏：只有模型（左）与尺寸（右）两个菜单，点按直接切换。移动端只在
-/// 这里切换模型，参数页不再重复提供；输入与保存自定义尺寸仍在参数页。余额、
-/// 智能体与队列在底栏。
+/// 生成页顶栏：左侧模型与尺寸两个菜单相邻，点按直接切换；右端为额度胶囊
+/// （V5 体力与 Anlas 余额）。移动端只在这里切换模型，参数页不再重复提供；
+/// 输入与保存自定义尺寸仍在参数页。智能体与队列在底栏。
 class MobileGenerationHeader extends StatelessWidget
     implements PreferredSizeWidget {
   const MobileGenerationHeader({super.key});
 
+  /// 44 dp pills with a 4 dp margin above and below.
+  static const double toolbarHeight = 52;
+
+  /// Text in the header scales at most this much, so every pill stays 44 dp
+  /// tall like the workbench tabs.
+  static const double maxTextScale = 1.6;
+
   @override
-  Size get preferredSize => const Size.fromHeight(kToolbarHeight);
+  Size get preferredSize => const Size.fromHeight(toolbarHeight);
 
   /// “NAI Diffusion V5 (Full)” → “V5 Full”，保留非官方前缀的模型全名。
   static String shortModelLabel(String model) =>
@@ -35,20 +43,25 @@ class MobileGenerationHeader extends StatelessWidget
     return AppBar(
       key: const ValueKey('generation-mobile-header'),
       automaticallyImplyLeading: false,
+      toolbarHeight: toolbarHeight,
       titleSpacing: 12,
-      title: const MobileGenerationHeaderMenus(),
+      title: MediaQuery.withClampedTextScaling(
+        maxScaleFactor: maxTextScale,
+        child: const MobileGenerationHeaderBar(),
+      ),
       actions: const [SizedBox(width: 12)],
     );
   }
 }
 
-/// Model at the start, size at the end. Each pill's share follows its natural
-/// width, so both show in full when they fit and shrink together when they
-/// don't.
-class MobileGenerationHeaderMenus extends ConsumerWidget {
-  const MobileGenerationHeaderMenus({super.key});
+/// Model and size side by side at the start, the quota pill at the end. When
+/// the row is short of room the menu chevrons go first; past that the row
+/// scrolls sideways instead of cutting any text.
+class MobileGenerationHeaderBar extends ConsumerWidget {
+  const MobileGenerationHeaderBar({super.key});
 
-  static const double _gap = 6;
+  static const double _menuGap = 6;
+  static const double _minQuotaGap = 8;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -62,34 +75,57 @@ class MobileGenerationHeaderMenus extends ConsumerWidget {
     );
     final modelLabel = MobileGenerationHeader.shortModelLabel(model);
     final sizeLabel = MobileGenerationHeader.sizeLabel(size.$1, size.$2);
-    return Row(
-      children: [
-        Flexible(
-          flex: _HeaderPill.flexFor(context, modelLabel),
-          child: Align(
-            alignment: AlignmentDirectional.centerStart,
-            child: MobileModelMenu(label: modelLabel),
+    final style = Theme.of(context).textTheme.titleSmall;
+    final quotaWidth = MobileQuotaPill.naturalWidth(context, ref, style);
+    final labelsWidth =
+        _HeaderPill.labelWidth(context, modelLabel) +
+        _HeaderPill.labelWidth(context, sizeLabel);
+    double rowWidth({required bool chevrons}) =>
+        labelsWidth +
+        _HeaderPill.chromeWidth(chevron: chevrons) * 2 +
+        _menuGap +
+        _minQuotaGap +
+        quotaWidth;
+
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        // A little slack keeps rounding from tipping the row over.
+        final room = constraints.maxWidth - 2;
+        final chevrons = rowWidth(chevrons: true) <= room;
+        final fits = chevrons || rowWidth(chevrons: false) <= room;
+        final menus = [
+          MobileModelMenu(label: modelLabel, showChevron: chevrons),
+          const SizedBox(width: _menuGap),
+          MobileSizeMenu(label: sizeLabel, showChevron: chevrons),
+        ];
+        final quota = MobileQuotaPill(textStyle: style);
+        if (fits) {
+          return Row(children: [...menus, const Spacer(), quota]);
+        }
+        return SingleChildScrollView(
+          key: const ValueKey('generation-mobile-header-scroll'),
+          scrollDirection: Axis.horizontal,
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ...menus,
+              const SizedBox(width: _minQuotaGap),
+              quota,
+            ],
           ),
-        ),
-        const SizedBox(width: _gap),
-        Flexible(
-          flex: _HeaderPill.flexFor(context, sizeLabel),
-          child: Align(
-            alignment: AlignmentDirectional.centerEnd,
-            child: MobileSizeMenu(label: sizeLabel),
-          ),
-        ),
-      ],
+        );
+      },
     );
   }
 }
 
 /// 模型下拉菜单：列出全部可见模型，当前模型带勾选标记。
 class MobileModelMenu extends ConsumerWidget {
-  const MobileModelMenu({super.key, this.label});
+  const MobileModelMenu({super.key, this.label, this.showChevron = true});
 
   /// Pill text; defaults to the short name of the current model.
   final String? label;
+  final bool showChevron;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -128,6 +164,7 @@ class MobileModelMenu extends ConsumerWidget {
       builder: (context, controller, _) => _HeaderPill(
         key: const ValueKey('generation-mobile-model-action'),
         label: pillLabel,
+        showChevron: showChevron,
         semanticLabel: context.l10n.mobileWorkbench_selectModel(pillLabel),
         open: controller.isOpen,
         onPressed: () =>
@@ -139,10 +176,11 @@ class MobileModelMenu extends ConsumerWidget {
 
 /// 尺寸下拉菜单：按分组列出官方预设与参数页保存的自定义尺寸，只能选择。
 class MobileSizeMenu extends ConsumerStatefulWidget {
-  const MobileSizeMenu({super.key, this.label});
+  const MobileSizeMenu({super.key, this.label, this.showChevron = true});
 
   /// Pill text; defaults to the current width×height.
   final String? label;
+  final bool showChevron;
 
   @override
   ConsumerState<MobileSizeMenu> createState() => _MobileSizeMenuState();
@@ -236,6 +274,7 @@ class _MobileSizeMenuState extends ConsumerState<MobileSizeMenu> {
       builder: (context, controller, _) => _HeaderPill(
         key: const ValueKey('generation-mobile-size-action'),
         label: pillLabel,
+        showChevron: widget.showChevron,
         semanticLabel: l10n.mobileWorkbench_selectSize(pillLabel),
         open: controller.isOpen,
         onPressed: () =>
@@ -321,18 +360,24 @@ class _HeaderPill extends StatelessWidget {
     required this.semanticLabel,
     required this.open,
     required this.onPressed,
+    this.showChevron = true,
   });
 
   final String label;
   final String semanticLabel;
   final bool open;
   final VoidCallback onPressed;
+  final bool showChevron;
 
-  // Horizontal padding, gap and chevron around the label.
-  static const double _chromeWidth = 14 + 4 + 18 + 10;
+  static const double _start = 12;
+  static const double _endWithChevron = 6;
+  static const double _chevron = 16;
 
-  /// Flex weight proportional to the pill's natural width.
-  static int flexFor(BuildContext context, String label) {
+  /// Horizontal space around the label.
+  static double chromeWidth({required bool chevron}) =>
+      _start + (chevron ? _chevron + _endWithChevron : _start);
+
+  static double labelWidth(BuildContext context, String label) {
     final painter = TextPainter(
       text: TextSpan(
         text: label,
@@ -342,9 +387,9 @@ class _HeaderPill extends StatelessWidget {
       textDirection: Directionality.of(context),
       maxLines: 1,
     )..layout();
-    final width = painter.width + _chromeWidth;
+    final width = painter.width;
     painter.dispose();
-    return (width * 10).round().clamp(1, 1 << 20);
+    return width;
   }
 
   @override
@@ -366,45 +411,35 @@ class _HeaderPill extends StatelessWidget {
           borderRadius: radius,
           child: ConstrainedBox(
             constraints: const BoxConstraints(minHeight: 44),
-            // A squeezed pill (narrow phone, large text) drops the chevron
-            // and padding first; the label then ellipsizes.
-            child: LayoutBuilder(
-              builder: (context, constraints) {
-                final roomy = constraints.maxWidth >= _chromeWidth + 24;
-                return Padding(
-                  padding: roomy
-                      ? const EdgeInsets.fromLTRB(14, 6, 10, 6)
-                      : const EdgeInsets.symmetric(horizontal: 6, vertical: 6),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Flexible(
-                        child: Text(
-                          label,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: theme.textTheme.titleSmall,
-                        ),
-                      ),
-                      if (roomy) ...[
-                        const SizedBox(width: 4),
-                        AnimatedRotation(
-                          turns: open ? 0.5 : 0,
-                          duration: MediaQuery.disableAnimationsOf(context)
-                              ? Duration.zero
-                              : theme.appTheme.fastDuration,
-                          curve: theme.appTheme.standardCurve,
-                          child: Icon(
-                            Icons.expand_more_rounded,
-                            size: 18,
-                            color: colors.onSurfaceVariant,
-                          ),
-                        ),
-                      ],
-                    ],
+            child: Padding(
+              padding: EdgeInsetsDirectional.only(
+                start: _start,
+                end: showChevron ? _endWithChevron : _start,
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    label,
+                    maxLines: 1,
+                    softWrap: false,
+                    style: theme.textTheme.titleSmall,
                   ),
-                );
-              },
+                  if (showChevron)
+                    AnimatedRotation(
+                      turns: open ? 0.5 : 0,
+                      duration: MediaQuery.disableAnimationsOf(context)
+                          ? Duration.zero
+                          : theme.appTheme.fastDuration,
+                      curve: theme.appTheme.standardCurve,
+                      child: Icon(
+                        Icons.expand_more_rounded,
+                        size: _chevron,
+                        color: colors.onSurfaceVariant,
+                      ),
+                    ),
+                ],
+              ),
             ),
           ),
         ),

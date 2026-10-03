@@ -13,10 +13,9 @@ import '../../../widgets/common/themed_button.dart';
 import '../mobile_generation_view_data.dart';
 import '../widgets/generation_controls/generate_button.dart';
 import '../widgets/generation_controls/random_mode_toggle.dart';
-import 'mobile_generation_status_strip.dart';
 
-/// 生成页底栏：额度条（V5 体力与 Anlas 余额）+ 抽卡开关、加入队列、智能体、
-/// 队列与生成按钮。
+/// 生成页底栏：抽卡开关、加入队列、智能体、队列与生成按钮（V5 体力与 Anlas
+/// 余额在顶栏）。
 ///
 /// 各页签共用同一个生成入口；进度直接填充在生成按钮内部。
 class MobileGenerateBar extends StatelessWidget {
@@ -102,13 +101,11 @@ class MobileGenerateBar extends StatelessWidget {
         key: const ValueKey('generation-mobile-bottom-bar'),
         color: theme.colorScheme.surface,
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(12, 4, 12, 10),
+          padding: const EdgeInsets.fromLTRB(12, 8, 12, 10),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              const MobileGenerationStatusStrip(),
-              const SizedBox(height: 8),
               Row(
                 key: const ValueKey('generation-mobile-action-row'),
                 children: [
