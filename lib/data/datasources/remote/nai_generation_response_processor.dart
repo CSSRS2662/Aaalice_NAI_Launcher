@@ -15,6 +15,7 @@ import '../../../core/utils/nai_api_utils.dart';
 import '../../../core/utils/zip_utils.dart';
 import '../../models/image/image_params.dart';
 import '../../models/image/image_stream_chunk.dart';
+import 'length_prefixed_frame_reader.dart';
 
 class NaiGenerationResponseContext {
   const NaiGenerationResponseContext({
@@ -99,7 +100,7 @@ class NaiGenerationResponseProcessor {
     NaiGenerationResponseContext context, {
     required CancelToken cancelToken,
   }) async* {
-    final buffer = <int>[];
+    final buffer = LengthPrefixedFrameReader();
     final completedSamples = <int>{};
     final expectedSamples = context.originalParams.nSamples <= 0
         ? 1
@@ -111,15 +112,13 @@ class NaiGenerationResponseProcessor {
         yield ImageStreamChunk.error('Cancelled');
         return;
       }
-      buffer.addAll(chunk);
+      buffer.add(chunk);
 
-      while (buffer.length >= 4) {
-        final messageLength = _readLength(buffer);
-        if (buffer.length < 4 + messageLength) break;
-        final messageBytes = Uint8List.fromList(
-          buffer.sublist(4, 4 + messageLength),
-        );
-        buffer.removeRange(0, 4 + messageLength);
+      for (
+        var messageBytes = buffer.nextFrame();
+        messageBytes != null;
+        messageBytes = buffer.nextFrame()
+      ) {
         messageCount += 1;
 
         try {
@@ -169,7 +168,7 @@ class NaiGenerationResponseProcessor {
 
     if (buffer.isNotEmpty) {
       try {
-        final bytes = Uint8List.fromList(buffer);
+        final bytes = buffer.takeRemaining();
         if (_isZip(bytes)) {
           final images = ZipUtils.extractAllImages(bytes);
           for (var index = 0; index < images.length; index += 1) {
@@ -316,7 +315,7 @@ class NaiGenerationResponseProcessor {
 
   Uint8List? _decodeFallbackMessage(Uint8List bytes) {
     if (bytes.length < 4) return null;
-    final messageLength = _readLength(bytes);
+    final messageLength = LengthPrefixedFrameReader.readLength(bytes);
     if (bytes.length < 4 + messageLength) return null;
     final message = _decodeMessage(
       Uint8List.fromList(bytes.sublist(4, 4 + messageLength)),
@@ -335,10 +334,6 @@ class NaiGenerationResponseProcessor {
       }
     }
     return null;
-  }
-
-  int _readLength(List<int> bytes) {
-    return (bytes[0] << 24) | (bytes[1] << 16) | (bytes[2] << 8) | bytes[3];
   }
 
   bool _isZip(Uint8List bytes) {
