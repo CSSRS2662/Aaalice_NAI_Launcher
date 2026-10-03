@@ -1,226 +1,133 @@
-# NAI Launcher
+# Aaalice Pocket
 
 <p align="center">
   <a href="README.md">简体中文</a> · <a href="README.zh-TW.md">繁體中文</a> · English
 </p>
 
 <p align="center">
-  <img src="assets/icons/Icon.png" alt="NAI Launcher icon" width="112">
+  <img src="docs/assets/pocket-icon.png" alt="Aaalice Pocket icon" width="112">
 </p>
 
 <p align="center">
-  <strong>More than image generation: your complete NovelAI creative workflow in one application.</strong>
+  <strong>A NovelAI studio that fits in your pocket: an Android-only branch of NAI Launcher, tuned for phones.</strong>
 </p>
 
 <p align="center">
-  <a href="https://github.com/Aaalice233/Aaalice_NAI_Launcher/releases/latest"><img src="https://img.shields.io/github/v/release/Aaalice233/Aaalice_NAI_Launcher?display_name=tag&sort=semver" alt="Latest release"></a>
-  <img src="https://img.shields.io/badge/Windows%20%7C%20macOS%20%7C%20Android-available-6f7785" alt="Supported platforms">
+  <a href="https://github.com/CSSRS2662/Aaalice_NAI_Launcher/releases/latest"><img src="https://img.shields.io/github/v/release/CSSRS2662/Aaalice_NAI_Launcher?include_prereleases&display_name=tag" alt="Latest release"></a>
+  <img src="https://img.shields.io/badge/Android-7.0%2B%20arm64-3ddc84?logo=android&logoColor=white" alt="Android 7.0+ arm64">
   <img src="https://img.shields.io/badge/license-MIT-5b8c5a" alt="MIT License">
-  <a href="https://discord.gg/R48n6GwXzD"><img src="https://img.shields.io/badge/Discord-Join-5865F2?logo=discord&logoColor=white" alt="Discord community"></a>
+  <a href="https://github.com/Aaalice233/Aaalice_NAI_Launcher"><img src="https://img.shields.io/badge/upstream-NAI%20Launcher-6f7785" alt="Upstream project NAI Launcher"></a>
 </p>
 
 <p align="center">
-  <a href="https://github.com/Aaalice233/Aaalice_NAI_Launcher/releases/latest">Download latest release</a> ·
-  <a href="CHANGELOG.md">Read the changelog</a> ·
-  <a href="https://github.com/Aaalice233/Aaalice_NAI_Launcher/issues">Report an issue</a> ·
-  <a href="https://discord.gg/R48n6GwXzD">Join Discord</a>
+  <a href="https://github.com/CSSRS2662/Aaalice_NAI_Launcher/releases/latest">Download</a> ·
+  <a href="https://github.com/Aaalice233/Aaalice_NAI_Launcher">Upstream project</a> ·
+  <a href="#-relationship-to-upstream">Relationship to upstream</a>
 </p>
 
-> NAI Launcher is a community-developed third-party client, not an official NovelAI product. Bring your own NovelAI account for online features, and follow the applicable terms of service, content rules, and local laws.
+> Aaalice Pocket is an unofficial Android branch of [NAI Launcher](https://github.com/Aaalice233/Aaalice_NAI_Launcher), maintained by [CSSRS2662](https://github.com/CSSRS2662). It is not affiliated with or endorsed by the upstream author or by NovelAI (Anlatan); "Aaalice" in the name comes from the upstream project name to show where it comes from. Online features need your own NovelAI account; follow the applicable terms of service, content rules, and local laws.
 
-NAI Launcher is built for people who use NovelAI regularly. Generation, editing, Prompts, characters, references, galleries, queues, and Agent Chat connect in one workflow. Windows, macOS, and Android share the same core features, and local tools work before you sign in.
+## 📱 Android only
 
-## ✨ One complete creative workflow
+Upstream NAI Launcher targets Windows, macOS, and Android. Aaalice Pocket targets Android alone. It treats the phone as the main creative device: reachable with one hand, natural to drive with gestures, smooth on real hardware, rather than a shrunken desktop layout.
 
-| What you want to do | How NAI Launcher helps |
+- **Android packages only.** Desktop code stays in the tree so upstream merges stay easy, but this branch publishes no Windows or macOS builds.
+- **Own package name and signature.** The package is `com.cssrs2662.aaalicepocket`, signed with this branch's own key. It installs side by side with upstream builds and keeps its data separate.
+- **Regular upstream merges.** Upstream features and fixes are merged as needed, then reworked for phones.
+- **No in-app updater.** Download new versions from this repository's Releases and install over the existing app.
+
+## ✨ Reworked for phones
+
+| What you'll notice | What Aaalice Pocket does |
 | --- | --- |
-| **Start creating** | Write a Prompt, choose a model and parameters, then add characters, Vibes, Precise References, or a source image. |
-| **Keep refining** | Use image-to-image, inpainting, outpainting, variations, and enhancement, or restore selected settings from an older image. |
-| **Process a batch** | Queue multiple jobs, pause, resume, reorder, retry, and see real progress and Anlas cost. |
-| **Build a library** | Organize artwork in the local gallery and turn tags, Vibes, and references into searchable personal libraries. |
-| **Find inspiration** | Search several online galleries, inspect original Prompts and metadata, then continue from them in generation. |
-| **Move between tools** | Connect Krita, ComfyUI, and cloud backup so the same workflow can continue on Android. |
+| **Generation workbench** | The top bar holds just two pills, model and size, with V5 stamina and Anlas balance on the right. The Image / Prompt / Parameters / References / History tabs below switch with a horizontal swipe. One bottom row holds the gacha toggle, add to queue, agent, queue, and the Generate button, which shows progress inside itself. |
+| **Prompt sections** | Split a prompt into sections you edit, enable, and reorder separately. Reusing parameters restores the original sections instead of putting every tag into one box. |
+| **Tag mode** | Switch between text and tag views at any time; each tag shows its Chinese translation underneath, and a long press adjusts weight, copies, or temporarily disables it. |
+| **Tag search without AI** | Chinese, full pinyin, Ziranma double pinyin, and initials all find English tags, with homophone and spelling correction and splitting of Chinese phrases. A bundled semantic completion model also runs fully on the device. |
+| **V5 stamina and balance** | The top bar shows Opus stamina and Anlas balance; tap it for the remaining amount, estimated images, and refill time. |
+| **Pocket theme** | Neutral white or charcoal backgrounds with 8 preset accent colors or a custom one; light, dark, or follow the system. |
+| **Smoothness** | On high refresh rate screens, scrolling and other touch interaction run at the panel's top rate (for example 120Hz; turn off in Settings → Appearance → High refresh rate). Finishing an image no longer causes a stall. |
 
-## 🚀 Feature guide
+## 🎨 The full NovelAI workflow
 
-### 🎨 NovelAI generation and editing
+Aaalice Pocket keeps the upstream capabilities that work on phones:
 
-- Text-to-image, image-to-image, regular Inpaint, Focused Inpaint, Outpaint, variations, and enhancement are supported.
-- Common NovelAI V5 Curated / Full, V4.5, V4, and V3 workflows are available. Controls, defaults, Token limits, and reference features follow the selected model's capabilities.
-- Configure size, sampler, Steps, CFG, Seed, noise schedule, and related parameters. Invalid NovelAI dimensions are caught early with a usable size suggestion.
-- Estimated Anlas cost appears before generation. Important paid actions require separate confirmation, and balances and statistics refresh afterward.
-- Built-in history and previews let you reuse Prompts, Seeds, models, or selected settings without overwriting work still being edited.
+- **Generation and editing**: text-to-image, image-to-image, inpainting, Focused Inpaint, outpainting, variations, and enhancement. Supports NovelAI V5 Curated / Full, V4.5, V4, and V3, with parameters adjusted to each model's capabilities.
+- **Characters and references**: per-character prompts and positions. Vibe Transfer and Precise Reference have their own libraries for sorting, searching, and sending straight into the current task.
+- **Fixed tags and libraries**: positive and negative fixed tags, a custom tag library, and random tag libraries, with categories, search, and quick insertion.
+- **Gallery and history**: the local gallery and generation history use a masonry layout. Every image menu offers save, reuse parameters, and favorite, and NovelAI image metadata can be read and selectively restored.
+- **Share to import**: share an image or a direct image link from Discord or other apps to Aaalice Pocket to extract metadata or use it as an img2img source or reference.
+- **Online galleries**: Danbooru, Safebooru, Gelbooru, AI TAG, and the QuickTagCloud codex, with original prompts you can send back to the generation page.
+- **Queue and agent**: pause, resume, reorder, and retry batch tasks. The agent can look up tags, tidy prompts, and prepare tasks; paid and destructive actions still need your confirmation.
+- **Backup and restore**: cloud backup to GitHub and WebDAV; you start every push, pull, and restore. OneDrive and Google Drive need OAuth settings at build time, which this branch's release packages do not include.
 
-### ✍️ Prompts, pinned tags, and characters
-
-- Positive Prompts, negative Prompts, positive and negative pinned tags, and character content have clear editing areas, even in complex setups.
-- Each character can have separate positive and negative Prompts, reference images, and a position. Character count and positioning adapt to the current model.
-- The offline Danbooru / e621 catalog and aliases show completion, tag type, popularity, and translations. Optional Chinese and related-tag data packs add more context.
-- Related-tag completion helps explore composition, clothing, poses, and visual elements, while Danbooru online results can fill in newer tags.
-- Completion tolerates input mistakes without AI: Chinese homophones (陈山 → 衬衫), full pinyin, Ziranma double pinyin and initials (chenshan / ifuj / cs), approximate Chinese, Chinese phrases split into words and matched to English tags (坐在椅子上 → sitting_on_chair), and English typo correction. Results can also be ranked by the tags near the cursor and by your usage on this device; each option can be turned off in Settings. Usage history stays on the device and is never cloud-synced.
-- Personal tag, pinned-tag, and random-tag libraries support categories, search, batch editing, and quick insertion.
-- Switch between text and tag mode at the bottom-right of the input to edit original text, adjust weights, long-press and drag selected tags to reorder them, and undo. Simplified and Traditional Chinese interfaces display the same local Chinese translations below tags; other languages show only the original text. Selecting a complete tag in text mode also displays its translation when using a Chinese interface.
-- Drag the bottom edge of the main prompt editor to resize it, or double-click the handle to restore automatic height. Text and tag modes share the same height.
-- Disable and restore tags without losing their content. The `/*disabled:original fragment*/` notation is saved and cloud-synced with the Prompt, while disabled content is excluded from generation, effective previews, and Token counts. This is Launcher editing syntax; older clients and external tools may not recognize it. Choose “Copy effective prompt” from the menu for external use.
-- Local translation misses can be sent to a configured AI translation service.
-- Prompt Assistant tasks, including reverse prompting, optimization, and translation, share a configurable response wait timeout: 1, 2, 5, 10, 15, or 30 minutes, with a 5-minute default.
-- Each Prompt Assistant provider saves its own automatic or manual concurrency mode. Automatic mode starts at 5 concurrent requests, and independent tag batches translate in parallel. Each task offers the thinking levels supported by its model. Configure these local settings under Settings → Integrations → Prompt Assistant.
-
-### 🧬 Vibe, Precise Reference, and image editing
-
-- Vibe Transfer accepts images, pre-encoded Vibes, and Bundles, with information extraction and reference strength controls and model-aware encoding reuse.
-- Precise Reference supports character and style references, multi-select, batch type changes, and portable packages that include their images.
-- Dedicated Vibe and Precise Reference libraries provide categories, search, previews, batch management, import/export, and direct use in the current generation.
-- The inpaint editor includes brushes, masks, Focused Inpaint regions, and canvas expansion. Agent Chat can prepare a mask or outpaint draft for review.
-- NovelAI image metadata can restore selected model, size, sampler, Steps, CFG, Seed, pinned tags, and character content.
-- On Android, share a single image or a direct image link from apps such as Discord to NAI Launcher, then choose metadata import, img2img, or reference use. Direct links must be accessible, and restoring parameters requires an original image with metadata intact.
-
-### 🗂️ Local gallery and artwork organization
-
-- Scan only the folders you choose, then find artwork by folder, album, favorite status, Prompt, or generation metadata.
-- Image details separate positive and negative Prompts, pinned tags, character content, and full parameters for all-at-once or selective copying.
-- Batch categorization, favorites, moving, and deletion sit alongside comparison, slideshows, watermarks, redacted copies, and several viewing modes.
-- In Settings → Privacy & Sharing, independently enable "Add watermark when copying or dragging" to apply the saved default watermark to an output copy without changing the original. Adding a watermark does not remove metadata. To remove it, also enable Protection Mode and "Remove all metadata when copying or dragging"; metadata is removed before the watermark is added.
-- Desktop gets context menus, hover previews, and drag-and-drop; touch devices get equivalent menus instead of losing features.
-- Persistent sidebars in the local gallery, Vibe library, Precise Reference library, and tag library can be resized by dragging. Each page remembers its width on this device only, outside cloud sync.
-- Local gallery folders, albums, Vibe categories, and tag-library categories support original order or ascending/descending name and count sorting, remembered separately on this device only. Folders default to descending names, placing consistently formatted date folders newest first. Dragging to reorder starts from the displayed order and switches to original order automatically. Drag directly on desktop or long-press and drag on touchscreens; folders, albums, and tag-library categories also support nesting, while Vibe categories remain flat.
-- Image and resource cards use consistent actions across context menus, More menus, and batch toolbars. Selected cards open batch actions; unselected cards act only on themselves. Desktop supports Ctrl/Cmd toggling, Shift range selection, and selecting the current page, with selection preserved across pages.
-- Dragging a selected card includes the entire selected set: actual images for image cards and portable resource files for Vibes, Bundles, and Precise References. In-app targets include compatible generation references, Agent, categories, and albums; single-item targets reject multiple items.
-- Local images can go directly to generation, Agent Chat, or Krita without repeated exports and file picking.
-
-### 🔎 Online galleries and inspiration
-
-- Browse Danbooru, Safebooru, Gelbooru, AI TAG, and Codex Gallery (NovelAI QuickTagCloud) from one place.
-- Search, popular, random, ranking, date, rating, blacklist, and output filters appear according to each source's real capabilities.
-- Local favorites work independently. Danbooru sign-in and Gelbooru API settings unlock the matching account features.
-- Inspect multi-image posts, original Prompts, and structured generation metadata, download a set, or return recognized settings to generation.
-- Codex Gallery includes public codices, categories, versions, multi-image and text entries, contributor credits, and recently viewed items.
-
-### 🤖 Agent Chat
-
-- From a desktop sidebar or mobile drawer, the agent can search tags, organize Prompts, inspect generation history, use libraries, and prepare generation tasks.
-- Images, Vibes, and Precise References can be added directly as context. The agent can also prepare masks, expanded canvases, and inpaint drafts.
-- Preparation verifies the cost before generation. In Full Access, verified zero-Anlas generations proceed directly; deletion and paid operations still require approval.
-- The default character research workflow combines online identity verification, canonical tag lookup, and gallery appearance evidence, noting disabled web access or missing evidence.
-- Customize the system prompt by adding plain-language instructions or replacing the built-in body; no placeholders are needed. The working directory, web availability, Skills, and app execution rules are added automatically, with a preview of the final prompt. Customization does not bypass app permission checks.
-- Structured questions offer three feasible directions, one Recommended marker, and a custom-answer option per question. Answer sequentially, then review and submit the full set. After two minutes without submission, all recommended options are selected automatically. New questions show a Toast, a question-mark entry icon, and an Android system notification.
-- On Windows and macOS, a local MCP server can be enabled under Settings → Integrations → MCP, letting external agents such as Claude Code, Codex CLI, Cursor, Cherry Studio, Pi, and Claude Desktop drive Launcher through the same tools. The server is off by default; approvals and Anlas cost confirmations still happen inside Launcher. See [MCP server](docs/mcp_server.md).
-- MCP generation and image retrieval return original-resolution images by default. Clients may show them inside collapsed tool details. Inline answers can use temporary loopback HTTP image URLs for same-machine clients such as Cherry Studio, or optional display-cache files for Codex, without saving gallery copies. HTTP links last at most one hour and are revoked on server shutdown or cache eviction. With Protection Mode and "Remove all metadata when copying or dragging" enabled, MCP images, HTTP display, display-cache files, saved exports, and clipboard output all remove metadata and NAI steganographic watermark data without exposing original file paths. Local originals remain unchanged. Sanitized exports use PNG and retain destination-permission and no-overwrite checks.
-- Supports OpenAI-compatible APIs, Google's native Gemini API, third-party Gemini-compatible relays, and OpenRouter, including model lists, thinking levels, and tool calls when supported.
-- Your provider controls API keys, regional availability, and fees. Extra network tools such as web search are off by default.
-
-### 📋 Queue, history, and statistics
-
-- Queue multiple generations, pause, resume, reorder, cancel, and retry failures.
-- See per-job status, overall progress, and failure details without supervising every request.
-- Review creation activity by time, image size, sampler, model, and Anlas usage.
-
-### 🧩 Krita and ComfyUI
-
-- **Krita Bridge** sends a Krita canvas to Launcher for generation or inpainting, then returns the result.
-- **ComfyUI** connects to a local server for regular upscale or SeedVR2 workflows. Models and custom nodes stay under your ComfyUI installation.
-- **DLSSNR image enhancement (Windows)**: Install the public runtime on demand and test your NVIDIA GPU under Settings → Integrations → DLSSNR. Supports automatic enhancement after generation (off by default), manual image-card enhancement, and a draggable before/after divider. The shared comparison viewer offers a Follow mouse toggle for inspecting details while zoomed in; the toggle preference is saved on this device. SR scale defaults to 2× and accepts manual input. SR upscaling is followed by a single NR evaluation, then enhancement/color blending. Includes seven built-in style presets, with Texture & light as the default and alternatives such as Color-preserving enhancement and Vivid, plus custom presets you can save, rename, and delete; the current selection and adjustments are saved automatically. Parameters include explanations and numeric input. Images are processed locally; manual saves create a new file, add it to the generation history as the latest result, and never overwrite the original.
-- Gallery, preview, and editing flows can open these tools directly instead of requiring repeated manual exports.
-
-### ☁️ Sync and backup
-
-- Supports OneDrive, GitHub, and WebDAV. New Google Drive connections are temporarily disabled pending authorization approval. Connecting an account never uploads, downloads, or overwrites content by itself.
-- Push, pull, and restore start only when requested, with change previews and conflict handling.
-- Select settings, Prompts and libraries, previews, online-gallery settings and favorites, local albums, fixed-tag usage records, Agent Prompts and Skills, and optional Vibe or Precise Reference content independently.
-- Original local and remote gallery images, credentials, caches, and logs never enter a backup.
-- Backups use readable plain data and need no separate recovery key. Check the destination's permissions before syncing.
-
-## 🖼️ Interface preview
-
-### 🖥️ Desktop
+## 🖼️ Screenshots
 
 <table>
   <tr>
-    <td width="50%" align="center">
-      <img src="docs/screenshots/overview-generation-desktop.png" alt="Generation workspace and Agent Chat" width="100%"><br>
-      <sub>Generation workspace: Prompts, parameters, preview, and Agent Chat together</sub>
+    <td width="33%" align="center">
+      <img src="docs/screenshots/pocket/pocket-generate.png" alt="Generation workbench" width="100%"><br>
+      <sub>Workbench: model, size, and balance in the top bar</sub>
     </td>
-    <td width="50%" align="center">
-      <img src="docs/screenshots/overview-local-gallery-desktop.png" alt="Local gallery" width="100%"><br>
-      <sub>Local gallery: search, albums, folders, and batch organization</sub>
+    <td width="33%" align="center">
+      <img src="docs/screenshots/pocket/pocket-streaming.png" alt="Streaming preview" width="100%"><br>
+      <sub>Streaming preview with progress in the Generate button</sub>
+    </td>
+    <td width="33%" align="center">
+      <img src="docs/screenshots/pocket/pocket-prompt-tags.png" alt="Prompt tag mode" width="100%"><br>
+      <sub>Tag mode with Chinese translations</sub>
     </td>
   </tr>
   <tr>
-    <td width="50%" align="center">
-      <img src="docs/screenshots/overview-online-gallery-desktop.png" alt="Online galleries" width="100%"><br>
-      <sub>Online galleries: multiple sources, filters, and masonry browsing</sub>
+    <td width="33%" align="center">
+      <img src="docs/screenshots/pocket/pocket-params.png" alt="Parameters" width="100%"><br>
+      <sub>Parameters: size, sampler, and steps</sub>
     </td>
-    <td width="50%" align="center">
-      <img src="docs/screenshots/overview-statistics-desktop.png" alt="Statistics dashboard" width="100%"><br>
-      <sub>Statistics dashboard: artwork, settings, and Anlas usage</sub>
+    <td width="33%" align="center">
+      <img src="docs/screenshots/pocket/pocket-appearance.png" alt="Appearance settings" width="100%"><br>
+      <sub>Appearance: accent color and theme</sub>
     </td>
+    <td width="33%"></td>
   </tr>
 </table>
 
-## 💻 Platform support
+All images in the screenshots were generated with NovelAI V5 Curated from random prompts; the UI is shown in Simplified Chinese.
 
-| Platform | Current status | Notes |
-| --- | --- | --- |
-| **Windows** | Primary development and release platform | Installer and portable packages are available. Well suited to long sessions, batch work, Krita / ComfyUI integration, and external MCP access. |
-| **macOS** | Available and still being refined | Requires macOS 12 or later. A portable package is available. If macOS blocks an unnotarized build, allow it through the system security prompt. |
-| **Android** | Beta | Supports phones, landscape, tablets, and large screens, with touch access to generation, galleries, libraries, queues, Agent Chat, and settings. |
-| **Linux** | No official release package | No official download is currently provided. |
+## ⚡ Download and install
 
-## ⚡ Download and get started
+1. Download `Aaalice_Pocket_<version>_arm64.apk` from [Releases](https://github.com/CSSRS2662/Aaalice_NAI_Launcher/releases/latest), and check its SHA-256 against `checksums.txt` on the same page.
+2. On first install, allow the current app to install unknown apps when Android asks.
+3. Requires Android 7.0 or later on a 64-bit ARM (arm64-v8a) device. The package bundles the offline tag database and the semantic completion model, so it is about 290MB.
+4. To upgrade, install the new package over the old one; your data stays. This branch and upstream use different signatures, so neither can install over the other.
 
-### 1. Download the package for your platform
-
-Open [GitHub Releases](https://github.com/Aaalice233/Aaalice_NAI_Launcher/releases/latest):
-
-| Platform | File | Usage |
-| --- | --- | --- |
-| Windows | `NAI_Launcher_Windows_<version>_Setup.exe` | Installer recommended for most users. |
-| Windows | `NAI_Launcher_Windows_<version>_Portable.zip` | Portable package; extract and run. |
-| macOS | `NAI_Launcher_macOS_<version>_Portable.zip` | Extract and open `Aaalice NAI Launcher.app`. |
-| Android | `NAI_Launcher_Android_<version>.apk` | Sideload the APK. The first install may require permission to install unknown apps. |
-
-Every release includes `checksums.txt`. If an archive cannot be extracted or installed, verify the downloaded file first.
-
-### 2. Sign in to NovelAI
-
-Sign in with NovelAI credentials or a **Persistent API Token**. If web security verification prevents password login, a Persistent API Token is usually more reliable. The token is stored only in the current device's secure storage.
-
-### 3. Set up the resources you use
-
-- Select your artwork folders in Settings, then open the local gallery to start scanning.
-- Manage the Chinese translation catalog, related-tag data pack, and online caches under **Settings → Data Sources & Cache**.
-- For Krita, enable Krita Bridge and follow the [Krita plugin guide](krita_plugin/README.md).
-- For ComfyUI, enter the local address and choose a workflow under **Settings → ComfyUI**.
-- For cross-device use, connect a destination on the cloud-sync page and carefully select what should be included.
+Sign in with your NovelAI email and password or a **Persistent API Token**. If the website's security check makes password sign-in fail, use a Persistent API Token instead; it is kept only in the device's secure storage.
 
 ## 🔒 Data and privacy
 
-NAI Launcher does not host your account or artwork on a project-operated server. Data is sent to another service only when you actively use the related feature:
+Aaalice Pocket has no server of its own and collects no usage data. Data leaves the device only when you use a feature that needs a service:
 
-| Feature in use | Where the data goes |
+| Feature | Where data goes |
 | --- | --- |
-| Generation, image-to-image, inpainting, Vibe encoding | NovelAI, including the Prompt, parameters, and source or reference images required for that request. |
-| Online gallery search and downloads | The third-party gallery you selected. Availability, rate limits, and content rules belong to each site. |
-| AI translation or Agent Chat | The model service you configured. Conversations, attached images, and tool results required by the task may incur provider fees. |
-| Sync and backup | Your selected Google Drive, OneDrive, GitHub, or WebDAV destination. Only explicitly selected content is uploaded. |
+| Generation, img2img, inpainting, Vibe encoding | NovelAI, including the prompt, parameters, and source or reference images the request needs. |
+| Online gallery search and downloads | The third-party gallery you choose; each site sets its own availability, rate limits, and content rules. |
+| AI translation or the agent | The model service you configure, which may charge fees. |
+| Cloud backup | The GitHub or WebDAV target you choose; only the items you select are uploaded. |
 
-- NovelAI Tokens, OAuth access/refresh tokens, WebDAV passwords, and GitHub Tokens use device secure storage and are never written into backups.
-- Local Prompts, gallery indexes, tags, resource libraries, and Agent sessions stay on the device by default.
-- Cloud backups store selected data in plaintext. Local gallery image files are not uploaded; albums, categories, membership references, and fixed-tag usage records can sync as lightweight data.
-- Online galleries can contain third-party content. Rating filters do not replace user judgment.
-- WebDAV security depends on the server and transport you configure. Keep a local copy of important data.
+- Your NovelAI token, GitHub token, and WebDAV password stay in the device's secure storage and are never written to backups.
+- Prompts, the gallery index, tags, libraries, and agent sessions stay on the device by default; image files in the local gallery are never uploaded.
+- Online galleries may contain third-party content, and rating filters do not replace your own judgment.
 
-## 🆘 Support and feedback
+## 🔗 Relationship to upstream
 
-- If something goes wrong, use **Settings → About → Export diagnostic logs** and attach the exported information to your report.
-- [Open an Issue](https://github.com/Aaalice233/Aaalice_NAI_Launcher/issues) for a reproducible bug or feature request.
-- [Join Discord](https://discord.gg/R48n6GwXzD) for usage discussion and community help.
-- [View Releases](https://github.com/Aaalice233/Aaalice_NAI_Launcher/releases) to download packages, verify files, and read release notes.
+- This branch is based on [Aaalice233/Aaalice_NAI_Launcher](https://github.com/Aaalice233/Aaalice_NAI_Launcher), uses the same [MIT License](LICENSE), and keeps the upstream copyright notice.
+- Credit for upstream features and fixes goes to the upstream author and contributors; this branch maintains the Android-specific interface and changes.
+- Report problems with Aaalice Pocket to this branch, not to the upstream repository. Before reporting, you can save troubleshooting data with Settings → About → Export diagnostic logs.
+- For Windows or macOS builds, or upstream's full feature set, use upstream [NAI Launcher](https://github.com/Aaalice233/Aaalice_NAI_Launcher/releases/latest).
 
-## 🙏 Acknowledgments
+## 🙏 Acknowledgements
 
-Thanks to [NovelAI](https://novelai.net/), [Codex Gallery](https://novelai.quicktagcloud.com/), [AgIzT/NovelAI-Tag](https://github.com/AgIzT/NovelAI-Tag), [ffdkj Danbooru tag translation table](https://github.com/ffdkj/ffdkj-Danbooru_Tag-Chinese-English-Translation-Table), [amenorira/danbooru-tags-data-zh](https://github.com/amenorira/danbooru-tags-data-zh), [mozillazg/pinyin-data](https://github.com/mozillazg/pinyin-data), [ECDICT](https://github.com/skywind3000/ECDICT), [Flutter](https://flutter.dev/), [Riverpod](https://riverpod.dev/), and all contributors and testers.
+Thanks to the author and all contributors of [NAI Launcher](https://github.com/Aaalice233/Aaalice_NAI_Launcher), and to [NovelAI](https://novelai.net/), [QuickTagCloud](https://novelai.quicktagcloud.com/), [AgIzT/NovelAI-Tag](https://github.com/AgIzT/NovelAI-Tag), the [ffdkj Chinese-English tag table](https://github.com/ffdkj/ffdkj-Danbooru_Tag-Chinese-English-Translation-Table), [amenorira/danbooru-tags-data-zh](https://github.com/amenorira/danbooru-tags-data-zh), [mozillazg/pinyin-data](https://github.com/mozillazg/pinyin-data), [ECDICT](https://github.com/skywind3000/ECDICT), [multilingual-e5-small](https://huggingface.co/intfloat/multilingual-e5-small), [Flutter](https://flutter.dev/), and [Riverpod](https://riverpod.dev/). License details for bundled data and assets are in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
 
 ## 📄 License
 
-This project is open source under the [MIT License](LICENSE).
+This project is open source under the [MIT License](LICENSE). NovelAI and its logo are trademarks of Anlatan; this project claims no rights to them.
