@@ -30,12 +30,14 @@ dart run tool/perf/measure_frames.dart watch 20 generation
 - `base_hz`：录制期间主要的刷新率。
 - `late_pct`：超过 1.5 个刷新周期的帧间隔占比，即“晚帧”。
 - `missed_vsyncs`：累计错过的刷新次数。
-- `long_frames_ms`：所有 30 ms 及以上的间隔，按发生顺序列出；连续出现的几个值通常就是一次卡顿。
+- `long_frames_ms`：所有 30 ms 及以上的间隔，按发生顺序列出；连续出现的几个值通常就是一次卡顿。`long_frames_at_s` 是对应的发生时刻（距第一帧的秒数）。
+- `rate_share_pct`：各刷新率下的帧间隔占比。`watch` 录制常常前段是触摸后的 120 Hz、后段是 60 Hz，此时 `late_pct` 会把 60 Hz 段全部算作晚帧，应看 `rate_share_pct` 与 `long_frames_ms`。
 - 间隔超过 60 ms 视为画面静止，不计入统计。
 
 SurfaceFlinger 每个图层只保留最近 128 帧（120 Hz 下约 1 秒），脚本在录制期间每 0.4 秒读取一次再合并，因此长时间录制不会丢帧。
 
 ## 已知结论（OnePlus 12，ColorOS，Android 16）
 
-- 系统默认只给应用 60 Hz（静止）和 90 Hz（触摸）。应用通过 `DisplayRefreshRateChannel` 申请最高显示模式，并给 Flutter 画面投 120 Hz 票；设置 → 外观 → 高刷新率可以关闭。
+- 系统默认只给应用 60 Hz（静止）和 90 Hz（触摸）。应用通过 `DisplayRefreshRateChannel` 申请最高显示模式后，触摸及松手后约 2.5 秒内为 120 Hz；设置 → 外观 → 高刷新率可以关闭。
+- 不触屏的动画（如生成进度）始终是 60 Hz：系统“智能”刷新率由 OPlus 自适应帧率选择器决定，`Surface.setFrameRate` 的图层投票已登记但被忽略，因此没有保留。
 - 软键盘弹出和收起时全应用都有大量晚帧（图库搜索框同样如此），原因是 Flutter 在系统键盘动画期间逐帧重排窗口，不是单个页面的问题。

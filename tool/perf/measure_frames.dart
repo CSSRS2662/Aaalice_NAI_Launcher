@@ -272,6 +272,8 @@ class _Stats {
     required this.latePct,
     required this.missedVsyncs,
     required this.longFramesMs,
+    required this.longFramesAtS,
+    required this.rateShare,
   });
 
   final int frames;
@@ -287,12 +289,27 @@ class _Stats {
   /// Intervals of 30 ms or more, in order: the stalls worth investigating.
   final List<double> longFramesMs;
 
+  /// Seconds from the first recorded frame to the end of each long interval.
+  final List<double> longFramesAtS;
+
+  /// Percentage of intervals at each refresh rate, to tell touch-driven 120 Hz
+  /// motion from 60 Hz untouched animation in one recording.
+  final Map<String, double> rateShare;
+
   static _Stats? of(List<int> presents) {
     if (presents.length < 3) return null;
-    final run = <double>[
-      for (var i = 1; i < presents.length; i++)
-        (presents[i] - presents[i - 1]) / 1e6,
-    ].where((gap) => gap < _runBreakMs).toList();
+    final run = <double>[];
+    final longFramesMs = <double>[];
+    final longFramesAtS = <double>[];
+    for (var i = 1; i < presents.length; i++) {
+      final gap = (presents[i] - presents[i - 1]) / 1e6;
+      if (gap >= _runBreakMs) continue;
+      run.add(gap);
+      if (gap >= 30) {
+        longFramesMs.add(_round(gap));
+        longFramesAtS.add(_round((presents[i] - presents.first) / 1e9));
+      }
+    }
     if (run.isEmpty) return null;
     // The refresh period is the most common short interval.
     const periods = [1000 / 120, 1000 / 90, 1000 / 60];
@@ -314,10 +331,14 @@ class _Stats {
         0,
         (sum, gap) => sum + (gap / base).round() - 1,
       ),
-      longFramesMs: [
-        for (final gap in run)
-          if (gap >= 30) _round(gap),
-      ],
+      longFramesMs: longFramesMs,
+      longFramesAtS: longFramesAtS,
+      rateShare: {
+        for (final period in periods)
+          '${(1000 / period).round()}': _round(
+            100 * _near(run, period) / run.length,
+          ),
+      },
     );
   }
 
@@ -333,6 +354,8 @@ class _Stats {
     'late_pct': latePct,
     'missed_vsyncs': missedVsyncs,
     'long_frames_ms': longFramesMs,
+    'long_frames_at_s': longFramesAtS,
+    'rate_share_pct': rateShare,
   };
 }
 
