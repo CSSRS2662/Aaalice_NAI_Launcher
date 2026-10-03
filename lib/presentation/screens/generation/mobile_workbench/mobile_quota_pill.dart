@@ -3,13 +3,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
 import '../../../providers/subscription_provider.dart';
-import '../../../themes/core/layered_surface_style.dart';
-import '../../../themes/theme_extension.dart';
 import '../../../widgets/anlas/anlas_balance_chip.dart';
 import '../../../widgets/anlas/opus_stamina_bar.dart';
 
-/// 顶栏右端的额度胶囊：V5 体力（闪电 + 剩余百分比，有额度数据时）与 Anlas
-/// 余额。点体力看详情，点余额刷新。
+/// 顶栏右端的额度读数：V5 体力（闪电 + 剩余百分比，有额度数据时）与 Anlas
+/// 余额，直接放在顶栏底色上（没有自己的色面）。点体力看详情，点余额刷新。
 class MobileQuotaPill extends ConsumerWidget {
   const MobileQuotaPill({super.key, required this.textStyle});
 
@@ -21,8 +19,11 @@ class MobileQuotaPill extends ConsumerWidget {
       OpusStaminaIndicator.horizontalPadding * 2 +
       OpusStaminaIndicator.iconSize +
       OpusStaminaIndicator.iconGap;
-  static const double _balanceChrome = 8 + 14 + 4 + 8;
+  static const double _balanceChrome = 8 + 14 + 4 + trailingInset;
   static const double _divider = 1;
+
+  /// Padding after the balance digits (the embedded chip's end padding).
+  static const double trailingInset = 8;
 
   /// The pill's natural width, for the header's fit decision.
   static double naturalWidth(
@@ -62,14 +63,11 @@ class MobileQuotaPill extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final theme = Theme.of(context);
-    final colors = theme.colorScheme;
+    final colors = Theme.of(context).colorScheme;
     final showStamina = watchVisibleOpusUsage(ref) != null;
     return Material(
       key: const ValueKey('generation-mobile-quota'),
-      color: controlSurfaceColor(colors),
-      borderRadius: BorderRadius.circular(theme.appTheme.controlRadius + 2),
-      clipBehavior: Clip.antiAlias,
+      type: MaterialType.transparency,
       child: ConstrainedBox(
         constraints: const BoxConstraints(minHeight: 44),
         child: Row(

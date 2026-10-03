@@ -224,6 +224,8 @@ void main() {
       find.descendant(of: quota, matching: find.byType(AnlasIcon)),
       findsOne,
     );
+    // The quota sits on the header colour, without a pill surface.
+    expect(tester.widget<Material>(quota).type, MaterialType.transparency);
     for (final pill in [model, size, quota]) {
       expect(tester.getSize(pill).height, 44);
     }

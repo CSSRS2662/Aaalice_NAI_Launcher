@@ -44,12 +44,19 @@ class MobileGenerationHeader extends StatelessWidget
       key: const ValueKey('generation-mobile-header'),
       automaticallyImplyLeading: false,
       toolbarHeight: toolbarHeight,
-      titleSpacing: 12,
-      title: MediaQuery.withClampedTextScaling(
-        maxScaleFactor: maxTextScale,
-        child: const MobileGenerationHeaderBar(),
+      titleSpacing: 0,
+      // The quota at the end has no surface of its own: its last digits, not
+      // its padding, line up with the 12 dp margin of the pills at the start.
+      title: Padding(
+        padding: const EdgeInsetsDirectional.only(
+          start: 12,
+          end: 12 - MobileQuotaPill.trailingInset,
+        ),
+        child: MediaQuery.withClampedTextScaling(
+          maxScaleFactor: maxTextScale,
+          child: const MobileGenerationHeaderBar(),
+        ),
       ),
-      actions: const [SizedBox(width: 12)],
     );
   }
 }
