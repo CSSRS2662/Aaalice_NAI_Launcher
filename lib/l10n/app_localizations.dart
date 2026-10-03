@@ -22548,6 +22548,18 @@ abstract class AppLocalizations {
   /// **'Not translated'**
   String get autocomplete_missingTranslation;
 
+  /// No description provided for @settings_highRefreshRate.
+  ///
+  /// In en, this message translates to:
+  /// **'High refresh rate'**
+  String get settings_highRefreshRate;
+
+  /// No description provided for @settings_highRefreshRate_description.
+  ///
+  /// In en, this message translates to:
+  /// **'Run at the screen\'s highest refresh rate for smoother motion; uses slightly more battery. Off lets the system decide.'**
+  String get settings_highRefreshRate_description;
+
   /// No description provided for @generation_varietyPlusDescription.
   ///
   /// In en, this message translates to:

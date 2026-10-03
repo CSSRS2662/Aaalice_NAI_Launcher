@@ -12632,6 +12632,13 @@ class AppLocalizationsJa extends AppLocalizations {
   String get autocomplete_missingTranslation => '未翻訳';
 
   @override
+  String get settings_highRefreshRate => '高リフレッシュレート';
+
+  @override
+  String get settings_highRefreshRate_description =>
+      '画面の最高リフレッシュレートで動作し、動きが滑らかになります（電池消費がやや増えます）。オフにするとシステムに任せます。';
+
+  @override
   String get generation_varietyPlusDescription =>
       '生成初期は CFG ガイダンスを省き、構図・ポーズ・配色をより多様にします。同じ画像を安定して再現したいときはオフにしてください。';
 

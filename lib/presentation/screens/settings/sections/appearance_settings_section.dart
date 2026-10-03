@@ -8,6 +8,7 @@ import '../../../providers/accent_color_provider.dart';
 import '../../../providers/font_provider.dart';
 import '../../../providers/font_scale_provider.dart';
 import '../../../providers/generation_layout_mode_provider.dart';
+import '../../../providers/high_refresh_rate_provider.dart';
 import '../../../providers/history_click_behavior_provider.dart';
 import '../../../../core/utils/locale_provider.dart';
 import '../../../providers/theme_provider.dart';
@@ -104,6 +105,21 @@ class _AppearanceSettingsSectionState
                 subtitle: Text(_languageLabel(context, currentLocale)),
                 onTap: () => _showLanguageDialog(context, currentLocale),
               ),
+
+              if (PlatformCapabilities
+                  .current
+                  .supportsDisplayRefreshRateControl)
+                SwitchListTile.adaptive(
+                  key: const ValueKey('settings-high-refresh-rate'),
+                  secondary: const Icon(Icons.speed_rounded),
+                  title: Text(context.l10n.settings_highRefreshRate),
+                  subtitle: Text(
+                    context.l10n.settings_highRefreshRate_description,
+                  ),
+                  value: ref.watch(highRefreshRateProvider),
+                  onChanged: (value) =>
+                      ref.read(highRefreshRateProvider.notifier).set(value),
+                ),
             ],
           ),
         ),

@@ -12424,6 +12424,13 @@ class AppLocalizationsZh extends AppLocalizations {
   String get autocomplete_missingTranslation => '未汉化';
 
   @override
+  String get settings_highRefreshRate => '高刷新率';
+
+  @override
+  String get settings_highRefreshRate_description =>
+      '以屏幕支持的最高刷新率运行，动画与滑动更流畅，耗电略增；关闭后由系统决定';
+
+  @override
   String get generation_varietyPlusDescription =>
       '生成初期跳过 CFG 引导，构图、姿势与配色更多变；想稳定复现同一张图时关闭。';
 
@@ -27539,6 +27546,13 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get autocomplete_missingTranslation => '未漢化';
+
+  @override
+  String get settings_highRefreshRate => '高更新率';
+
+  @override
+  String get settings_highRefreshRate_description =>
+      '以螢幕支援的最高更新率執行，動畫與滑動更流暢，耗電略增；關閉後由系統決定';
 
   @override
   String get generation_varietyPlusDescription =>

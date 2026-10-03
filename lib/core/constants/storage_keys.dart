@@ -42,6 +42,9 @@ class StorageKeys {
   static const String themeType = 'theme_type';
   static const String themeMode = 'theme_mode';
   static const String accentColor = 'accent_color';
+
+  /// Device-local: run at the panel's fastest refresh rate (Android).
+  static const String displayHighRefreshRate = 'display_high_refresh_rate';
   static const String fontFamily = 'font_family';
   static const String fontScale = 'font_scale';
   static const String locale = 'locale';

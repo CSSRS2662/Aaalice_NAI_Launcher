@@ -2,6 +2,7 @@ package com.cssrs2662.aaalicepocket
 
 import android.content.Intent
 import android.os.Build
+import android.os.Bundle
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
@@ -12,9 +13,21 @@ class MainActivity : FlutterActivity() {
     private var fileExportChannel: AndroidFileExportChannel? = null
     private var generationServiceChannel: MethodChannel? = null
     private var imageShareChannel: AndroidImageShareChannel? = null
+    private var displayRefreshRate: DisplayRefreshRateChannel? = null
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        // Fastest mode from the first frame; Dart turns it off if the user
+        // chose to follow the system rate.
+        displayRefreshRate?.apply(true)
+    }
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
+        displayRefreshRate = DisplayRefreshRateChannel(
+            this,
+            flutterEngine.dartExecutor.binaryMessenger,
+        )
         imageShareChannel = AndroidImageShareChannel(this, flutterEngine.dartExecutor.binaryMessenger)
         questionNotifications = AgentQuestionNotifications(this, flutterEngine.dartExecutor.binaryMessenger)
         fileExportChannel = AndroidFileExportChannel(
@@ -114,6 +127,8 @@ class MainActivity : FlutterActivity() {
         fileExportChannel = null
         generationServiceChannel?.setMethodCallHandler(null)
         generationServiceChannel = null
+        displayRefreshRate?.dispose()
+        displayRefreshRate = null
         super.onDestroy()
     }
 

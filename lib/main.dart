@@ -14,6 +14,7 @@ import 'package:timeago/timeago.dart' as timeago;
 
 import 'core/constants/app_version.dart';
 import 'core/constants/storage_keys.dart';
+import 'core/platform/platform_capabilities.dart';
 import 'l10n/app_localizations.dart';
 import 'l10n/app_localizations_en.dart';
 import 'l10n/app_localizations_ja.dart';
@@ -37,6 +38,7 @@ import 'data/services/temp_image_service.dart';
 import 'core/cache/gallery_cache_manager.dart';
 import 'core/cache/local_gallery_thumbnail_migration.dart';
 import 'core/services/sqflite_bootstrap_service.dart';
+import 'presentation/providers/high_refresh_rate_provider.dart';
 import 'presentation/providers/online_gallery_blacklist_provider.dart';
 import 'presentation/providers/startup_initialization_provider.dart';
 import 'presentation/screens/splash/app_bootstrap.dart';
@@ -645,6 +647,11 @@ Future<void> _bootstrapApplication() async {
 
   WidgetsBinding.instance.addPostFrameCallback((_) {
     AppLogger.i('Flutter first frame completed', 'Main');
+    // Applies a stored "follow the system" choice; the fastest mode is the
+    // activity's launch default.
+    if (PlatformCapabilities.current.supportsDisplayRefreshRateControl) {
+      container.read(highRefreshRateProvider);
+    }
     if (desktopWindow != null) {
       unawaited(desktopWindow.show());
     }

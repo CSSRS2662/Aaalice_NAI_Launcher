@@ -6321,6 +6321,8 @@
 
   "autocomplete_translating": "Translating…",
   "autocomplete_missingTranslation": "Not translated",
+  "settings_highRefreshRate": "High refresh rate",
+  "settings_highRefreshRate_description": "Run at the screen's highest refresh rate for smoother motion; uses slightly more battery. Off lets the system decide.",
   "generation_varietyPlusDescription": "Skips CFG guidance in the first steps for more varied composition, poses and colors. Turn it off to reproduce an image reliably.",
   "autocomplete_searchEnhancementTitle": "Search enhancements",
   "autocomplete_pinyinSearch": "Pinyin matching",

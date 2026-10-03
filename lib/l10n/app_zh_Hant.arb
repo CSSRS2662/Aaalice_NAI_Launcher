@@ -6562,6 +6562,8 @@
   },
   "autocomplete_translating": "翻譯中…",
   "autocomplete_missingTranslation": "未漢化",
+  "settings_highRefreshRate": "高更新率",
+  "settings_highRefreshRate_description": "以螢幕支援的最高更新率執行，動畫與滑動更流暢，耗電略增；關閉後由系統決定",
   "generation_varietyPlusDescription": "生成初期略過 CFG 引導，構圖、姿勢與配色更多變；想穩定重現同一張圖時關閉。",
   "autocomplete_searchEnhancementTitle": "搜尋增強",
   "autocomplete_pinyinSearch": "拼音匹配",

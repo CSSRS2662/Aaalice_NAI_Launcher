@@ -6390,6 +6390,8 @@
 
   "autocomplete_translating": "翻译中…",
   "autocomplete_missingTranslation": "未汉化",
+  "settings_highRefreshRate": "高刷新率",
+  "settings_highRefreshRate_description": "以屏幕支持的最高刷新率运行，动画与滑动更流畅，耗电略增；关闭后由系统决定",
   "generation_varietyPlusDescription": "生成初期跳过 CFG 引导，构图、姿势与配色更多变；想稳定复现同一张图时关闭。",
   "autocomplete_searchEnhancementTitle": "搜索增强",
   "autocomplete_pinyinSearch": "拼音匹配",

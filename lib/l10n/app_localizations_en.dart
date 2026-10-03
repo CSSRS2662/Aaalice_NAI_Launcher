@@ -12963,6 +12963,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get autocomplete_missingTranslation => 'Not translated';
 
   @override
+  String get settings_highRefreshRate => 'High refresh rate';
+
+  @override
+  String get settings_highRefreshRate_description =>
+      'Run at the screen\'s highest refresh rate for smoother motion; uses slightly more battery. Off lets the system decide.';
+
+  @override
   String get generation_varietyPlusDescription =>
       'Skips CFG guidance in the first steps for more varied composition, poses and colors. Turn it off to reproduce an image reliably.';
 

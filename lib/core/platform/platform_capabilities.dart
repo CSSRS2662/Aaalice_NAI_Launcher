@@ -77,4 +77,8 @@ class PlatformCapabilities {
   /// Image libraries load the next page as the list nears its end instead of
   /// showing a page bar, and refresh with a pull from the top.
   bool get prefersContinuousLibraryScrolling => isMobile;
+
+  /// Android OEM builds may cap apps below the panel's refresh rate unless
+  /// the app asks for a faster display mode.
+  bool get supportsDisplayRefreshRateControl => isAndroid;
 }
